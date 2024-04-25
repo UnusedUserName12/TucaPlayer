@@ -53,7 +53,9 @@ public class Folder extends Fragment {
         musicListView = view.findViewById(R.id.AudioList);
 
         AudioList = new ArrayList<>();
-        AudioAdapter = new MP3ListAdapter(getActivity(), AudioList); //problem here
+
+        AudioAdapter = new MP3ListAdapter(getActivigit ty(), AudioList); //problem here
+        loadAudio();
         musicListView.setAdapter(AudioAdapter);
 
         play_pause_button = view.findViewById(R.id.play_pause);
@@ -66,6 +68,7 @@ public class Folder extends Fragment {
         seekBar = view.findViewById(R.id.seek_bar);
         currentTime = view.findViewById(R.id.currentTime);
         totalTime = view.findViewById(R.id.totalTime);
+
 
         getActivity().runOnUiThread(new Runnable() {
             @Override
@@ -80,7 +83,7 @@ public class Folder extends Fragment {
             }
         });
 
-        ControllerMainActivity controller = new ControllerMainActivity(this);
+        FolderTabController controller = new FolderTabController(this);
 
         return view;
     }
