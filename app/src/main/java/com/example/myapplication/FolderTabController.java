@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 
-public class ControllerMainActivity {
+public class FolderTabController {
 
     MediaPlayer mediaPlayer = MyMediaPlayer.getInstance();
     private final List<String> AudioList;
@@ -28,7 +28,7 @@ public class ControllerMainActivity {
     private boolean OnRepeat=false, OnShuffle=false;
 
 
-    public ControllerMainActivity(Fragment folderFragment){
+    public FolderTabController(Fragment folderFragment){
 
         AudioList = ((Folder)folderFragment).getAudioList();
         AudioAdapter = ((Folder)folderFragment).getAudioAdapter();
