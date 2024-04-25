@@ -54,7 +54,7 @@ public class Folder extends Fragment {
 
         AudioList = new ArrayList<>();
 
-        AudioAdapter = new MP3ListAdapter(getActivigit ty(), AudioList); //problem here
+        AudioAdapter = new MP3ListAdapter(getActivity(), AudioList);
         loadAudio();
         musicListView.setAdapter(AudioAdapter);
 
