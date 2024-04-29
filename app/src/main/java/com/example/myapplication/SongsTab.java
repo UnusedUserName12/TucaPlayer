@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class Folder extends Fragment {
+public class SongsTab extends Fragment {
 
     private ListView musicListView;
     private List<String> AudioList;
@@ -83,7 +83,7 @@ public class Folder extends Fragment {
             }
         });
 
-        FolderTabController controller = new FolderTabController(this);
+        SongsTabController controller = new SongsTabController(this);
 
         return view;
     }
