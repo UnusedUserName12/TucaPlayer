@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 
-public class FolderTabController {
+public class SongsTabController {
 
     MediaPlayer mediaPlayer = MyMediaPlayer.getInstance();
     private final List<String> AudioList;
@@ -28,11 +28,11 @@ public class FolderTabController {
     private boolean OnRepeat=false, OnShuffle=false;
 
 
-    public FolderTabController(Fragment folderFragment){
+    public SongsTabController(Fragment folderFragment){
 
-        AudioList = ((Folder)folderFragment).getAudioList();
-        AudioAdapter = ((Folder)folderFragment).getAudioAdapter();
-        ListView musicListView = ((Folder)folderFragment).getMusicListView();
+        AudioList = ((SongsTab)folderFragment).getAudioList();
+        AudioAdapter = ((SongsTab)folderFragment).getAudioAdapter();
+        ListView musicListView = ((SongsTab)folderFragment).getMusicListView();
         AdapterView.OnItemClickListener itemListener = new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
@@ -44,8 +44,8 @@ public class FolderTabController {
         };
         musicListView.setOnItemClickListener(itemListener);
 
-        play_button = ((Folder)folderFragment).getPlay_pause_button();
-        currentMediaText = ((Folder)folderFragment).getCurrentMediaText();
+        play_button = ((SongsTab)folderFragment).getPlay_pause_button();
+        currentMediaText = ((SongsTab)folderFragment).getCurrentMediaText();
 
         play_button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -63,7 +63,7 @@ public class FolderTabController {
 
 
 
-        ImageButton skip_forward = ((Folder)folderFragment).getSkip_forward_button();
+        ImageButton skip_forward = ((SongsTab)folderFragment).getSkip_forward_button();
         skip_forward.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -85,7 +85,7 @@ public class FolderTabController {
             }
         });
 
-        ImageButton skip_back = ((Folder)folderFragment).getSkip_backward_button();
+        ImageButton skip_back = ((SongsTab)folderFragment).getSkip_backward_button();
         skip_back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -102,7 +102,7 @@ public class FolderTabController {
             }
         });
 
-        ImageButton repeat_button = ((Folder)folderFragment).getRepeat_button();
+        ImageButton repeat_button = ((SongsTab)folderFragment).getRepeat_button();
         repeat_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -117,7 +117,7 @@ public class FolderTabController {
             }
         });
 
-        ImageButton shuffle_button = ((Folder)folderFragment).getShuffle_button();
+        ImageButton shuffle_button = ((SongsTab)folderFragment).getShuffle_button();
         shuffle_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -132,7 +132,7 @@ public class FolderTabController {
             }
         });
 
-        SeekBar seekBar = ((Folder)folderFragment).getSeekBar();
+        SeekBar seekBar = ((SongsTab)folderFragment).getSeekBar();
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
