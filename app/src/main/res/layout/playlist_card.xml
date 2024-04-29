@@ -2,10 +2,14 @@
 <androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="180dp"
+    android:layout_width="0dp"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    app:cardCornerRadius="14dp">
+    app:cardCornerRadius="14dp"
+    android:layout_columnWeight="1"
+    android:clickable="true"
+    android:focusable="true"
+    >
 
     <RelativeLayout
         android:layout_width="match_parent"
