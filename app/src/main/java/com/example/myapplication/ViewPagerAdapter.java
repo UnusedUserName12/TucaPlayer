@@ -15,9 +15,9 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
     @Override
     public Fragment createFragment(int position) {
         switch (position){
-            case 0: return new Playlists();
-            case 1: return new Folder();
-            default: return new Folder();
+            case 0: return new PlaylistsTab();
+            case 1: return new SongsTab();
+            default: return new SongsTab();
         }
     }
 
