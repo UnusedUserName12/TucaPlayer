@@ -16,7 +16,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String PLAYLIST_NAME = "playlist_name";
     public static final String PLAYLIST_PICTURE = "playlist_picture";
 
-    private static final String CREATE_PLAYLIST_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS "+PLAYLIST_TABLE
+    static final String CREATE_PLAYLIST_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS "+PLAYLIST_TABLE
             +"("
             + PLAYLIST_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
             + PLAYLIST_NAME + " TEXT NOT NULL, "
@@ -27,11 +27,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String SONG_TABLE = "SONGS";
     public static final String SONG_ID = "song_id";
     public static final String SONG_FILENAME = "song_filename";
+    public static final String SONG_NAME = "song_name";
+    public static final String SONG_ALBUM = "song_album";
+    public static final String SONG_ARTIST = "song_artist";
+    public static final String SONG_GENRE = "song_genre";
 
-    private static final String CREATE_SONG_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS " + SONG_TABLE
+    static final String CREATE_SONG_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS " + SONG_TABLE
             + "("
             + SONG_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-            + SONG_FILENAME + " TEXT NOT NULL"
+            + SONG_FILENAME + " TEXT NOT NULL,"
+            + SONG_NAME + " TEXT,"
+            + SONG_ALBUM + " TEXT,"
+            + SONG_ARTIST + " TEXT,"
+            + SONG_GENRE + " TEXT"
             + ");";
 
 
@@ -39,7 +47,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String PLAY_SONGS_TABLE_PLAYLIST_ID = "playlist_id";
     public static final String PLAY_SONGS_TABLE_SONG_ID = "song_id";
 
-    private static final String CREATE_PLAYLIST_SONGS_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS " + PLAYLIST_SONGS_TABLE
+    static final String CREATE_PLAYLIST_SONGS_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS " + PLAYLIST_SONGS_TABLE
             +"("
             + PLAY_SONGS_TABLE_PLAYLIST_ID + " INTEGER, "
             + PLAY_SONGS_TABLE_SONG_ID + " INTEGER,"

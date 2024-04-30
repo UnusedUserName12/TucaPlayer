@@ -32,9 +32,13 @@ public class DatabaseManager  {
         database.insert(DatabaseHelper.PLAYLIST_TABLE,null,contentValues);
     }
 
-    public void insertSong(String filename){
+    public void insertSong(String filename,String name,String album,String artist,String genre){
         ContentValues contentValues = new ContentValues();
         contentValues.put(DatabaseHelper.SONG_FILENAME,filename);
+        contentValues.put(DatabaseHelper.SONG_NAME,name);
+        contentValues.put(DatabaseHelper.SONG_ALBUM,album);
+        contentValues.put(DatabaseHelper.SONG_ARTIST,artist);
+        contentValues.put(DatabaseHelper.SONG_GENRE,genre);
         database.insert(DatabaseHelper.SONG_TABLE,null,contentValues);
     }
 
@@ -58,7 +62,7 @@ public class DatabaseManager  {
     }
 
     public Cursor fetchSongs(){
-        String [] columns = new String[] {DatabaseHelper.SONG_ID,DatabaseHelper.SONG_FILENAME};
+        String [] columns = new String[] {DatabaseHelper.SONG_ID,DatabaseHelper.SONG_FILENAME,DatabaseHelper.SONG_NAME,DatabaseHelper.SONG_ALBUM,DatabaseHelper.SONG_ARTIST,DatabaseHelper.SONG_GENRE};
         Cursor cursor = database.query(DatabaseHelper.SONG_TABLE, columns,null,null,null,null,null,null);
         if (cursor !=null){
             cursor.moveToFirst();
@@ -86,6 +90,22 @@ public class DatabaseManager  {
 
     public void deletePlaylistSong(int playlist_id, int song_id){
         database.delete(DatabaseHelper.PLAYLIST_SONGS_TABLE,DatabaseHelper.PLAY_SONGS_TABLE_PLAYLIST_ID + " = "+playlist_id+" AND "+DatabaseHelper.PLAY_SONGS_TABLE_SONG_ID+"="+song_id,null);
+    }
+
+    /*
+    **************DEBUG FUNCTIONS**************
+     */
+
+    public void dropAllTables(){
+        database.execSQL("DROP TABLE IF EXISTS "+ DatabaseHelper.PLAYLIST_TABLE);
+        database.execSQL("DROP TABLE IF EXISTS "+ DatabaseHelper.SONG_TABLE);
+        database.execSQL("DROP TABLE IF EXISTS "+ DatabaseHelper.PLAYLIST_SONGS_TABLE);
+    }
+
+    public void createTables(){
+        database.execSQL(DatabaseHelper.CREATE_SONG_TABLE_QUERY);
+        database.execSQL(DatabaseHelper.CREATE_PLAYLIST_TABLE_QUERY);
+        database.execSQL(DatabaseHelper.CREATE_PLAYLIST_SONGS_TABLE_QUERY);
     }
 
 
