@@ -142,12 +142,15 @@ public class MainActivity extends AppCompatActivity {
             }while (cursor.moveToNext());
         }
 
-        //Compare database and folder
+        //Compare database and folder and insert if in folder but not db
         MediaMetadataRetriever mmr = new MediaMetadataRetriever();
         for (File file : FolderFileList) {
-            Boolean found = false;
-            for (String filename : dbFileList) {
-                if(file.getName().equals(filename)) found=true;
+            boolean found = false;
+            for (String dbFilename : dbFileList) {
+                if(file.getName().equals(dbFilename)) {
+                    found=true;
+                    break;
+                }
             }
             if(!found){
                 mmr.setDataSource(file.getPath());
@@ -158,6 +161,27 @@ public class MainActivity extends AppCompatActivity {
 
                 databaseManager.insertSong(file.getName(),song_name,song_album,song_artist,song_genre);
             }
+        }
+
+        //Delete from database if not in folder
+        if(cursor.moveToFirst()){
+            do {
+                boolean in_folder = false;
+                @SuppressLint("Range") String ID = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ID));
+                @SuppressLint("Range") String dbFILENAME = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_FILENAME));
+
+                for (File file : FolderFileList) {
+                    if(file.getName().equals(dbFILENAME))
+                    {
+                        in_folder=true;
+                        break;
+                    }
+                }
+
+                if(!in_folder){
+                    databaseManager.deleteSong(Integer.parseInt(ID));
+                }
+            }while (cursor.moveToNext());
         }
 
         databaseManager.close();
