@@ -13,6 +13,8 @@ import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 
+import com.example.myapplication.obj.Song;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -21,7 +23,7 @@ import java.util.Random;
 public class SongsTabController {
 
     MediaPlayer mediaPlayer = MyMediaPlayer.getInstance();
-    private final List<String> AudioList;
+    private final List<Song> AudioList;
     private final MP3ListAdapter AudioAdapter;
     private final ImageButton play_button;
     private final TextView currentMediaText;
@@ -30,7 +32,7 @@ public class SongsTabController {
 
     public SongsTabController(Fragment folderFragment){
 
-        AudioList = ((SongsTab)folderFragment).getAudioList();
+        AudioList = ((SongsTab)folderFragment).getSongList();
         AudioAdapter = ((SongsTab)folderFragment).getAudioAdapter();
         ListView musicListView = ((SongsTab)folderFragment).getMusicListView();
         AdapterView.OnItemClickListener itemListener = new AdapterView.OnItemClickListener() {
@@ -159,7 +161,7 @@ public class SongsTabController {
         MyMediaPlayer.CurrentIndex = position;
 
         try {
-            String selectedAudioFile = AudioList.get(position);
+            String selectedAudioFile = AudioList.get(position).getFilename();
 
             File audioFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), selectedAudioFile);
             currentMediaText.setText(String.format("Playing: %s", audioFile.getName()));

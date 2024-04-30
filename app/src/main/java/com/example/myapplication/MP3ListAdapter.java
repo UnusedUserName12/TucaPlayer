@@ -11,17 +11,19 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
+import com.example.myapplication.obj.Song;
+
 import java.util.List;
 
-public class MP3ListAdapter extends ArrayAdapter<String> {
+public class MP3ListAdapter extends ArrayAdapter<Song> {
 
-    private final List<String> mp3FilesList;
+    private final List<Song> SongList;
     private final LayoutInflater mInflater;
     public static int selectedItemPosition = -1;
 
-    public MP3ListAdapter(Context context, List<String> mp3FilesList) {
-        super(context, R.layout.list_item, mp3FilesList);
-        this.mp3FilesList = mp3FilesList;
+    public MP3ListAdapter(Context context, List<Song> SongList) {
+        super(context, R.layout.list_item, SongList);
+        this.SongList = SongList;
         mInflater = LayoutInflater.from(context);
     }
 
@@ -39,7 +41,7 @@ public class MP3ListAdapter extends ArrayAdapter<String> {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        String mp3FileName = mp3FilesList.get(position);
+        String mp3FileName = SongList.get(position).getSongName();
         holder.textView.setText(mp3FileName);
 
         if (position == selectedItemPosition) {

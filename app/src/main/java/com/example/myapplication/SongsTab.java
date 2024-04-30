@@ -1,11 +1,12 @@
 package com.example.myapplication;
 
+import android.annotation.SuppressLint;
+import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
-import android.os.Environment;
 import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,9 +15,11 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import java.io.File;
+import com.example.myapplication.db.DatabaseHelper;
+import com.example.myapplication.db.DatabaseManager;
+import com.example.myapplication.obj.Song;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -24,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 public class SongsTab extends Fragment {
 
     private ListView musicListView;
-    private List<String> AudioList;
+    private List<Song> SongList;
     private MP3ListAdapter AudioAdapter;
     private ImageButton play_pause_button;
     private ImageButton skip_forward_button;
@@ -52,9 +55,9 @@ public class SongsTab extends Fragment {
 
         musicListView = view.findViewById(R.id.AudioList);
 
-        AudioList = new ArrayList<>();
+        SongList = new ArrayList<>();
 
-        AudioAdapter = new MP3ListAdapter(getActivity(), AudioList);
+        AudioAdapter = new MP3ListAdapter(getActivity(), SongList);
         loadAudio();
         musicListView.setAdapter(AudioAdapter);
 
@@ -94,21 +97,34 @@ public class SongsTab extends Fragment {
         return String.format("%02d:%02d", minutes, seconds);
     }
 
+    //Now uses database values
     private void loadAudio() {
-        File downloadsFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        if (downloadsFolder.exists() && downloadsFolder.isDirectory()) {
-            File[] files = downloadsFolder.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    if (file.isFile() && file.getName().toLowerCase().endsWith(".mp3")) {
-                        AudioList.add(file.getName());
-                    }
-                }
-                AudioAdapter.notifyDataSetChanged();
-            }
-        } else {
-            Toast.makeText(getActivity(), "Downloads folder not found", Toast.LENGTH_SHORT).show();//problem here
+        DatabaseManager databaseManager = new DatabaseManager(getContext());
+        try{
+            databaseManager.open();
+        }catch (Exception e){
+            e.printStackTrace();
         }
+
+        Cursor cursor = databaseManager.fetchSongs();
+        if(cursor.moveToFirst()){
+            do {
+                @SuppressLint("Range") String filename = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_FILENAME));
+                @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_NAME));
+                @SuppressLint("Range") String artist = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ARTIST));
+                @SuppressLint("Range") String album = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ALBUM));
+                @SuppressLint("Range") String genre = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_GENRE));
+
+                Song song = new Song(filename,name,artist,album);
+                SongList.add(song);
+
+            }while (cursor.moveToNext());
+        }
+        AudioAdapter.notifyDataSetChanged();
+
+        databaseManager.close();
+
+
     }
 
     public ImageButton getPlay_pause_button() {
@@ -131,8 +147,8 @@ public class SongsTab extends Fragment {
         return shuffle_button;
     }
 
-    public List<String> getAudioList() {
-        return AudioList;
+    public List<Song> getSongList() {
+        return SongList;
     }
 
     public TextView getCurrentMediaText() {
