@@ -155,6 +155,7 @@ public class MainActivity extends AppCompatActivity {
             if(!found){
                 mmr.setDataSource(file.getPath());
                 String song_name = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+                if(song_name == null) song_name = file.getName().replace(".mp3","");
                 String song_album = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM);
                 String song_artist = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
                 String song_genre = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_GENRE);
