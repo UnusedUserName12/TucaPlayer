@@ -30,8 +30,10 @@ import com.google.android.material.tabs.TabLayout;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
@@ -107,14 +109,14 @@ public class MainActivity extends AppCompatActivity {
     private void updateSongTable() {
 
         //Checking the folder
-        List<String> FolderFileList = new ArrayList<>();
+        List<String> folderFileList = new ArrayList<>();
         File downloadsFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         if (downloadsFolder.exists() && downloadsFolder.isDirectory()) {
             File[] files = downloadsFolder.listFiles();
             if (files != null) {
                 for (File file : files) {
                     if (file.isFile() && file.getName().toLowerCase().endsWith(".mp3")) {
-                        FolderFileList.add(file.getName());
+                        folderFileList.add(file.getName());
                     }
                 }
 
@@ -137,21 +139,19 @@ public class MainActivity extends AppCompatActivity {
             do {
                 @SuppressLint("Range") String dbFILENAME = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_FILENAME));
                 dbFileList.add(dbFILENAME);
-                Log.i("DATABASE_TAG", "I have read SONG : "+dbFILENAME);
+                //Log.i("DATABASE_TAG", "I have read SONG : "+dbFILENAME);
             }while (cursor.moveToNext());
         }
 
         //Compare database and folder and insert if in folder but not db
+        List<String> songsToAdd = new ArrayList<>(folderFileList);
+        songsToAdd.removeAll(dbFileList);
+
+        //List<String> songsToDelete = new ArrayList<>(dbFileList);
+        //songsToDelete.removeAll(folderFileList);
+
         MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-        for (String FolderFilename : FolderFileList) {
-            boolean found = false;
-            for (String dbFilename : dbFileList) {
-                if(FolderFilename.equals(dbFilename)) {
-                    found=true;
-                    break;
-                }
-            }
-            if(!found){
+        for (String FolderFilename : songsToAdd) {
                 File songFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), FolderFilename);
                 mmr.setDataSource(songFile.getPath());
                 String song_name = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
@@ -162,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
 
                 databaseManager.insertSong(FolderFilename,song_name,song_album,song_artist,song_genre);
             }
-        }
+
 
         //Delete from database if not in folder
         if(cursor.moveToFirst()){
@@ -171,8 +171,8 @@ public class MainActivity extends AppCompatActivity {
                 @SuppressLint("Range") String ID = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ID));
                 @SuppressLint("Range") String dbFILENAME = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_FILENAME));
 
-                for (String FolderFilename : FolderFileList) {
-                    if(FolderFilename.equals(dbFILENAME))
+                for (String FolderFilename : folderFileList) {
+                    if(FolderFilename.contentEquals(dbFILENAME))
                     {
                         in_folder=true;
                         break;
@@ -186,6 +186,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         databaseManager.close();
+        cursor.close();
     }
 
 }
