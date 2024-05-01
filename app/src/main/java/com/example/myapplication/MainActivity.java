@@ -107,14 +107,14 @@ public class MainActivity extends AppCompatActivity {
     private void updateSongTable() {
 
         //Checking the folder
-        List<File> FolderFileList = new ArrayList<>();
+        List<String> FolderFileList = new ArrayList<>();
         File downloadsFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         if (downloadsFolder.exists() && downloadsFolder.isDirectory()) {
             File[] files = downloadsFolder.listFiles();
             if (files != null) {
                 for (File file : files) {
                     if (file.isFile() && file.getName().toLowerCase().endsWith(".mp3")) {
-                        FolderFileList.add(file);
+                        FolderFileList.add(file.getName());
                     }
                 }
 
@@ -137,30 +137,30 @@ public class MainActivity extends AppCompatActivity {
             do {
                 @SuppressLint("Range") String dbFILENAME = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_FILENAME));
                 dbFileList.add(dbFILENAME);
-                Toast.makeText(this,dbFILENAME,Toast.LENGTH_SHORT).show();
                 Log.i("DATABASE_TAG", "I have read SONG : "+dbFILENAME);
             }while (cursor.moveToNext());
         }
 
         //Compare database and folder and insert if in folder but not db
         MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-        for (File file : FolderFileList) {
+        for (String FolderFilename : FolderFileList) {
             boolean found = false;
             for (String dbFilename : dbFileList) {
-                if(file.getName().equals(dbFilename)) {
+                if(FolderFilename.equals(dbFilename)) {
                     found=true;
                     break;
                 }
             }
             if(!found){
-                mmr.setDataSource(file.getPath());
+                File songFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), FolderFilename);
+                mmr.setDataSource(songFile.getPath());
                 String song_name = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
-                if(song_name == null) song_name = file.getName().replace(".mp3","");
+                if(song_name == null) song_name = songFile.getName().replace(".mp3","");
                 String song_album = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM);
                 String song_artist = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
                 String song_genre = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_GENRE);
 
-                databaseManager.insertSong(file.getName(),song_name,song_album,song_artist,song_genre);
+                databaseManager.insertSong(FolderFilename,song_name,song_album,song_artist,song_genre);
             }
         }
 
@@ -171,8 +171,8 @@ public class MainActivity extends AppCompatActivity {
                 @SuppressLint("Range") String ID = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ID));
                 @SuppressLint("Range") String dbFILENAME = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_FILENAME));
 
-                for (File file : FolderFileList) {
-                    if(file.getName().equals(dbFILENAME))
+                for (String FolderFilename : FolderFileList) {
+                    if(FolderFilename.equals(dbFILENAME))
                     {
                         in_folder=true;
                         break;
