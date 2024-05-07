@@ -34,6 +34,7 @@ import android.widget.Toast;
 
 import com.example.myapplication.db.DatabaseHelper;
 import com.example.myapplication.db.DatabaseManager;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -99,7 +100,7 @@ public class PlaylistsTab extends Fragment {
                     String image_path = "null";
                     if(chosen_image.getDrawable()!=null){
                         Bitmap bm=((BitmapDrawable)chosen_image.getDrawable()).getBitmap();
-                        image_path = String.valueOf(saveToInternalStorage(bm));
+                        image_path = String.valueOf(saveToInternalStorage(bm,name));
                     }
 
                     if(image_path.equals("null")) image_path = "placeholder.png";
@@ -139,12 +140,12 @@ public class PlaylistsTab extends Fragment {
         }
     }
 
-    private String saveToInternalStorage(Bitmap bitmapImage){
+    private String saveToInternalStorage(Bitmap bitmapImage,String playlistName){
         ContextWrapper cw = new ContextWrapper(getContext());
         // path to /data/data/yourapp/app_data/imageDir
         File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
         // Create imageDir
-        File mypath=new File(directory,"profile.jpg");
+        File mypath=new File(directory,playlistName+".jpg");
 
         FileOutputStream fos = null;
         try {
@@ -163,19 +164,14 @@ public class PlaylistsTab extends Fragment {
         return directory.getAbsolutePath();
     }
 
-    private void loadImageFromStorage(String path, ImageView v)
-    {
-
+    private Bitmap loadImageFromStorage(String path,String playlistName) {
         try {
-            File f=new File(path, "profile.jpg");
-            Bitmap b = BitmapFactory.decodeStream(new FileInputStream(f));
-            v.setImageBitmap(b);
-        }
-        catch (FileNotFoundException e)
-        {
+            File f = new File(path, playlistName+".jpg");
+            return BitmapFactory.decodeStream(new FileInputStream(f));
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
+            return null;
         }
-
     }
 
     private void updatePlaylistLayout(GridLayout gridLayout,LayoutInflater inflater){
@@ -194,7 +190,10 @@ public class PlaylistsTab extends Fragment {
                 TextView cardText = cardView.findViewById(R.id.cardText);
                 cardText.setText(name);
                 ImageView imageView = cardView.findViewById(R.id.cardImage);
-                loadImageFromStorage(image_path,imageView);
+
+                if(!image_path.equals("placeholder.png")) imageView.setImageBitmap(loadImageFromStorage(image_path,name));
+
+
 
                 View.OnClickListener playlist_name_listener = new View.OnClickListener() {
                     @Override
