@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="0dp"
-    android:layout_height="wrap_content"
+    android:layout_height="150dp"
     android:layout_margin="8dp"
     app:cardCornerRadius="14dp"
     android:layout_columnWeight="1"
@@ -18,7 +18,7 @@
         <ImageView
             android:id="@+id/cardImage"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="120dp"
             android:adjustViewBounds="true"
             android:scaleType="fitCenter"
             android:src="@drawable/placeholder"
@@ -36,6 +36,11 @@
             android:textColor="@android:color/black"
             android:textSize="15sp"
             />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            android:id="@+id/playlistID"/>
 
     </RelativeLayout>
 
