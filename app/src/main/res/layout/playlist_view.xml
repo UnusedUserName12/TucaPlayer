@@ -56,7 +56,7 @@
             android:layout_alignParentEnd="true"/>
 
         <ListView
-            android:id="@+id/AudioList"
+            android:id="@+id/playlist_songs"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@+id/btn_add_song_to_playlist"
