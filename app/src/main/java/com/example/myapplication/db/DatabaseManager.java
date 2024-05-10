@@ -61,6 +61,15 @@ public class DatabaseManager  {
         return cursor;
     }
 
+    public Cursor getPlaylistById(int id){
+        String [] columns = new String[] {DatabaseHelper.PLAYLIST_ID,DatabaseHelper.PLAYLIST_NAME,DatabaseHelper.PLAYLIST_PICTURE};
+        Cursor cursor = database.query(DatabaseHelper.PLAYLIST_TABLE, columns,DatabaseHelper.PLAYLIST_ID+"="+id,null,null,null,null,null);
+        if (cursor !=null){
+            cursor.moveToFirst();
+        }
+        return cursor;
+    }
+
     public Cursor fetchSongs(){
         String [] columns = new String[] {DatabaseHelper.SONG_ID,DatabaseHelper.SONG_FILENAME,DatabaseHelper.SONG_NAME,DatabaseHelper.SONG_ALBUM,DatabaseHelper.SONG_ARTIST,DatabaseHelper.SONG_GENRE};
         Cursor cursor = database.query(DatabaseHelper.SONG_TABLE, columns,null,null,null,null,null,null);
