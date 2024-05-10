@@ -25,8 +25,8 @@ import java.util.List;
 public class AddSongsToPlaylistActivity extends Activity {
 
     private List<Song> SongList;
-    private List<Song> FilteredList;
     private MP3ListAdapter AudioAdapter;
+    ListView listView;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,7 +46,7 @@ public class AddSongsToPlaylistActivity extends Activity {
         SearchView searchView = findViewById(R.id.search_bar_add_song);
         searchView.setFocusable(true);
         searchView.setFocusableInTouchMode(true);
-        ListView listView = findViewById(R.id.add_songs_list);
+        listView = findViewById(R.id.add_songs_list);
 
         SongList = new ArrayList<>();
 
@@ -78,7 +78,7 @@ public class AddSongsToPlaylistActivity extends Activity {
             @Override
             public boolean onQueryTextChange(String newText) {
 
-                filterList(newText);
+                AudioAdapter.getFilter().filter(newText);
                 return false;
             }
         });
@@ -117,22 +117,5 @@ public class AddSongsToPlaylistActivity extends Activity {
 
         databaseManager.close();
         cursor.close();
-    }
-
-    //TODO FIX ADAPTER
-
-    private void filterList(String text){
-        AudioAdapter.setSongList(SongList);
-        List<Song> filteredList = new ArrayList<>();
-        for(Song song : SongList){
-            if(song.getSongName().toLowerCase().contains(text.toLowerCase()))
-                filteredList.add(song);
-        }
-
-        if(!filteredList.isEmpty()) {
-            AudioAdapter.setSongList(filteredList);
-
-        }
-        AudioAdapter.notifyDataSetChanged();
     }
 }
