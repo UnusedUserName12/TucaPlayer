@@ -27,5 +27,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".PlaylistViewActivity"/>
+        <activity android:name=".AddSongsToPlaylistActivity"/>
     </application>
 </manifest>
