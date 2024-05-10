@@ -3,13 +3,35 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <RelativeLayout
+        android:id="@+id/search_bar_area"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="@+id/topPanel_add_songs">
+
+        <SearchView
+            android:id="@+id/search_bar_add_song"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:queryHint="Search..."/>
+    </RelativeLayout>
+
+
     <RelativeLayout
         android:id="@+id/topPanel_add_songs"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="60dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+
         >
 
         <ImageView
@@ -29,7 +51,7 @@
 
     <TextView
         android:id="@+id/choose_tracks"
-        android:layout_width="wrap_content"
+        android:layout_width="250dp"
         android:layout_height="wrap_content"
         android:text="Choose tracks"
         android:textSize="20sp"
@@ -37,6 +59,19 @@
         android:layout_centerVertical="true"
         android:textColor="@color/grey_72"
         />
+
+        <ImageView
+            android:id="@+id/btn_search_add_songs"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_alignParentEnd="true"
+            android:src="@drawable/search_24dp_fill0_wght400_grad0_opsz24"
+            android:layout_centerVertical="true"
+            android:layout_toStartOf="@+id/btn_sort_add_songs"
+            android:layout_marginEnd="70dp"
+            app:tint="@color/grey_72"
+            android:clickable="true"
+            android:focusable="true"/>
         <ImageView
             android:id="@+id/btn_sort_add_songs"
             android:layout_width="25dp"
@@ -46,38 +81,29 @@
             android:layout_centerVertical="true"
             android:layout_toStartOf="@+id/btn_select_all_add_songs"
             android:layout_marginEnd="40dp"
-            app:tint="@color/grey_72"
             android:clickable="true"
             android:focusable="true"
-            />
+            app:tint="@color/grey_72" />
+
         <ImageView
             android:id="@+id/btn_select_all_add_songs"
-            android:layout_width="25dp"
-            android:layout_height="25dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:src="@drawable/select_all_24dp_fill0_wght400_grad0_opsz24"
             android:layout_centerVertical="true"
             android:layout_marginEnd="10dp"
-            app:tint="@color/grey_72"
             android:clickable="true"
             android:focusable="true"
-            />
+            android:src="@drawable/select_all_24dp_fill0_wght400_grad0_opsz24"
+            app:tint="@color/grey_72" />
     </RelativeLayout>
 
-    <SearchView
-        android:id="@+id/search_bar_add_song"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/topPanel_add_songs"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        />
 
     <ListView
         android:id="@+id/add_songs_list"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@+id/search_bar_add_song"
+        app:layout_constraintTop_toBottomOf="@+id/topPanel_add_songs"
         app:layout_constraintBottom_toTopOf="@+id/btn_add_songs"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
@@ -88,7 +114,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
         android:background="@drawable/corners10dp"
-        android:backgroundTint="@color/red"
+        android:backgroundTint="@color/grey_66D6D6D6"
         android:text="ADD"
         android:fontFamily="sans-serif-black"
         android:textSize="25sp"
