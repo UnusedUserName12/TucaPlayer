@@ -133,7 +133,10 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        Cursor cursor = databaseManager.fetchSongs();
+        //databaseManager.dropAllTables();
+        //databaseManager.createTables();
+
+        Cursor cursor = databaseManager.fetchSongs("title");
         List<String> dbFileList = new ArrayList<>();
         if(cursor.moveToFirst()){
             do {
@@ -147,42 +150,37 @@ public class MainActivity extends AppCompatActivity {
         List<String> songsToAdd = new ArrayList<>(folderFileList);
         songsToAdd.removeAll(dbFileList);
 
-        //List<String> songsToDelete = new ArrayList<>(dbFileList);
-        //songsToDelete.removeAll(folderFileList);
+        List<String> songsToDelete = new ArrayList<>(dbFileList);
+        songsToDelete.removeAll(folderFileList);
 
-        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-        for (String FolderFilename : songsToAdd) {
+
+        if(!songsToAdd.isEmpty()) {
+            MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+            for (String FolderFilename : songsToAdd) {
                 File songFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), FolderFilename);
                 mmr.setDataSource(songFile.getPath());
                 String song_name = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
-                if(song_name == null) song_name = songFile.getName().replace(".mp3","");
+                if (song_name == null) song_name = songFile.getName().replace(".mp3", "");
                 String song_album = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM);
                 String song_artist = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
                 String song_genre = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_GENRE);
+                long duration = Long.parseLong(Objects.requireNonNull(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)));
 
-                databaseManager.insertSong(FolderFilename,song_name,song_album,song_artist,song_genre);
+                databaseManager.insertSong(FolderFilename, song_name, song_album, song_artist, song_genre,duration);
             }
+        }
 
 
         //Delete from database if not in folder
-        if(cursor.moveToFirst()){
-            do {
-                boolean in_folder = false;
-                @SuppressLint("Range") String ID = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ID));
-                @SuppressLint("Range") String dbFILENAME = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_FILENAME));
+        if(!songsToDelete.isEmpty()) {
+            if (cursor.moveToFirst()) {
+                do {
+                    @SuppressLint("Range") String ID = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ID));
+                    @SuppressLint("Range") String dbFILENAME = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_FILENAME));
 
-                for (String FolderFilename : folderFileList) {
-                    if(FolderFilename.contentEquals(dbFILENAME))
-                    {
-                        in_folder=true;
-                        break;
-                    }
-                }
-
-                if(!in_folder){
-                    databaseManager.deleteSong(Integer.parseInt(ID));
-                }
-            }while (cursor.moveToNext());
+                    if(!songsToDelete.contains(dbFILENAME)) databaseManager.deleteSong(Integer.parseInt(ID));
+                } while (cursor.moveToNext());
+            }
         }
 
         databaseManager.close();
