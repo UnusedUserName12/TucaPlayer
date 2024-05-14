@@ -31,6 +31,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String SONG_ALBUM = "song_album";
     public static final String SONG_ARTIST = "song_artist";
     public static final String SONG_GENRE = "song_genre";
+    public static final  String SONG_DURATION = "song_duration";
 
     static final String CREATE_SONG_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS " + SONG_TABLE
             + "("
@@ -39,7 +40,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + SONG_NAME + " TEXT,"
             + SONG_ALBUM + " TEXT,"
             + SONG_ARTIST + " TEXT,"
-            + SONG_GENRE + " TEXT"
+            + SONG_GENRE + " TEXT,"
+            + SONG_DURATION + " INTEGER"
             + ");";
 
 
