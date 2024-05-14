@@ -2,16 +2,19 @@ package com.example.myapplication;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.Context;
+
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
 import android.widget.SearchView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
@@ -27,15 +30,20 @@ public class AddSongsToPlaylistActivity extends Activity {
     private List<Song> SongList;
     private MP3ListAdapter AudioAdapter;
     ListView listView;
+    private RelativeLayout top_panel;
+    private RelativeLayout search_area;
+    private SearchView searchView;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add_songs_to_playlist);
 
-        RelativeLayout search_area = findViewById(R.id.search_bar_area);
-        RelativeLayout top_panel = findViewById(R.id.topPanel_add_songs);
+        search_area = findViewById(R.id.search_bar_area);
+        top_panel = findViewById(R.id.topPanel_add_songs);
 
         TextView textView = findViewById(R.id.choose_tracks);
+        textView.setOnClickListener(v -> showSearchBar());
 
         ImageView btn_back = findViewById(R.id.btn_back_from_add_songs);
         Button btn_add = findViewById(R.id.btn_add_songs);
@@ -43,29 +51,23 @@ public class AddSongsToPlaylistActivity extends Activity {
         ImageView btn_select_all = findViewById(R.id.btn_select_all_add_songs);
         ImageView btn_search = findViewById(R.id.btn_search_add_songs);
 
-        SearchView searchView = findViewById(R.id.search_bar_add_song);
+        searchView = findViewById(R.id.search_bar_add_song);
         searchView.setFocusable(true);
         searchView.setFocusableInTouchMode(true);
         listView = findViewById(R.id.add_songs_list);
 
         SongList = new ArrayList<>();
 
+
         AudioAdapter = new MP3ListAdapter(this, SongList);
-        loadAudio();
+        AudioAdapter.setMultiSelect(true);
+        loadAudio("title");
         listView.setAdapter(AudioAdapter);
+        listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
 
-        btn_back.setOnClickListener(v -> {
-            this.finish();
-        });
+        btn_back.setOnClickListener(v -> this.finish());
 
-        btn_search.setOnClickListener(v -> {
-            top_panel.setVisibility(View.INVISIBLE);
-            search_area.setVisibility(View.VISIBLE);
-            searchView.setIconifiedByDefault(true);
-            searchView.requestFocus();
-            searchView.setIconified(false);
-            searchView.requestFocusFromTouch();
-        });
+        btn_search.setOnClickListener(v -> showSearchBar());
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -89,9 +91,35 @@ public class AddSongsToPlaylistActivity extends Activity {
             return false;
         });
 
+        btn_sort.setOnClickListener(v -> {
+            PopupMenu popupMenu = new PopupMenu(AddSongsToPlaylistActivity.this, v);
+
+            popupMenu.getMenuInflater().inflate(R.menu.sort_order_menu, popupMenu.getMenu());
+            popupMenu.setOnMenuItemClickListener(menuItem -> {
+                loadAudio((String) menuItem.getTitle()); //on click try to arrange a new list
+                Toast.makeText(AddSongsToPlaylistActivity.this,"By "+menuItem.getTitle(),Toast.LENGTH_SHORT).show();
+                return true;
+            });
+            popupMenu.show();
+        });
+
+        AdapterView.OnItemClickListener itemListener = new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+                MP3ListAdapter.selectedItemPosition = position;
+                AudioAdapter.notifyDataSetChanged();
+            }
+        };
+        listView.setOnItemClickListener(itemListener);
+
     }
 
-    private void loadAudio() {
+    //TODO CHECK IF ORDERING AFFECTS MP3ListAdapter
+
+    private void loadAudio(String orderOption) {
+        SongList.clear();
+        MP3ListAdapter.selectedItemPosition=-1;
+
         DatabaseManager databaseManager = new DatabaseManager(this);
         try{
             databaseManager.open();
@@ -99,16 +127,19 @@ public class AddSongsToPlaylistActivity extends Activity {
             e.printStackTrace();
         }
 
-        Cursor cursor = databaseManager.fetchSongs();
+        Cursor cursor = databaseManager.fetchSongs(orderOption);
         if(cursor.moveToFirst()){
             do {
+                @SuppressLint("Range") int id = Integer.parseInt(cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ID)));
                 @SuppressLint("Range") String filename = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_FILENAME));
                 @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_NAME));
                 @SuppressLint("Range") String artist = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ARTIST));
                 @SuppressLint("Range") String album = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ALBUM));
                 @SuppressLint("Range") String genre = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_GENRE));
+                @SuppressLint("Range") long duration = Long.parseLong(cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_DURATION)));
 
-                Song song = new Song(filename,name,artist,album);
+
+                Song song = new Song(id,filename,name,artist,album,genre,duration);
                 SongList.add(song);
 
             }while (cursor.moveToNext());
@@ -117,5 +148,14 @@ public class AddSongsToPlaylistActivity extends Activity {
 
         databaseManager.close();
         cursor.close();
+    }
+
+    private void showSearchBar(){
+        top_panel.setVisibility(View.INVISIBLE);
+        search_area.setVisibility(View.VISIBLE);
+        searchView.setIconifiedByDefault(true);
+        searchView.requestFocus();
+        searchView.setIconified(false);
+        searchView.requestFocusFromTouch();
     }
 }

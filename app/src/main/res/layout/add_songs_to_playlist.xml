@@ -58,6 +58,8 @@
         android:layout_toRightOf="@+id/btn_back_from_add_songs"
         android:layout_centerVertical="true"
         android:textColor="@color/grey_72"
+        android:clickable="true"
+        android:focusable="true"
         />
 
         <ImageView
