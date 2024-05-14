@@ -1,12 +1,14 @@
 package com.example.myapplication.obj;
 
 public class Song {
-
+    private int id;
     private String filename;
     private String songName;
     private long duration;
-    private String author;
-    private int image;
+    private String genre;
+    private String artist;
+    private String album;
+
 
     public Song() {
     }
@@ -14,15 +16,28 @@ public class Song {
     public Song(String filename) {
         this.filename = filename;
     }
-
-    public Song(String filename, String songName, long duration, String author, int image) {
+    public Song(int id,String filename) {
+        this.id = id;
         this.filename = filename;
-        this.songName = songName;
-        this.duration = duration;
-        this.author = author;
-        this.image = image;
     }
 
+    public Song(int id,String filename, String songName, String artist, String album,String genre,long duration) {
+        this.id = id;
+        this.filename = filename;
+        this.songName = songName;
+        this.artist = artist;
+        this.album = album;
+        this.genre = genre;
+        this.duration = duration;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public String getFilename() {
         return filename;
@@ -48,20 +63,28 @@ public class Song {
         this.duration = duration;
     }
 
-    public String getAuthor() {
-        return author;
+    public String getArtist() {
+        return artist;
     }
 
-    public void setAuthor(String author) {
-        this.author = author;
+    public void setArtist(String artist) {
+        this.artist = artist;
     }
 
-    public int getImage() {
-        return image;
+    public String getAlbum() {
+        return album;
+    }
+    public void setAlbum(String album) {
+        this.album = album;
+    }
+    public String getGenre() {
+        return genre;
     }
 
-    public void setImage(int image) {
-        this.image = image;
+    public void setGenre(String genre) {
+        this.genre = genre;
     }
+
+
 
 }

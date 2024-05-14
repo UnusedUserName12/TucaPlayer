@@ -5,7 +5,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import java.sql.SQLDataException;
-import java.sql.SQLException;
 
 public class DatabaseManager  {
     private DatabaseHelper dbHelper;
@@ -32,13 +31,14 @@ public class DatabaseManager  {
         database.insert(DatabaseHelper.PLAYLIST_TABLE,null,contentValues);
     }
 
-    public void insertSong(String filename,String name,String album,String artist,String genre){
+    public void insertSong(String filename,String name,String album,String artist,String genre,long duration){
         ContentValues contentValues = new ContentValues();
         contentValues.put(DatabaseHelper.SONG_FILENAME,filename);
         contentValues.put(DatabaseHelper.SONG_NAME,name);
         contentValues.put(DatabaseHelper.SONG_ALBUM,album);
         contentValues.put(DatabaseHelper.SONG_ARTIST,artist);
         contentValues.put(DatabaseHelper.SONG_GENRE,genre);
+        contentValues.put(DatabaseHelper.SONG_DURATION,duration);
         database.insert(DatabaseHelper.SONG_TABLE,null,contentValues);
     }
 
@@ -70,9 +70,37 @@ public class DatabaseManager  {
         return cursor;
     }
 
-    public Cursor fetchSongs(){
-        String [] columns = new String[] {DatabaseHelper.SONG_ID,DatabaseHelper.SONG_FILENAME,DatabaseHelper.SONG_NAME,DatabaseHelper.SONG_ALBUM,DatabaseHelper.SONG_ARTIST,DatabaseHelper.SONG_GENRE};
-        Cursor cursor = database.query(DatabaseHelper.SONG_TABLE, columns,null,null,null,null,null,null);
+    /**
+     * Retrieves songs from the database based on the specified order option.
+     *
+     * @param orderOption the option to order the songs by. Valid options are "title", "album", "artist", "genre", or "duration".
+     * @return a Cursor object containing the result set of the query. Returns null if an error occurs.
+     */
+    public Cursor fetchSongs(String orderOption){
+        String [] columns = new String[] {DatabaseHelper.SONG_ID,DatabaseHelper.SONG_FILENAME,DatabaseHelper.SONG_NAME,DatabaseHelper.SONG_ALBUM,DatabaseHelper.SONG_ARTIST,DatabaseHelper.SONG_GENRE,DatabaseHelper.SONG_DURATION};
+        Cursor cursor = null;
+        orderOption = orderOption.toLowerCase();
+        switch (orderOption){
+            case "title":
+                cursor = database.query(DatabaseHelper.SONG_TABLE, columns,null,null,null,null,DatabaseHelper.SONG_NAME,null);
+                break;
+            case "album":
+                cursor = database.query(DatabaseHelper.SONG_TABLE, columns,null,null,null,null,DatabaseHelper.SONG_ALBUM,null);
+                break;
+            case "artist":
+                cursor = database.query(DatabaseHelper.SONG_TABLE, columns,null,null,null,null,DatabaseHelper.SONG_ARTIST,null);
+                break;
+            case "genre":
+                cursor = database.query(DatabaseHelper.SONG_TABLE, columns,null,null,null,null,DatabaseHelper.SONG_GENRE,null);
+                break;
+            case "duration":
+                cursor = database.query(DatabaseHelper.SONG_TABLE, columns,null,null,null,null,DatabaseHelper.SONG_DURATION,null);
+                break;
+            default:
+                cursor = database.query(DatabaseHelper.SONG_TABLE, columns,null,null,null,null,DatabaseHelper.SONG_NAME,null);
+                break;
+        }
+
         if (cursor !=null){
             cursor.moveToFirst();
         }

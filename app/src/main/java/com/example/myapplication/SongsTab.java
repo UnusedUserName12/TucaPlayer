@@ -106,16 +106,18 @@ public class SongsTab extends Fragment {
             e.printStackTrace();
         }
 
-        Cursor cursor = databaseManager.fetchSongs();
+        Cursor cursor = databaseManager.fetchSongs("title");
         if(cursor.moveToFirst()){
             do {
+                @SuppressLint("Range") int id = Integer.parseInt(cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ID)));
                 @SuppressLint("Range") String filename = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_FILENAME));
                 @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_NAME));
                 @SuppressLint("Range") String artist = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ARTIST));
                 @SuppressLint("Range") String album = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ALBUM));
                 @SuppressLint("Range") String genre = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_GENRE));
+                @SuppressLint("Range") long duration = Long.parseLong(cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_DURATION)));
 
-                Song song = new Song(filename,name,artist,album);
+                Song song = new Song(id,filename,name,artist,album,genre,duration);
                 SongList.add(song);
 
             }while (cursor.moveToNext());
