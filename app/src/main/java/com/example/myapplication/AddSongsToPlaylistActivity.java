@@ -28,6 +28,7 @@ import java.util.List;
 public class AddSongsToPlaylistActivity extends Activity {
 
     private List<Song> SongList;
+    private List<Integer> SelectedSongList;
     private MP3ListAdapter AudioAdapter;
     ListView listView;
     private RelativeLayout top_panel;
@@ -57,10 +58,10 @@ public class AddSongsToPlaylistActivity extends Activity {
         listView = findViewById(R.id.add_songs_list);
 
         SongList = new ArrayList<>();
+        SelectedSongList = new ArrayList<>();
 
 
         AudioAdapter = new MP3ListAdapter(this, SongList);
-        AudioAdapter.setMultiSelect(true);
         loadAudio("title");
         listView.setAdapter(AudioAdapter);
         listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
@@ -79,7 +80,7 @@ public class AddSongsToPlaylistActivity extends Activity {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-
+                //TODO WRITE A WORKING FILTER
                 AudioAdapter.getFilter().filter(newText);
                 return false;
             }
@@ -97,16 +98,26 @@ public class AddSongsToPlaylistActivity extends Activity {
             popupMenu.getMenuInflater().inflate(R.menu.sort_order_menu, popupMenu.getMenu());
             popupMenu.setOnMenuItemClickListener(menuItem -> {
                 loadAudio((String) menuItem.getTitle()); //on click try to arrange a new list
-                Toast.makeText(AddSongsToPlaylistActivity.this,"By "+menuItem.getTitle(),Toast.LENGTH_SHORT).show();
+                updateSelection();
+
+                //Toast.makeText(AddSongsToPlaylistActivity.this,"By "+menuItem.getTitle(),Toast.LENGTH_SHORT).show();
                 return true;
             });
             popupMenu.show();
+
         });
 
         AdapterView.OnItemClickListener itemListener = new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                MP3ListAdapter.selectedItemPosition = position;
+            public void onItemClick(AdapterView<?> parent, View v, int position , long id) {
+
+                if (!SelectedSongList.contains(SongList.get(position).getId()))
+                    SelectedSongList.add(SongList.get(position).getId());
+                else SelectedSongList.remove(SelectedSongList.indexOf(SongList.get(position).getId()));
+
+                updateSelection();
+
+                testSelection();
                 AudioAdapter.notifyDataSetChanged();
             }
         };
@@ -114,11 +125,8 @@ public class AddSongsToPlaylistActivity extends Activity {
 
     }
 
-    //TODO CHECK IF ORDERING AFFECTS MP3ListAdapter
-
     private void loadAudio(String orderOption) {
         SongList.clear();
-        MP3ListAdapter.selectedItemPosition=-1;
 
         DatabaseManager databaseManager = new DatabaseManager(this);
         try{
@@ -138,16 +146,30 @@ public class AddSongsToPlaylistActivity extends Activity {
                 @SuppressLint("Range") String genre = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_GENRE));
                 @SuppressLint("Range") long duration = Long.parseLong(cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_DURATION)));
 
-
                 Song song = new Song(id,filename,name,artist,album,genre,duration);
                 SongList.add(song);
 
             }while (cursor.moveToNext());
         }
-        AudioAdapter.notifyDataSetChanged();
 
         databaseManager.close();
         cursor.close();
+    }
+    private void testSelection(){
+        for(int i : SelectedSongList)     //Contains looks for "PERFECT" match
+            Toast.makeText(AddSongsToPlaylistActivity.this,""+i,Toast.LENGTH_SHORT).show();
+    }
+
+
+    private void updateSelection(){
+        for (Song s : SongList) {
+            s.setSelected(false);
+        }
+        for (Song s : SongList) {
+            for(int i : SelectedSongList)     //Contains looks for "PERFECT" match
+                if(i==s.getId()) SongList.get(SongList.indexOf(s)).setSelected(true);
+            }
+        AudioAdapter.notifyDataSetChanged();
     }
 
     private void showSearchBar(){
