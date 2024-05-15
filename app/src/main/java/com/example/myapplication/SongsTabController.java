@@ -41,15 +41,6 @@ public class SongsTabController {
             @Override
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
                 playMedia(position);
-                /*
-                MyMediaPlayer.CurrentIndex = position;
-
-                if (MP3ListAdapter.selectedItemPosition != -1) AudioList.get(MP3ListAdapter.selectedItemPosition).setSelected(false);
-                MP3ListAdapter.selectedItemPosition = position;
-                AudioList.get(position).setSelected(true);
-
-                AudioAdapter.notifyDataSetChanged();
-                 */
             }
         };
         musicListView.setOnItemClickListener(itemListener);
@@ -82,15 +73,6 @@ public class SongsTabController {
                 MyMediaPlayer.CurrentIndex = MyMediaPlayer.CurrentIndex + 1;
             }
             playMedia(MyMediaPlayer.CurrentIndex);
-            /*
-            if (MP3ListAdapter.selectedItemPosition != -1) AudioList.get(MP3ListAdapter.selectedItemPosition).setSelected(false);
-            MP3ListAdapter.selectedItemPosition = MyMediaPlayer.CurrentIndex;
-            AudioList.get(MP3ListAdapter.selectedItemPosition).setSelected(true);
-            AudioAdapter.notifyDataSetChanged();
-             */
-
-
-
         });
 
 
@@ -104,14 +86,6 @@ public class SongsTabController {
                 --MyMediaPlayer.CurrentIndex;
             }
             playMedia(MyMediaPlayer.CurrentIndex);
-            /*
-            if (MP3ListAdapter.selectedItemPosition != -1) AudioList.get(MP3ListAdapter.selectedItemPosition).setSelected(false);
-            MP3ListAdapter.selectedItemPosition = MyMediaPlayer.CurrentIndex;
-            AudioList.get(MP3ListAdapter.selectedItemPosition).setSelected(true);
-            AudioAdapter.notifyDataSetChanged();
-             */
-
-
         });
 
 
