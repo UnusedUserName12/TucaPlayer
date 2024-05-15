@@ -9,6 +9,8 @@ public class Song {
     private String artist;
     private String album;
 
+    private boolean selected;
+
 
     public Song() {
     }
@@ -19,6 +21,7 @@ public class Song {
     public Song(int id,String filename) {
         this.id = id;
         this.filename = filename;
+        this.selected = false;
     }
 
     public Song(int id,String filename, String songName, String artist, String album,String genre,long duration) {
@@ -29,6 +32,7 @@ public class Song {
         this.album = album;
         this.genre = genre;
         this.duration = duration;
+        this.selected = false;
     }
 
     public int getId() {
@@ -85,6 +89,12 @@ public class Song {
         this.genre = genre;
     }
 
+    public boolean isSelected() {
+        return selected;
+    }
 
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+    }
 
 }
