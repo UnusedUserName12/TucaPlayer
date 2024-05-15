@@ -10,6 +10,7 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
@@ -27,7 +28,7 @@ public class SongsTabController {
     private final MP3ListAdapter AudioAdapter;
     private final ImageButton play_button;
     private final TextView currentMediaText;
-    private boolean OnRepeat=false, OnShuffle=false;
+    private static boolean OnRepeat=false, OnShuffle=false;
 
 
     public SongsTabController(Fragment folderFragment){
@@ -35,13 +36,20 @@ public class SongsTabController {
         AudioList = ((SongsTab)folderFragment).getSongList();
         AudioAdapter = ((SongsTab)folderFragment).getAudioAdapter();
         ListView musicListView = ((SongsTab)folderFragment).getMusicListView();
+
         AdapterView.OnItemClickListener itemListener = new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
                 playMedia(position);
+                /*
                 MyMediaPlayer.CurrentIndex = position;
+
+                if (MP3ListAdapter.selectedItemPosition != -1) AudioList.get(MP3ListAdapter.selectedItemPosition).setSelected(false);
                 MP3ListAdapter.selectedItemPosition = position;
+                AudioList.get(position).setSelected(true);
+
                 AudioAdapter.notifyDataSetChanged();
+                 */
             }
         };
         musicListView.setOnItemClickListener(itemListener);
@@ -49,88 +57,86 @@ public class SongsTabController {
         play_button = ((SongsTab)folderFragment).getPlay_pause_button();
         currentMediaText = ((SongsTab)folderFragment).getCurrentMediaText();
 
-        play_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(!mediaPlayer.isPlaying()) {
-                    mediaPlayer.start();
-                    play_button.setImageResource(R.drawable.pause);
-                }
-                else{
-                    mediaPlayer.pause();
-                    play_button.setImageResource(R.drawable.play);
-                }
+        play_button.setOnClickListener(v -> {
+            if(!mediaPlayer.isPlaying()) {
+                mediaPlayer.start();
+                play_button.setImageResource(R.drawable.pause);
+            }
+            else{
+                mediaPlayer.pause();
+                play_button.setImageResource(R.drawable.play);
             }
         });
-
 
 
         ImageButton skip_forward = ((SongsTab)folderFragment).getSkip_forward_button();
-        skip_forward.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (MyMediaPlayer.CurrentIndex == AudioList.size()-1){
-                    MyMediaPlayer.CurrentIndex=-1;
-                }
-                else if(OnShuffle){
-                    Random ran = new Random(System.currentTimeMillis());
-                    MyMediaPlayer.CurrentIndex = ran.nextInt(AudioList.size());
-                }
-                else {
-                    MyMediaPlayer.CurrentIndex = MyMediaPlayer.CurrentIndex + 1;
-                }
-                playMedia(MyMediaPlayer.CurrentIndex);
-
-                MP3ListAdapter.selectedItemPosition = MyMediaPlayer.CurrentIndex;
-                AudioAdapter.notifyDataSetChanged();
-
+        skip_forward.setOnClickListener(v -> {
+            if (MyMediaPlayer.CurrentIndex == AudioList.size()-1){
+                MyMediaPlayer.CurrentIndex=-1;
             }
+            else if(OnShuffle){
+                Random ran = new Random(System.currentTimeMillis());
+                MyMediaPlayer.CurrentIndex = ran.nextInt(AudioList.size());
+            }
+            else {
+                MyMediaPlayer.CurrentIndex = MyMediaPlayer.CurrentIndex + 1;
+            }
+            playMedia(MyMediaPlayer.CurrentIndex);
+            /*
+            if (MP3ListAdapter.selectedItemPosition != -1) AudioList.get(MP3ListAdapter.selectedItemPosition).setSelected(false);
+            MP3ListAdapter.selectedItemPosition = MyMediaPlayer.CurrentIndex;
+            AudioList.get(MP3ListAdapter.selectedItemPosition).setSelected(true);
+            AudioAdapter.notifyDataSetChanged();
+             */
+
+
+
         });
+
 
         ImageButton skip_back = ((SongsTab)folderFragment).getSkip_backward_button();
-        skip_back.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (MyMediaPlayer.CurrentIndex == 0){
-                    MyMediaPlayer.CurrentIndex=AudioList.size();
-                }
-                if(MyMediaPlayer.CurrentIndex!=-1) {
-                    mediaPlayer.reset();
-                    --MyMediaPlayer.CurrentIndex;
-                }
-                playMedia(MyMediaPlayer.CurrentIndex);
-                MP3ListAdapter.selectedItemPosition = MyMediaPlayer.CurrentIndex;
-                AudioAdapter.notifyDataSetChanged();
+        skip_back.setOnClickListener(v -> {
+            if (MyMediaPlayer.CurrentIndex == 0){
+                MyMediaPlayer.CurrentIndex=AudioList.size();
             }
+            if(MyMediaPlayer.CurrentIndex!=-1) {
+                mediaPlayer.reset();
+                --MyMediaPlayer.CurrentIndex;
+            }
+            playMedia(MyMediaPlayer.CurrentIndex);
+            /*
+            if (MP3ListAdapter.selectedItemPosition != -1) AudioList.get(MP3ListAdapter.selectedItemPosition).setSelected(false);
+            MP3ListAdapter.selectedItemPosition = MyMediaPlayer.CurrentIndex;
+            AudioList.get(MP3ListAdapter.selectedItemPosition).setSelected(true);
+            AudioAdapter.notifyDataSetChanged();
+             */
+
+
         });
+
 
         ImageButton repeat_button = ((SongsTab)folderFragment).getRepeat_button();
-        repeat_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(!OnRepeat){
-                    OnRepeat=true;
-                    repeat_button.setBackground(new ColorDrawable(Color.rgb(240, 240, 240)));
-                }
-                else {
-                    OnRepeat=false;
-                    repeat_button.setBackground(new ColorDrawable(Color.WHITE));
-                }
+        repeat_button.setOnClickListener(v -> {
+            if(!OnRepeat){
+                OnRepeat=true;
+                repeat_button.setBackground(new ColorDrawable(Color.rgb(240, 240, 240)));
+            }
+            else {
+                OnRepeat=false;
+                repeat_button.setBackground(new ColorDrawable(Color.WHITE));
             }
         });
 
+
         ImageButton shuffle_button = ((SongsTab)folderFragment).getShuffle_button();
-        shuffle_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(!OnShuffle){
-                    OnShuffle=true;
-                    shuffle_button.setBackground(new ColorDrawable(Color.rgb(240, 240, 240)));
-                }
-                else {
-                    OnShuffle=false;
-                    shuffle_button.setBackground(new ColorDrawable(Color.WHITE));
-                }
+        shuffle_button.setOnClickListener(v -> {
+            if(!OnShuffle){
+                OnShuffle=true;
+                shuffle_button.setBackground(new ColorDrawable(Color.rgb(240, 240, 240)));
+            }
+            else {
+                OnShuffle=false;
+                shuffle_button.setBackground(new ColorDrawable(Color.WHITE));
             }
         });
 
@@ -170,24 +176,26 @@ public class SongsTabController {
             mediaPlayer.start();
             play_button.setImageResource(R.drawable.pause);
 
-            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mp) {
-                    play_button.setImageResource(R.drawable.play);
-                    if (!OnRepeat) {
-                        if (OnShuffle) {
-                            Random ran = new Random(System.currentTimeMillis());
-                            MyMediaPlayer.CurrentIndex = ran.nextInt(AudioList.size());
-                        }
-                        else {
-                            MyMediaPlayer.CurrentIndex++;
-                        }
+            mediaPlayer.setOnCompletionListener(mp -> {
+                play_button.setImageResource(R.drawable.play);
+                if (!OnRepeat) {
+                    if (OnShuffle) {
+                        Random ran = new Random(System.currentTimeMillis());
+                        MyMediaPlayer.CurrentIndex = ran.nextInt(AudioList.size());
+                    } else {
+                        MyMediaPlayer.CurrentIndex++;
                     }
-                    playMedia(MyMediaPlayer.CurrentIndex);
-                    MP3ListAdapter.selectedItemPosition = MyMediaPlayer.CurrentIndex;
-                    AudioAdapter.notifyDataSetChanged();
                 }
+                playMedia(MyMediaPlayer.CurrentIndex);
             });
+
+            if (MP3ListAdapter.selectedItemPosition != -1) {
+                AudioList.get(MP3ListAdapter.selectedItemPosition).setSelected(false);
+            }
+
+            MP3ListAdapter.selectedItemPosition = MyMediaPlayer.CurrentIndex;
+            AudioList.get(MP3ListAdapter.selectedItemPosition).setSelected(true);
+            AudioAdapter.notifyDataSetChanged();
         } catch (IOException e) {
             e.printStackTrace();
         }
