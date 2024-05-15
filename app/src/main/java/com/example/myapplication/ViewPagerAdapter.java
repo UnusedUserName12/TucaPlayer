@@ -14,10 +14,13 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
     @NonNull
     @Override
     public Fragment createFragment(int position) {
+        PlaylistsTab playlistsTab = new PlaylistsTab();
+        SongsTab songsTab = new SongsTab();
+
         switch (position){
-            case 0: return new PlaylistsTab();
-            case 1: return new SongsTab();
-            default: return new SongsTab();
+            case 0: return playlistsTab;
+            case 1: return songsTab;
+            default: return songsTab;
         }
     }
 
