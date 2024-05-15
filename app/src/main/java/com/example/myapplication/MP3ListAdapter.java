@@ -10,6 +10,7 @@ import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -50,20 +51,21 @@ public class MP3ListAdapter extends ArrayAdapter<Song>{
         String songName = "";
         if (position < SongList.size()) {
             songName = SongList.get(position).getSongName();
+            if(SongList.get(position).isSelected()){
+                convertView.setBackground(new ColorDrawable(Color.rgb(255, 114, 114)));
+                textView.setTextColor(Color.WHITE);
+                //Toast.makeText(getContext(),"Colored",Toast.LENGTH_SHORT).show();
+            }
+            else {
+                convertView.setBackground(new ColorDrawable(Color.TRANSPARENT));
+                textView.setTextColor(Color.BLACK);
+                //Toast.makeText(getContext(),"DISColored",Toast.LENGTH_SHORT).show();
+            }
         }
         textView.setText(songName);
 
-        if (position == selectedItemPosition) {
-            convertView.setBackground(new ColorDrawable(Color.rgb(255, 114, 114)));
-            textView.setTextColor(Color.WHITE);
-        } else {
-            convertView.setBackground(new ColorDrawable(Color.TRANSPARENT));
-            textView.setTextColor(Color.BLACK);
-        }
-
         return convertView;
     }
-
 
     @NonNull
     @Override
