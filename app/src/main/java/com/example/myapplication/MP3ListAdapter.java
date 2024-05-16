@@ -23,7 +23,8 @@ import java.util.Locale;
 public class MP3ListAdapter extends ArrayAdapter<Song>{
 
     private List<Song> SongList;
-    private final List<Song> filterSongList;
+    private List<Song> filterSongList;
+    private List<Song> filteredList;
     private final LayoutInflater mInflater;
     public static int selectedItemPosition = -1;
 
@@ -31,6 +32,7 @@ public class MP3ListAdapter extends ArrayAdapter<Song>{
         super(context, R.layout.list_item, SongList);
         this.SongList = SongList;
         this.filterSongList = SongList;
+        this.filteredList = SongList;
         mInflater = LayoutInflater.from(context);
     }
 
@@ -98,9 +100,14 @@ public class MP3ListAdapter extends ArrayAdapter<Song>{
             protected void publishResults(CharSequence constraint, FilterResults results) {
 
                 SongList = (List<Song>) results.values;
+                filteredList = SongList;
                 notifyDataSetChanged();
             }
         };
+    }
+
+    public List<Song> getFilteredList(){
+        return filteredList;
     }
 
 
