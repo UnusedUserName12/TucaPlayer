@@ -8,16 +8,15 @@ import java.sql.SQLDataException;
 
 public class DatabaseManager  {
     private DatabaseHelper dbHelper;
-    private Context context;
+    private final Context context;
     private SQLiteDatabase database;
     public DatabaseManager(Context ctx){
         this.context = ctx;
     }
 
-    public DatabaseManager open() throws SQLDataException {
+    public void open() throws SQLDataException {
         dbHelper = new DatabaseHelper(context);
         database = dbHelper.getWritableDatabase();
-        return this;
     }
 
     public void close(){
@@ -78,7 +77,7 @@ public class DatabaseManager  {
      */
     public Cursor fetchSongs(String orderOption){
         String [] columns = new String[] {DatabaseHelper.SONG_ID,DatabaseHelper.SONG_FILENAME,DatabaseHelper.SONG_NAME,DatabaseHelper.SONG_ALBUM,DatabaseHelper.SONG_ARTIST,DatabaseHelper.SONG_GENRE,DatabaseHelper.SONG_DURATION};
-        Cursor cursor = null;
+        Cursor cursor;
         orderOption = orderOption.toLowerCase();
         switch (orderOption){
             case "title":
@@ -107,9 +106,9 @@ public class DatabaseManager  {
         return cursor;
     }
 
-    public Cursor fetchPlaylistSongs(){
+    public Cursor fetchPlaylistSongs(int id){
         String [] columns = new String[] {DatabaseHelper.PLAY_SONGS_TABLE_PLAYLIST_ID,DatabaseHelper.PLAY_SONGS_TABLE_SONG_ID};
-        Cursor cursor = database.query(DatabaseHelper.PLAYLIST_SONGS_TABLE, columns,null,null,null,null,null,null);
+        Cursor cursor = database.query(DatabaseHelper.PLAYLIST_SONGS_TABLE, columns,DatabaseHelper.PLAY_SONGS_TABLE_PLAYLIST_ID+"="+id,null,null,null,null,null);
         if (cursor !=null){
             cursor.moveToFirst();
         }
