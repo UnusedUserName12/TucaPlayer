@@ -76,9 +76,9 @@ public class PlaylistViewActivity extends Activity {
 
     private void openAddSongsActivity(View v){
         Context context = getBaseContext();
-        int id = getIntent().getIntExtra("card_playlist_id",0);
+        int playlist_id = getIntent().getIntExtra("card_playlist_id",0);
         Intent intent = new Intent(context, AddSongsToPlaylistActivity.class);
-        intent.putExtra("playlist_id",id);
+        intent.putExtra("playlist_id",playlist_id);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);
     }
@@ -102,11 +102,12 @@ public class PlaylistViewActivity extends Activity {
         }catch (Exception e){
             e.printStackTrace();
         }
+        int playlist_id = getIntent().getIntExtra("card_playlist_id",0);
 
-        Cursor cursor = databaseManager.fetchSongs(orderOption);
+        Cursor cursor = databaseManager.fetchPlaylistSongsFullInfo(playlist_id,orderOption);
         if(cursor.moveToFirst()){
             do {
-                @SuppressLint("Range") int id = Integer.parseInt(cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ID)));
+                @SuppressLint("Range") int id = Integer.parseInt(cursor.getString(cursor.getColumnIndex(DatabaseHelper.PLAY_SONGS_TABLE_SONG_ID)));
                 @SuppressLint("Range") String filename = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_FILENAME));
                 @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_NAME));
                 @SuppressLint("Range") String artist = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ARTIST));
