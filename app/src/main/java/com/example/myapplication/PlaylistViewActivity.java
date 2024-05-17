@@ -9,10 +9,13 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.myapplication.db.DatabaseHelper;
 import com.example.myapplication.db.DatabaseManager;
@@ -24,13 +27,12 @@ import java.io.FileNotFoundException;
 import java.sql.SQLDataException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 public class PlaylistViewActivity extends Activity {
-
     private List<Song> SongList;
     private MP3ListAdapter AudioAdapter;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,10 +70,54 @@ public class PlaylistViewActivity extends Activity {
                 playlist_image_view.setClipToOutline(true);
             }
         }
-        databaseManager.close();
+
         cursor.close();
 
         btn_add_songs.setOnClickListener(this::openAddSongsActivity);
+
+        btn_more.setOnClickListener(v -> {
+            PopupMenu popupMenu = new PopupMenu(PlaylistViewActivity.this, v);
+
+            popupMenu.getMenuInflater().inflate(R.menu.playlist_options_menu, popupMenu.getMenu());
+            popupMenu.setOnMenuItemClickListener(menuItem -> {
+
+                String option = (String) menuItem.getTitle();
+                assert option != null;
+
+                option = option.toLowerCase();
+                switch (Objects.requireNonNull(option)){
+                    case "rename playlist":
+                        Toast.makeText(this,"Rename",Toast.LENGTH_SHORT).show();
+                        break;
+                    case "change image":
+                        break;
+                    case "delete playlist":
+                        databaseManager.deletePlaylist(id);
+                        PlaylistViewActivity.this.finish();
+                        break;
+                    default:
+                        if(!option.equals("order by")) {
+                            Toast.makeText(this, "By " + option, Toast.LENGTH_SHORT).show();
+                            loadAudio(option);
+                            AudioAdapter.notifyDataSetChanged();
+                        }
+                        break;
+                }
+
+                return true;
+            });
+            popupMenu.show();
+        });
+
+        playlist_songs_view.setOnItemClickListener((parent, view, position, id1) -> {
+            if (MP3ListAdapter.selectedItemPosition != -1) {
+                SongList.get(MP3ListAdapter.selectedItemPosition).setSelected(false);
+            }
+
+            MP3ListAdapter.selectedItemPosition = position;
+            SongList.get(MP3ListAdapter.selectedItemPosition).setSelected(true);
+            AudioAdapter.notifyDataSetChanged();
+        });
     }
 
     private void openAddSongsActivity(View v){
@@ -124,4 +170,6 @@ public class PlaylistViewActivity extends Activity {
         databaseManager.close();
         cursor.close();
     }
+
+
 }
