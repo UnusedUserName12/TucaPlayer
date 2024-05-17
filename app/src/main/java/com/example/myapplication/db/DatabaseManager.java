@@ -115,6 +115,30 @@ public class DatabaseManager  {
         return cursor;
     }
 
+    public Cursor fetchPlaylistSongsFullInfo(int id){
+        String [] columns = new String[] {DatabaseHelper.PLAY_SONGS_TABLE_PLAYLIST_ID,DatabaseHelper.PLAY_SONGS_TABLE_SONG_ID};
+        String sql = "Select "
+                + DatabaseHelper.PLAY_SONGS_TABLE_SONG_ID + ","
+                + DatabaseHelper.SONG_FILENAME + ","
+                + DatabaseHelper.SONG_NAME + ","
+                + DatabaseHelper.SONG_ALBUM + ","
+                + DatabaseHelper.SONG_ARTIST + ","
+                + DatabaseHelper.SONG_GENRE + ","
+                + DatabaseHelper.SONG_DURATION
+                + " FROM "
+                + DatabaseHelper.PLAYLIST_SONGS_TABLE + " l "
+                + " INNER JOIN "
+                + DatabaseHelper.SONG_TABLE + " r "
+                + " ON "
+                + "r." + DatabaseHelper.SONG_ID + " = " + "l." + DatabaseHelper.PLAY_SONGS_TABLE_SONG_ID
+                + ";";
+        Cursor cursor = database.rawQuery(sql,null);
+        if (cursor !=null){
+            cursor.moveToFirst();
+        }
+        return cursor;
+    }
+
 
     public void deletePlaylist(int id){
         database.delete(DatabaseHelper.PLAYLIST_TABLE, DatabaseHelper.PLAYLIST_ID + "="+id,null);
