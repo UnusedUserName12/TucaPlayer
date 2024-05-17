@@ -115,23 +115,63 @@ public class DatabaseManager  {
         return cursor;
     }
 
-    public Cursor fetchPlaylistSongsFullInfo(int id){
-        String [] columns = new String[] {DatabaseHelper.PLAY_SONGS_TABLE_PLAYLIST_ID,DatabaseHelper.PLAY_SONGS_TABLE_SONG_ID};
+    /**
+     * Fetches detailed information about the songs in a specific playlist, ordered by the specified criteria.
+     *
+     * @param id the ID of the playlist for which to fetch song details.
+     * @param orderOption the field by which to order the results. Can be one of "title", "album", "artist", "genre", or "duration".
+     *                    If the provided value is not one of these, the results will be ordered by the song title by default.
+     * @return a Cursor object positioned at the first entry of the result set, containing the detailed song information.
+     *         The columns in the result set are:
+     *         - {@link DatabaseHelper#PLAY_SONGS_TABLE_SONG_ID}
+     *         - {@link DatabaseHelper#SONG_FILENAME}
+     *         - {@link DatabaseHelper#SONG_NAME}
+     *         - {@link DatabaseHelper#SONG_ALBUM}
+     *         - {@link DatabaseHelper#SONG_ARTIST}
+     *         - {@link DatabaseHelper#SONG_GENRE}
+     *         - {@link DatabaseHelper#SONG_DURATION}
+     */
+    public Cursor fetchPlaylistSongsFullInfo(int id, String orderOption){
         String sql = "Select "
-                + DatabaseHelper.PLAY_SONGS_TABLE_SONG_ID + ","
-                + DatabaseHelper.SONG_FILENAME + ","
-                + DatabaseHelper.SONG_NAME + ","
-                + DatabaseHelper.SONG_ALBUM + ","
-                + DatabaseHelper.SONG_ARTIST + ","
-                + DatabaseHelper.SONG_GENRE + ","
-                + DatabaseHelper.SONG_DURATION
+                + "l."+ DatabaseHelper.PLAY_SONGS_TABLE_SONG_ID + ","
+                + "r." + DatabaseHelper.SONG_FILENAME + ","
+                + "r." + DatabaseHelper.SONG_NAME + ","
+                + "r." + DatabaseHelper.SONG_ALBUM + ","
+                + "r." + DatabaseHelper.SONG_ARTIST + ","
+                + "r." + DatabaseHelper.SONG_GENRE + ","
+                + "r." + DatabaseHelper.SONG_DURATION
                 + " FROM "
                 + DatabaseHelper.PLAYLIST_SONGS_TABLE + " l "
                 + " INNER JOIN "
                 + DatabaseHelper.SONG_TABLE + " r "
                 + " ON "
                 + "r." + DatabaseHelper.SONG_ID + " = " + "l." + DatabaseHelper.PLAY_SONGS_TABLE_SONG_ID
-                + ";";
+                + " WHERE "
+                + DatabaseHelper.PLAY_SONGS_TABLE_PLAYLIST_ID + " = " + id
+                + " GROUP BY ";
+
+
+        orderOption = orderOption.toLowerCase();
+        switch (orderOption){
+            case "title":
+                sql += "r."+DatabaseHelper.SONG_NAME;
+                break;
+            case "album":
+                sql += "r."+DatabaseHelper.SONG_ALBUM;
+                break;
+            case "artist":
+                sql += "r."+DatabaseHelper.SONG_ARTIST;
+                break;
+            case "genre":
+                sql += "r."+DatabaseHelper.SONG_GENRE;
+                break;
+            case "duration":
+                sql += "r."+DatabaseHelper.SONG_DURATION;
+                break;
+            default:
+                sql += "r."+DatabaseHelper.SONG_NAME;
+                break;
+        }
         Cursor cursor = database.rawQuery(sql,null);
         if (cursor !=null){
             cursor.moveToFirst();
