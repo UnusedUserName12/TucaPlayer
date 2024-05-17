@@ -16,14 +16,20 @@ import android.widget.TextView;
 
 import com.example.myapplication.db.DatabaseHelper;
 import com.example.myapplication.db.DatabaseManager;
+import com.example.myapplication.obj.Song;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.sql.SQLDataException;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class PlaylistViewActivity extends Activity {
+
+    private List<Song> SongList;
+    private MP3ListAdapter AudioAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +42,12 @@ public class PlaylistViewActivity extends Activity {
         ImageButton btn_add_songs = findViewById(R.id.btn_add_song_redirect);
         ImageButton btn_more = findViewById(R.id.btn_more_playlist);
 
+        SongList = new ArrayList<>();
+        loadAudio("title");
+
+        AudioAdapter = new MP3ListAdapter(this,SongList);
+        playlist_songs_view.setAdapter(AudioAdapter);
+
         DatabaseManager databaseManager = new DatabaseManager(this);
         try {
             databaseManager.open();
@@ -46,7 +58,6 @@ public class PlaylistViewActivity extends Activity {
         Cursor cursor = databaseManager.getPlaylistById(id);
 
         if(cursor.moveToFirst()){
-            @SuppressLint("Range") String ID = cursor.getString(cursor.getColumnIndex(DatabaseHelper.PLAYLIST_ID));
             @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex(DatabaseHelper.PLAYLIST_NAME));
             @SuppressLint("Range") String image_path = cursor.getString(cursor.getColumnIndex(DatabaseHelper.PLAYLIST_PICTURE));
 
@@ -80,5 +91,36 @@ public class PlaylistViewActivity extends Activity {
             e.printStackTrace();
             return null;
         }
+    }
+
+    private void loadAudio(String orderOption) {
+        SongList.clear();
+
+        DatabaseManager databaseManager = new DatabaseManager(this);
+        try{
+            databaseManager.open();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        Cursor cursor = databaseManager.fetchSongs(orderOption);
+        if(cursor.moveToFirst()){
+            do {
+                @SuppressLint("Range") int id = Integer.parseInt(cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ID)));
+                @SuppressLint("Range") String filename = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_FILENAME));
+                @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_NAME));
+                @SuppressLint("Range") String artist = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ARTIST));
+                @SuppressLint("Range") String album = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ALBUM));
+                @SuppressLint("Range") String genre = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_GENRE));
+                @SuppressLint("Range") long duration = Long.parseLong(cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_DURATION)));
+
+                Song song = new Song(id, filename, name, artist, album, genre, duration);
+                SongList.add(song);
+
+            }while (cursor.moveToNext());
+        }
+
+        databaseManager.close();
+        cursor.close();
     }
 }
