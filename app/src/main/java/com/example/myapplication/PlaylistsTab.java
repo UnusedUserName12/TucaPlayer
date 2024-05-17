@@ -40,12 +40,10 @@ import java.io.IOException;
 public class PlaylistsTab extends Fragment {
 
     DatabaseManager databaseManager;
-
     RelativeLayout get_image_button;
     ImageView chosen_image;
     GridLayout gridLayout;
     LayoutInflater inflater;
-
     Context context;
 
     @Override
@@ -68,7 +66,7 @@ public class PlaylistsTab extends Fragment {
             this.inflater = inflaterr;
             View view = inflater.inflate(R.layout.fragment_playlists, container, false);
             gridLayout = view.findViewById(R.id.playlist_card_container);
-            updatePlaylistLayout(gridLayout,inflater);
+            updatePlaylistLayout();
 
             return view;
         }
@@ -102,7 +100,7 @@ public class PlaylistsTab extends Fragment {
 
                     if(image_path.equals("null")) image_path = "placeholder.png";
                     databaseManager.insertPlaylist(name,image_path);
-                    updatePlaylistLayout(gridLayout,inflater);
+                    updatePlaylistLayout();
                     dialog.dismiss();
                 }
             });
@@ -170,7 +168,13 @@ public class PlaylistsTab extends Fragment {
         }
     }
 
-    private void updatePlaylistLayout(GridLayout gridLayout,LayoutInflater inflater){
+    @Override
+    public void onResume() {
+        super.onResume();
+        updatePlaylistLayout();
+    }
+
+    private void updatePlaylistLayout(){
         gridLayout.removeAllViews();
         Cursor cursor = databaseManager.fetchPlaylists();
 
