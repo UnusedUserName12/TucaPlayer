@@ -2,14 +2,19 @@ package com.example.myapplication;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -19,6 +24,7 @@ import android.widget.Toast;
 
 import com.example.myapplication.db.DatabaseHelper;
 import com.example.myapplication.db.DatabaseManager;
+import com.example.myapplication.obj.Playlist;
 import com.example.myapplication.obj.Song;
 
 import java.io.File;
@@ -33,19 +39,21 @@ import java.util.Objects;
 public class PlaylistViewActivity extends Activity {
     private List<Song> SongList;
     private MP3ListAdapter AudioAdapter;
+    private TextView playlist_name_view;
+    private Playlist playlist;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.playlist_view);
 
-        TextView playlist_name_view = findViewById(R.id.playlist_name);
+        playlist_name_view = findViewById(R.id.playlist_name);
         ImageView playlist_image_view = findViewById(R.id.playlist_image);
         ListView playlist_songs_view = findViewById(R.id.playlist_songs);
         ImageButton btn_add_songs = findViewById(R.id.btn_add_song_redirect);
         ImageButton btn_more = findViewById(R.id.btn_more_playlist);
 
         SongList = new ArrayList<>();
-        loadAudio("title");
+
 
         AudioAdapter = new MP3ListAdapter(this,SongList);
         playlist_songs_view.setAdapter(AudioAdapter);
@@ -56,7 +64,10 @@ public class PlaylistViewActivity extends Activity {
         } catch (SQLDataException e) {
             throw new RuntimeException(e);
         }
+
+
         int id = getIntent().getIntExtra("card_playlist_id",0);
+
         Cursor cursor = databaseManager.getPlaylistById(id);
 
         if(cursor.moveToFirst()){
@@ -66,9 +77,10 @@ public class PlaylistViewActivity extends Activity {
             playlist_name_view.setText(name);
             if(!image_path.equals("placeholder.png"))
             {
-                playlist_image_view.setImageBitmap(loadImageFromStorage(image_path,name));
+                playlist_image_view.setImageBitmap(loadImageFromStorage(name));
                 playlist_image_view.setClipToOutline(true);
             }
+            playlist = new Playlist(id,name,image_path);
         }
 
         cursor.close();
@@ -87,7 +99,7 @@ public class PlaylistViewActivity extends Activity {
                 option = option.toLowerCase();
                 switch (Objects.requireNonNull(option)){
                     case "rename playlist":
-                        Toast.makeText(this,"Rename",Toast.LENGTH_SHORT).show();
+                        showDialogRename();
                         break;
                     case "change image":
                         break;
@@ -118,6 +130,11 @@ public class PlaylistViewActivity extends Activity {
             SongList.get(MP3ListAdapter.selectedItemPosition).setSelected(true);
             AudioAdapter.notifyDataSetChanged();
         });
+
+
+        loadAudio("title");
+
+
     }
 
     private void openAddSongsActivity(View v){
@@ -129,9 +146,11 @@ public class PlaylistViewActivity extends Activity {
         context.startActivity(intent);
     }
 
-    private Bitmap loadImageFromStorage(String path, String playlistName) {
+    private Bitmap loadImageFromStorage(String playlistName) {
+        ContextWrapper cw = new ContextWrapper(PlaylistViewActivity.this);
+        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
         try {
-            File f = new File(path, playlistName+".jpg");
+            File f = new File(directory, playlistName+".jpg");
             return BitmapFactory.decodeStream(new FileInputStream(f));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -148,9 +167,8 @@ public class PlaylistViewActivity extends Activity {
         }catch (Exception e){
             e.printStackTrace();
         }
-        int playlist_id = getIntent().getIntExtra("card_playlist_id",0);
 
-        Cursor cursor = databaseManager.fetchPlaylistSongsFullInfo(playlist_id,orderOption);
+        Cursor cursor = databaseManager.fetchPlaylistSongsFullInfo(playlist.getId(),orderOption);
         if(cursor.moveToFirst()){
             do {
                 @SuppressLint("Range") int id = Integer.parseInt(cursor.getString(cursor.getColumnIndex(DatabaseHelper.PLAY_SONGS_TABLE_SONG_ID)));
@@ -169,6 +187,63 @@ public class PlaylistViewActivity extends Activity {
 
         databaseManager.close();
         cursor.close();
+    }
+
+    private void showDialogRename(){
+        String oldName = String.valueOf(playlist_name_view.getText());
+        Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.rename_playlist_dialog);
+        dialog.getWindow().setBackgroundDrawableResource(R.drawable.corners10dp);
+
+        Button btn_rename = dialog.findViewById(R.id.btn_rename_playlist);
+        EditText playlist_name_field = dialog.findViewById(R.id.change_playlist_name);
+
+        playlist_name_field.setText(oldName);
+        btn_rename.setOnClickListener(v -> {
+            String newName = String.valueOf(playlist_name_field.getText());
+
+            renamePlaylistImage(oldName,newName);
+
+            DatabaseManager databaseManager = new DatabaseManager(PlaylistViewActivity.this);
+            try {
+                databaseManager.open();
+            } catch (SQLDataException e) {
+                throw new RuntimeException(e);
+            }
+            playlist.setName(newName);
+            databaseManager.updatePlaylist(playlist.getId(),playlist.getName(),playlist.getImagePath());
+
+            playlist_name_view.setText(newName);
+            dialog.dismiss();
+        });
+        dialog.show();
+    }
+
+    /**
+     * Renames a playlist image file from {@code oldName} to {@code newName}.
+     *
+     * <p>This method attempts to rename a file located in the application's private
+     * image directory. If the rename operation is successful, a success message
+     * is displayed using a toast. If the rename operation fails, an error message
+     * is displayed instead.
+     * <p><b>This method is needed due to the fact that we save and load images using
+     * playlist name</b>
+     *
+     *
+     * @param oldName the current name of the file (without the .jpg extension)
+     * @param newName the new name for the file (without the .jpg extension)
+     */
+
+    private void renamePlaylistImage(String oldName,String newName){
+        ContextWrapper cw = new ContextWrapper(PlaylistViewActivity.this);
+        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+
+            File f = new File(directory, oldName+".jpg");
+            File n = new File(directory,newName+".jpg");
+            if(f.renameTo(n))
+                Toast.makeText(PlaylistViewActivity.this,"File rename success",Toast.LENGTH_SHORT).show();
+            else Toast.makeText(PlaylistViewActivity.this,"Something went wrong",Toast.LENGTH_SHORT).show();
+
     }
 
 
