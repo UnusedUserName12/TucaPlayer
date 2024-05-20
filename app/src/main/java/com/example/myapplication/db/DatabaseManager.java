@@ -192,6 +192,18 @@ public class DatabaseManager  {
         database.delete(DatabaseHelper.PLAYLIST_SONGS_TABLE,DatabaseHelper.PLAY_SONGS_TABLE_PLAYLIST_ID + " = "+playlist_id+" AND "+DatabaseHelper.PLAY_SONGS_TABLE_SONG_ID+"="+song_id,null);
     }
 
+    public void updatePlaylist(int playlist_id, String playlist_name, String playlist_image_path){
+
+        ContentValues values = new ContentValues();
+
+        values.put(DatabaseHelper.PLAYLIST_NAME,playlist_name);
+        values.put(DatabaseHelper.PLAYLIST_PICTURE,playlist_image_path);
+
+
+        database.update(DatabaseHelper.PLAYLIST_TABLE,values,DatabaseHelper.PLAYLIST_ID+" = ? ",new String[]{String.valueOf(playlist_id)});
+
+    }
+
     /*
     **************DEBUG FUNCTIONS**************
      */
