@@ -10,6 +10,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -19,6 +20,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.PopupMenu;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,6 +32,8 @@ import com.example.myapplication.obj.Song;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.SQLDataException;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,13 +45,15 @@ public class PlaylistViewActivity extends Activity {
     private MP3ListAdapter AudioAdapter;
     private TextView playlist_name_view;
     private Playlist playlist;
+    ImageView chosen_image;
+    ImageView playlist_image_view;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.playlist_view);
 
         playlist_name_view = findViewById(R.id.playlist_name);
-        ImageView playlist_image_view = findViewById(R.id.playlist_image);
+        playlist_image_view = findViewById(R.id.playlist_image);
         ListView playlist_songs_view = findViewById(R.id.playlist_songs);
         ImageButton btn_add_songs = findViewById(R.id.btn_add_song_redirect);
         ImageButton btn_more = findViewById(R.id.btn_more_playlist);
@@ -102,9 +108,12 @@ public class PlaylistViewActivity extends Activity {
                         showDialogRename();
                         break;
                     case "change image":
+                        showDialogChangeImage();
                         break;
                     case "delete playlist":
                         databaseManager.deletePlaylist(id);
+                        File f = new File(playlist.getImagePath(), playlist.getName()+".jpg");
+                        if(f.delete()) Toast.makeText(this,"Playlist deleted",Toast.LENGTH_SHORT).show();
                         PlaylistViewActivity.this.finish();
                         break;
                     default:
@@ -135,6 +144,12 @@ public class PlaylistViewActivity extends Activity {
         loadAudio("title");
 
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadAudio("title");
     }
 
     private void openAddSongsActivity(View v){
@@ -219,6 +234,7 @@ public class PlaylistViewActivity extends Activity {
         dialog.show();
     }
 
+
     /**
      * Renames a playlist image file from {@code oldName} to {@code newName}.
      *
@@ -244,6 +260,93 @@ public class PlaylistViewActivity extends Activity {
                 Toast.makeText(PlaylistViewActivity.this,"File rename success",Toast.LENGTH_SHORT).show();
             else Toast.makeText(PlaylistViewActivity.this,"Something went wrong",Toast.LENGTH_SHORT).show();
 
+    }
+
+    //TODO: fix plus tint
+    private void showDialogChangeImage(){
+        Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.change_image_playlist_dialog);
+        dialog.getWindow().setBackgroundDrawableResource(R.drawable.corners10dp);
+
+        Button btn_change = dialog.findViewById(R.id.btn_change_img);
+        RelativeLayout get_image_button = dialog.findViewById(R.id.btn_insert_image_change_dialog);
+        chosen_image = dialog.findViewById(R.id.chosenImage_change_dialog);
+
+        btn_change.setOnClickListener(v -> {
+
+            DatabaseManager databaseManager = new DatabaseManager(this);
+
+            try {
+                databaseManager.open();
+            } catch (SQLDataException e) {
+                throw new RuntimeException(e);
+            }
+
+            String image_path = "null";
+            if(chosen_image.getDrawable()!=null){
+                Bitmap bm=((BitmapDrawable)chosen_image.getDrawable()).getBitmap();
+                image_path = String.valueOf(saveToInternalStorage(bm,playlist.getName()));
+            }
+
+            if(image_path.equals("null")) image_path = "placeholder.png";
+            playlist.setImagePath(image_path);
+            databaseManager.updatePlaylist(playlist.getId(),playlist.getName(),playlist.getImagePath());
+            databaseManager.close();
+
+            playlist_image_view.setImageBitmap(loadImageFromStorage(playlist.getName()));
+            dialog.dismiss();
+        });
+
+        get_image_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent();
+                i.setType("image/*");
+                i.setAction(Intent.ACTION_GET_CONTENT);
+
+                startActivityForResult(Intent.createChooser(i, "Select Picture"), 3);
+            }
+        });
+        dialog.show();
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == RESULT_OK) {
+
+            if (requestCode == 3) {
+                Uri selectedImageUri = data.getData();
+                if (null != selectedImageUri) {
+                    chosen_image.setImageURI(selectedImageUri);
+                    chosen_image.setVisibility(View.VISIBLE);
+                }
+            }
+        }
+    }
+
+    private String saveToInternalStorage(Bitmap bitmapImage,String playlistName){
+        ContextWrapper cw = new ContextWrapper(PlaylistViewActivity.this);
+        // path to /data/data/yourapp/app_data/imageDir
+        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+        // Create imageDir
+        File mypath=new File(directory,playlistName+".jpg");
+
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(mypath);
+            // Use the compress method on the BitMap object to write image to the OutputStream
+            bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return directory.getAbsolutePath();
     }
 
 
