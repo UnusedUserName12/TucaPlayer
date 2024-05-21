@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -23,6 +24,8 @@ import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.core.content.ContextCompat;
 
 import com.example.myapplication.db.DatabaseHelper;
 import com.example.myapplication.db.DatabaseManager;
@@ -150,6 +153,7 @@ public class PlaylistViewActivity extends Activity {
     protected void onResume() {
         super.onResume();
         loadAudio("title");
+        AudioAdapter.notifyDataSetChanged();
     }
 
     private void openAddSongsActivity(View v){
@@ -262,7 +266,6 @@ public class PlaylistViewActivity extends Activity {
 
     }
 
-    //TODO: fix plus tint
     private void showDialogChangeImage(){
         Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.change_image_playlist_dialog);
@@ -271,6 +274,10 @@ public class PlaylistViewActivity extends Activity {
         Button btn_change = dialog.findViewById(R.id.btn_change_img);
         RelativeLayout get_image_button = dialog.findViewById(R.id.btn_insert_image_change_dialog);
         chosen_image = dialog.findViewById(R.id.chosenImage_change_dialog);
+
+        //TODO: Remember for future coloring
+        ImageView plusIcon = dialog.findViewById(R.id.plus_icon_change_dialog);
+        plusIcon.setColorFilter(ContextCompat.getColor(this, R.color.red), PorterDuff.Mode.SRC_IN);
 
         btn_change.setOnClickListener(v -> {
 
