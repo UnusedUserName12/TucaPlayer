@@ -53,7 +53,7 @@ public class PlaylistViewActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.playlist_view);
+        setContentView(R.layout.activity_playlist_view);
 
         playlist_name_view = findViewById(R.id.playlist_name);
         playlist_image_view = findViewById(R.id.playlist_image);
