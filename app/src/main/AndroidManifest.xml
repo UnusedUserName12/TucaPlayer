@@ -28,5 +28,6 @@
         </activity>
         <activity android:name=".PlaylistViewActivity"/>
         <activity android:name=".AddSongsToPlaylistActivity"/>
+        <activity android:name=".PlaySongActivity"/>
     </application>
 </manifest>
