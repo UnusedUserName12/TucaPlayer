@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.transition.TransitionManager;
 import android.util.Log;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -20,6 +21,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.viewpager2.widget.ViewPager2;
@@ -42,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
     TabLayout tabLayout;
     ViewPager2 viewPager2;
     ViewPagerAdapter viewPagerAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -78,6 +82,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        TextView btn_expand_play_song = findViewById(R.id.song_name_play_song);
+        btn_expand_play_song.setOnClickListener(v->{expandSong();});
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
 
         if (!checkPermission()) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -185,6 +197,17 @@ public class MainActivity extends AppCompatActivity {
 
         databaseManager.close();
         cursor.close();
+    }
+
+    private void expandSong() {
+        ConstraintLayout constraintLayout = findViewById(R.id.main_layout);
+        ConstraintSet constraintSet1 = new ConstraintSet();
+        constraintSet1.clone(constraintLayout);
+        ConstraintSet constraintSet2 = new ConstraintSet();
+        constraintSet2.clone(this, R.layout.activity_play_song);
+
+        TransitionManager.beginDelayedTransition(constraintLayout);
+        constraintSet2.applyTo(constraintLayout);
     }
 
 }
