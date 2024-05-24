@@ -5,20 +5,13 @@ import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.media.MediaMetadataRetriever;
-import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
 import android.transition.TransitionManager;
-import android.util.Log;
-import android.widget.ImageButton;
-import android.widget.ListView;
-import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -33,11 +26,8 @@ import com.google.android.material.tabs.TabLayout;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -204,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
         ConstraintSet constraintSet1 = new ConstraintSet();
         constraintSet1.clone(constraintLayout);
         ConstraintSet constraintSet2 = new ConstraintSet();
-        constraintSet2.clone(this, R.layout.activity_play_song);
+        constraintSet2.clone(this, R.layout.song_view);
 
         TransitionManager.beginDelayedTransition(constraintLayout);
         constraintSet2.applyTo(constraintLayout);
