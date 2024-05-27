@@ -1,14 +1,26 @@
 package com.example.myapplication;
 
+import static com.example.myapplication.MyMediaPlayer.onRepeat;
+import static com.example.myapplication.MyMediaPlayer.onShuffle;
+import static com.example.myapplication.MyMediaPlayer.playMedia;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.media.MediaMetadataRetriever;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.transition.TransitionManager;
+import android.view.KeyEvent;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,6 +40,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -35,6 +49,11 @@ public class MainActivity extends AppCompatActivity {
     TabLayout tabLayout;
     ViewPager2 viewPager2;
     ViewPagerAdapter viewPagerAdapter;
+    boolean isShown = false;
+    boolean isExpanded = false;
+    MediaPlayer mediaPlayer = MyMediaPlayer.getInstance();
+
+    private ImageView btn_play,btn_back,btn_next,btn_repeat,btn_shuffle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +92,112 @@ public class MainActivity extends AppCompatActivity {
         });
 
         TextView btn_expand_play_song = findViewById(R.id.song_name_play_song);
-        btn_expand_play_song.setOnClickListener(v->{expandSong();});
+        btn_expand_play_song.setOnClickListener(v->{
+            if(!isExpanded) expandSong();
+        });
+
+        ImageView btn_shrink = findViewById(R.id.btn_close_play_song);
+        btn_shrink.setOnClickListener(v -> {
+            if(isExpanded) shrinkSong();
+        });
+
+
+        //TODO: NEEDS TESTING
+        btn_play = findViewById(R.id.btn_play_pause);
+        btn_play.setOnClickListener(v -> {
+            if(!mediaPlayer.isPlaying()) {
+                mediaPlayer.start();
+                btn_play.setImageResource(R.drawable.pause_24dp);
+            }
+            else{
+                mediaPlayer.pause();
+                btn_play.setImageResource(R.drawable.play_arrow_24dp);
+            }
+        });
+
+        btn_next = findViewById(R.id.btn_next);
+        btn_next.setOnClickListener(v ->{
+            if (MyMediaPlayer.CurrentIndex == MyMediaPlayer.getSongListSize()-1){
+                MyMediaPlayer.CurrentIndex=-1;
+            }
+            else if(onShuffle){
+                Random ran = new Random(System.currentTimeMillis());
+                MyMediaPlayer.CurrentIndex = ran.nextInt(MyMediaPlayer.getSongListSize());
+            }
+            else {
+                MyMediaPlayer.CurrentIndex = MyMediaPlayer.CurrentIndex + 1;
+            }
+            playMedia(MyMediaPlayer.CurrentIndex);
+        });
+
+        btn_back = findViewById(R.id.btn_back);
+        btn_back.setOnClickListener(v -> {
+            if (MyMediaPlayer.CurrentIndex == 0){
+                MyMediaPlayer.CurrentIndex= MyMediaPlayer.getSongListSize();
+            }
+            if(MyMediaPlayer.CurrentIndex!=-1) {
+                mediaPlayer.reset();
+                --MyMediaPlayer.CurrentIndex;
+            }
+            playMedia(MyMediaPlayer.CurrentIndex);
+        });
+
+        //TODO: change how background is set
+        btn_repeat = findViewById(R.id.btn_repeat);
+        btn_repeat.setOnClickListener(v -> {
+            if(!onRepeat){
+                onRepeat=true;
+                btn_repeat.setBackground(new ColorDrawable(Color.rgb(240, 240, 240)));
+            }
+            else {
+                onRepeat=false;
+                btn_repeat.setBackground(new ColorDrawable(Color.WHITE));
+            }
+        });
+
+        //TODO: change how background is set
+        btn_shuffle = findViewById(R.id.btn_shuffle);
+        btn_shuffle.setOnClickListener(v -> {
+            if(!onShuffle){
+                onShuffle=true;
+                btn_repeat.setBackground(new ColorDrawable(Color.rgb(240, 240, 240)));
+            }
+            else {
+                onRepeat=false;
+                btn_repeat.setBackground(new ColorDrawable(Color.WHITE));
+            }
+        });
+
+
+        SeekBar seekBar = findViewById(R.id.seek_bar);
+        TextView currentTime = findViewById(R.id.currentTime);
+        TextView totalTime = findViewById(R.id.totalTime);
+
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (mediaPlayer != null) {
+                    seekBar.setMax(mediaPlayer.getDuration());
+                    seekBar.setProgress(mediaPlayer.getCurrentPosition());
+                    totalTime.setText(convertToMMSS(mediaPlayer.getDuration()));
+                    currentTime.setText(convertToMMSS(mediaPlayer.getCurrentPosition()));
+                }
+                new Handler().postDelayed(this, 100);
+            }
+        });
+
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if(mediaPlayer!=null && fromUser){
+                    mediaPlayer.seekTo(progress);
+                }
+            }
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
 
     }
 
@@ -189,15 +313,55 @@ public class MainActivity extends AppCompatActivity {
         cursor.close();
     }
 
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        int action = event.getAction();
+        int keyCode = event.getKeyCode();
+        switch (keyCode)
+        {
+            case KeyEvent.KEYCODE_BACK:
+                if (action == KeyEvent.ACTION_DOWN)
+                {
+                    if(isExpanded) {
+                        shrinkSong();
+                    }
+                    else {
+                        this.finish();
+                    }
+                    return true;
+                }
+            default:
+                return false;
+        }
+    }
+
+    private ConstraintSet initialSet = new ConstraintSet();
     private void expandSong() {
         ConstraintLayout constraintLayout = findViewById(R.id.main_layout);
-        ConstraintSet constraintSet1 = new ConstraintSet();
-        constraintSet1.clone(constraintLayout);
-        ConstraintSet constraintSet2 = new ConstraintSet();
-        constraintSet2.clone(this, R.layout.song_view);
+        initialSet.clone(constraintLayout);
+        ConstraintSet expandedSongSet = new ConstraintSet();
+        expandedSongSet.clone(this, R.layout.song_view);
 
         TransitionManager.beginDelayedTransition(constraintLayout);
-        constraintSet2.applyTo(constraintLayout);
+        expandedSongSet.applyTo(constraintLayout);
+        isExpanded=true;
+    }
+    private void shrinkSong(){
+        ConstraintLayout constraintLayout = findViewById(R.id.main_layout);
+
+        TransitionManager.beginDelayedTransition(constraintLayout);
+        initialSet.applyTo(constraintLayout);
+        isExpanded=false;
+    }
+
+    private void showSong(){
+
+    }
+
+    public static String convertToMMSS(long duration){
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(duration) % 60;
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(duration) % 60;
+        return String.format("%02d:%02d", minutes, seconds);
     }
 
 }
