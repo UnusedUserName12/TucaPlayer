@@ -43,7 +43,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:orientation="horizontal"/>
+        android:orientation="horizontal" />
 
         <ImageView
             android:id="@+id/song_image_play_song"
@@ -189,7 +189,7 @@
 
         <ImageView
             android:visibility="gone"
-            android:id="@+id/close_play_song"
+            android:id="@+id/btn_close_play_song"
             android:layout_width="30dp"
 
             android:layout_height="30dp"
