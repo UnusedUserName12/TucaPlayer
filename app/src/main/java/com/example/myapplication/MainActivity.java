@@ -180,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
                     @SuppressLint("Range") String ID = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ID));
                     @SuppressLint("Range") String dbFILENAME = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_FILENAME));
 
-                    if(!songsToDelete.contains(dbFILENAME)) databaseManager.deleteSong(Integer.parseInt(ID));
+                    if(songsToDelete.contains(dbFILENAME)) databaseManager.deleteSong(Integer.parseInt(ID));
                 } while (cursor.moveToNext());
             }
         }
