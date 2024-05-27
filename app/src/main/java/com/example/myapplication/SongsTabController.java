@@ -20,7 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Random;
-
+/*
 public class SongsTabController {
 
     MediaPlayer mediaPlayer = MyMediaPlayer.getInstance();
@@ -175,3 +175,5 @@ public class SongsTabController {
         }
     }
 }
+*/
+
