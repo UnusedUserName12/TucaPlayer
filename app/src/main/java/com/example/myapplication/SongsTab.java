@@ -1,5 +1,7 @@
 package com.example.myapplication;
 
+import static com.example.myapplication.MyMediaPlayer.playMedia;
+
 import android.annotation.SuppressLint;
 import android.database.Cursor;
 import android.media.MediaPlayer;
@@ -11,10 +13,8 @@ import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
+import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.SeekBar;
-import android.widget.TextView;
 
 import com.example.myapplication.db.DatabaseHelper;
 import com.example.myapplication.db.DatabaseManager;
@@ -22,7 +22,6 @@ import com.example.myapplication.obj.Song;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public class SongsTab extends Fragment {
 
@@ -30,11 +29,16 @@ public class SongsTab extends Fragment {
     private List<Song> SongList;
     private MP3ListAdapter AudioAdapter;
     MediaPlayer mediaPlayer;
+    private int prev_pos =-1;
+    private int current_pos=0;
+    private boolean isListSent = false;
+    private Handler handler;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mediaPlayer = MyMediaPlayer.getInstance();
+        handler = new Handler();
     }
 
     @Override
@@ -51,11 +55,40 @@ public class SongsTab extends Fragment {
         loadAudio();
         musicListView.setAdapter(AudioAdapter);
 
+        AdapterView.OnItemClickListener itemListener = new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+                if(!isListSent) MyMediaPlayer.setSongList(SongList);
+                isListSent = true;
+
+                playMedia(position);
+                checkSelection();
+
+            }
+        };
+        musicListView.setOnItemClickListener(itemListener);
+
         return view;
     }
 
 
+    public void checkSelection(){
+        int currentSongId = MyMediaPlayer.getCurrentSongId();
+        for(Song s : SongList) if(currentSongId==s.getId()) {
+            s.setSelected(true);
+            current_pos = SongList.indexOf(s);
+        }
+        if(prev_pos >-1 && prev_pos!=current_pos) SongList.get(prev_pos).setSelected(false);
+        AudioAdapter.notifyDataSetChanged();
+        prev_pos = current_pos;
+    }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        isListSent=false;
+    }
+    
     //Now uses database values
     private void loadAudio() {
         DatabaseManager databaseManager = new DatabaseManager(getContext());
@@ -84,8 +117,6 @@ public class SongsTab extends Fragment {
         AudioAdapter.notifyDataSetChanged();
 
         databaseManager.close();
-
-
     }
 
 }
