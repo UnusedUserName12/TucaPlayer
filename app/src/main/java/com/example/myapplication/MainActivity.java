@@ -15,7 +15,6 @@ import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
 import android.transition.TransitionManager;
 import android.view.KeyEvent;
 import android.widget.ImageView;
@@ -51,9 +50,10 @@ public class MainActivity extends AppCompatActivity {
     boolean isShown = false;
     boolean isExpanded = false;
     static MediaPlayer mediaPlayer = MyMediaPlayer.getInstance();
-
-    private ImageView btn_play,btn_back,btn_next,btn_repeat,btn_shuffle;
+    private ImageView btn_play;
+    private ImageView btn_repeat;
     private ConstraintSet initialSet;
+    ThreadSeekBar threadSeekBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        btn_next = findViewById(R.id.btn_next);
+        ImageView btn_next = findViewById(R.id.btn_next);
         btn_next.setOnClickListener(v ->{
             if (MyMediaPlayer.CurrentIndex == MyMediaPlayer.getSongListSize()-1){
                 MyMediaPlayer.CurrentIndex=-1;
@@ -130,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
             playMedia(MyMediaPlayer.CurrentIndex);
         });
 
-        btn_back = findViewById(R.id.btn_back);
+        ImageView btn_back = findViewById(R.id.btn_back);
         btn_back.setOnClickListener(v -> {
             if (MyMediaPlayer.CurrentIndex == 0){
                 MyMediaPlayer.CurrentIndex= MyMediaPlayer.getSongListSize();
@@ -156,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         //TODO: change how background is set
-        btn_shuffle = findViewById(R.id.btn_shuffle);
+        ImageView btn_shuffle = findViewById(R.id.btn_shuffle);
         btn_shuffle.setOnClickListener(v -> {
             if(!onShuffle){
                 onShuffle=true;
@@ -186,6 +186,8 @@ public class MainActivity extends AppCompatActivity {
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
 
+        threadSeekBar = new ThreadSeekBar(seekBar,totalTime,currentTime);
+
     }
 
     @Override
@@ -199,6 +201,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         updateSongTable();
+
+        threadSeekBar.start();
     }
 
     private boolean checkPermission() {
@@ -301,25 +305,19 @@ public class MainActivity extends AppCompatActivity {
     public boolean dispatchKeyEvent(KeyEvent event) {
         int action = event.getAction();
         int keyCode = event.getKeyCode();
-        switch (keyCode)
-        {
-            case KeyEvent.KEYCODE_BACK:
-                if (action == KeyEvent.ACTION_DOWN)
-                {
-                    if(isExpanded) {
-                        shrinkSong();
-                    }
-                    else {
-                        this.finish();
-                    }
-                    return true;
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            if (action == KeyEvent.ACTION_DOWN) {
+                if (isExpanded) {
+                    shrinkSong();
+                } else {
+                    this.finish();
                 }
-            default:
-                return false;
+                return true;
+            }
         }
+        return false;
     }
 
-    //TODO Fix lag when other UI threads are active
     private void expandSong() {
         ConstraintLayout constraintLayout = findViewById(R.id.main_layout);
         initialSet.clone(constraintLayout);
@@ -329,23 +327,21 @@ public class MainActivity extends AppCompatActivity {
         TransitionManager.beginDelayedTransition(constraintLayout);
         expandedSongSet.applyTo(constraintLayout);
         isExpanded=true;
+        threadSeekBar.setRunning(true);
     }
     private void shrinkSong(){
         ConstraintLayout constraintLayout = findViewById(R.id.main_layout);
         TransitionManager.beginDelayedTransition(constraintLayout);
         initialSet.applyTo(constraintLayout);
         isExpanded=false;
+        threadSeekBar.setRunning(false);
     }
 
     private void showSong(){
 
     }
 
-    public static String convertToMMSS(long duration){
-        long seconds = TimeUnit.MILLISECONDS.toSeconds(duration) % 60;
-        long minutes = TimeUnit.MILLISECONDS.toMinutes(duration) % 60;
-        return String.format("%02d:%02d", minutes, seconds);
-    }
+
 
 }
 
