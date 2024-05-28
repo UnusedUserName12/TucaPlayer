@@ -21,16 +21,17 @@ public class MyMediaPlayer {
     }
 
     public static int CurrentIndex = -1;
+    private static int currentSongId;
     public static boolean onRepeat = false;
     public static boolean onShuffle = false;
 
     private static List<Song> SongList;
 
-    public List<Song> getSongList() {
+    public static List<Song> getSongList() {
         return SongList;
     }
 
-    public void setSongList(List<Song> songList) {
+    public static void setSongList(List<Song> songList) {
         instance.reset();
         SongList = songList;
     }
@@ -38,6 +39,7 @@ public class MyMediaPlayer {
     public static int getSongListSize() {
         return SongList.size();
     }
+    public static int getCurrentSongId() {return currentSongId;}
 
 
     /**
@@ -57,6 +59,7 @@ public class MyMediaPlayer {
 
         try {
             String selectedAudioFile = SongList.get(position).getFilename();
+            currentSongId = SongList.get(position).getId();
 
             File audioFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), selectedAudioFile);
             instance.setDataSource(audioFile.getAbsolutePath());
@@ -69,7 +72,8 @@ public class MyMediaPlayer {
                         Random ran = new Random(System.currentTimeMillis());
                         CurrentIndex = ran.nextInt(SongList.size());
                     } else {
-                        CurrentIndex++;
+                        if(CurrentIndex < SongList.size()-1) CurrentIndex++;
+                        else CurrentIndex=0;
                     }
                 }
                 playMedia(CurrentIndex);
