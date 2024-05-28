@@ -18,7 +18,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.transition.TransitionManager;
 import android.view.KeyEvent;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -51,15 +50,18 @@ public class MainActivity extends AppCompatActivity {
     ViewPagerAdapter viewPagerAdapter;
     boolean isShown = false;
     boolean isExpanded = false;
-    MediaPlayer mediaPlayer = MyMediaPlayer.getInstance();
+    static MediaPlayer mediaPlayer = MyMediaPlayer.getInstance();
 
     private ImageView btn_play,btn_back,btn_next,btn_repeat,btn_shuffle;
+    private ConstraintSet initialSet;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        initialSet = new ConstraintSet();
 
         tabLayout = findViewById(R.id.tabLayout);
         viewPager2 = findViewById(R.id.viewPager);
@@ -101,8 +103,6 @@ public class MainActivity extends AppCompatActivity {
             if(isExpanded) shrinkSong();
         });
 
-
-        //TODO: NEEDS TESTING
         btn_play = findViewById(R.id.btn_play_pause);
         btn_play.setOnClickListener(v -> {
             if(!mediaPlayer.isPlaying()) {
@@ -172,19 +172,6 @@ public class MainActivity extends AppCompatActivity {
         SeekBar seekBar = findViewById(R.id.seek_bar);
         TextView currentTime = findViewById(R.id.currentTime);
         TextView totalTime = findViewById(R.id.totalTime);
-
-        this.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (mediaPlayer != null) {
-                    seekBar.setMax(mediaPlayer.getDuration());
-                    seekBar.setProgress(mediaPlayer.getCurrentPosition());
-                    totalTime.setText(convertToMMSS(mediaPlayer.getDuration()));
-                    currentTime.setText(convertToMMSS(mediaPlayer.getCurrentPosition()));
-                }
-                new Handler().postDelayed(this, 100);
-            }
-        });
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -259,9 +246,6 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        //databaseManager.dropAllTables();
-        //databaseManager.createTables();
-
         Cursor cursor = databaseManager.fetchSongs("title");
         List<String> dbFileList = new ArrayList<>();
         if(cursor.moveToFirst()){
@@ -335,7 +319,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private ConstraintSet initialSet = new ConstraintSet();
+    //TODO Fix lag when other UI threads are active
     private void expandSong() {
         ConstraintLayout constraintLayout = findViewById(R.id.main_layout);
         initialSet.clone(constraintLayout);
@@ -348,7 +332,6 @@ public class MainActivity extends AppCompatActivity {
     }
     private void shrinkSong(){
         ConstraintLayout constraintLayout = findViewById(R.id.main_layout);
-
         TransitionManager.beginDelayedTransition(constraintLayout);
         initialSet.applyTo(constraintLayout);
         isExpanded=false;
