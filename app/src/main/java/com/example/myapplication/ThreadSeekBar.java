@@ -31,17 +31,17 @@ public class ThreadSeekBar extends Thread {
     public void run(){
         while (true) {
             if (mediaPlayer != null && isRunning) {
-                try {
-                    Thread.sleep(200);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
                 handler.post(() -> {
                     seekBar.setMax(mediaPlayer.getDuration());
                     seekBar.setProgress(mediaPlayer.getCurrentPosition());
                     totalTime.setText(convertToMMSS(mediaPlayer.getDuration()));
                     currentTime.setText(convertToMMSS(mediaPlayer.getCurrentPosition()));
                 });
+            }
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
         }
     }
