@@ -8,12 +8,12 @@ import android.widget.TextView;
 
 import java.util.concurrent.TimeUnit;
 
-public class ThreadSeekBar extends Thread{
-    SeekBar seekBar;
-    TextView totalTime;
-    TextView currentTime;
+public class ThreadSeekBar extends Thread {
+    private SeekBar seekBar;
+    private TextView totalTime;
+    private TextView currentTime;
     static MediaPlayer mediaPlayer = MyMediaPlayer.getInstance();
-    public boolean isRunning;
+    private static boolean isRunning;
     private final Handler handler;
 
     ThreadSeekBar(SeekBar seekBar, TextView totalTime, TextView currentTime) {
@@ -32,12 +32,11 @@ public class ThreadSeekBar extends Thread{
         while (true) {
             if (mediaPlayer != null && isRunning) {
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(200);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
                 handler.post(() -> {
-
                     seekBar.setMax(mediaPlayer.getDuration());
                     seekBar.setProgress(mediaPlayer.getCurrentPosition());
                     totalTime.setText(convertToMMSS(mediaPlayer.getDuration()));
