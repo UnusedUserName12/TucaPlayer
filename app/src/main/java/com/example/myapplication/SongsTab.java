@@ -9,7 +9,6 @@ import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
-import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,13 +31,11 @@ public class SongsTab extends Fragment {
     private int prev_pos =-1;
     private int current_pos=0;
     private boolean isListSent = false;
-    private Handler handler;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mediaPlayer = MyMediaPlayer.getInstance();
-        handler = new Handler();
     }
 
     @Override
@@ -55,6 +52,10 @@ public class SongsTab extends Fragment {
         loadAudio();
         musicListView.setAdapter(AudioAdapter);
 
+        //Garbage????
+        ThreadElementAutoSelector.AudioAdapter = AudioAdapter;
+        ThreadElementAutoSelector.SongList = SongList;
+
         AdapterView.OnItemClickListener itemListener = new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
@@ -63,7 +64,6 @@ public class SongsTab extends Fragment {
 
                 playMedia(position);
                 checkSelection();
-
             }
         };
         musicListView.setOnItemClickListener(itemListener);
@@ -72,13 +72,15 @@ public class SongsTab extends Fragment {
     }
 
 
-    public void checkSelection(){
+    private void checkSelection(){
         int currentSongId = MyMediaPlayer.getCurrentSongId();
         for(Song s : SongList) if(currentSongId==s.getId()) {
             s.setSelected(true);
             current_pos = SongList.indexOf(s);
+            ThreadElementAutoSelector.current_pos = current_pos; //MORE GARBAGE??
         }
         if(prev_pos >-1 && prev_pos!=current_pos) SongList.get(prev_pos).setSelected(false);
+        ThreadElementAutoSelector.prev_pos = prev_pos; //EVEN MORE GARBAGE???
         AudioAdapter.notifyDataSetChanged();
         prev_pos = current_pos;
     }
@@ -87,6 +89,8 @@ public class SongsTab extends Fragment {
     public void onResume() {
         super.onResume();
         isListSent=false;
+        ThreadElementAutoSelector.AudioAdapter = AudioAdapter;
+        ThreadElementAutoSelector.SongList = SongList;
     }
     
     //Now uses database values
