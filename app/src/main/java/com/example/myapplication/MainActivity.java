@@ -43,7 +43,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -211,6 +210,9 @@ public class MainActivity extends AppCompatActivity {
         updateSongTable();
 
         threadSeekBar.start();
+
+        ThreadElementAutoSelector threadElementAutoSelector = new ThreadElementAutoSelector();
+        threadElementAutoSelector.start();
     }
 
     private boolean checkPermission() {
@@ -350,7 +352,8 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onTransitionEnd(Transition transition) {
-                threadSeekBar.setRunning(true);
+                ThreadSeekBar.isRunning = true;
+                ThreadElementAutoSelector.isRunning = false;
             }
 
             @Override
@@ -383,10 +386,12 @@ public class MainActivity extends AppCompatActivity {
         transitionSet.addTransition(changeBounds);
         transitionSet.addTransition(fade);
 
+        ThreadElementAutoSelector.isRunning = true; //Why this not working in onTransitionStart??? Why line 356 WORKS???
+
         transitionSet.addListener(new Transition.TransitionListener() {
             @Override
             public void onTransitionStart(Transition transition) {
-                threadSeekBar.setRunning(false);
+                ThreadSeekBar.isRunning = false;
             }
 
             @Override
