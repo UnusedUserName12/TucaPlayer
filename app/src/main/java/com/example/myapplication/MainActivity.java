@@ -15,7 +15,11 @@ import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.transition.ChangeBounds;
+import android.transition.Fade;
+import android.transition.Transition;
 import android.transition.TransitionManager;
+import android.transition.TransitionSet;
 import android.view.KeyEvent;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -95,12 +99,16 @@ public class MainActivity extends AppCompatActivity {
 
         TextView btn_expand_play_song = findViewById(R.id.song_name_play_song);
         btn_expand_play_song.setOnClickListener(v->{
-            if(!isExpanded) expandSong();
+            if(!isExpanded) {
+                expandSong();
+            }
         });
 
         ImageView btn_shrink = findViewById(R.id.btn_close_play_song);
         btn_shrink.setOnClickListener(v -> {
-            if(isExpanded) shrinkSong();
+            if(isExpanded) {
+                shrinkSong();
+            }
         });
 
         btn_play = findViewById(R.id.btn_play_pause);
@@ -319,22 +327,87 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void expandSong() {
+        isExpanded = true;
         ConstraintLayout constraintLayout = findViewById(R.id.main_layout);
         initialSet.clone(constraintLayout);
         ConstraintSet expandedSongSet = new ConstraintSet();
         expandedSongSet.clone(this, R.layout.song_view);
 
-        TransitionManager.beginDelayedTransition(constraintLayout);
+        ChangeBounds changeBounds = new ChangeBounds();
+        changeBounds.setDuration(400);
+
+        Fade fade = new Fade();
+        fade.setDuration(400);
+        fade.setStartDelay(100);
+        TransitionSet transitionSet = new TransitionSet();
+        transitionSet.addTransition(changeBounds);
+        transitionSet.addTransition(fade);
+
+        transitionSet.addListener(new Transition.TransitionListener() {
+            @Override
+            public void onTransitionStart(Transition transition) {
+            }
+
+            @Override
+            public void onTransitionEnd(Transition transition) {
+                threadSeekBar.setRunning(true);
+            }
+
+            @Override
+            public void onTransitionCancel(Transition transition){
+            }
+
+            @Override
+            public void onTransitionPause(Transition transition) {
+            }
+
+            @Override
+            public void onTransitionResume(Transition transition) {
+            }
+        });
+
+        TransitionManager.beginDelayedTransition(constraintLayout,transitionSet);
         expandedSongSet.applyTo(constraintLayout);
-        isExpanded=true;
-        threadSeekBar.setRunning(true);
     }
-    private void shrinkSong(){
+    private void shrinkSong() {
+        isExpanded=false;
         ConstraintLayout constraintLayout = findViewById(R.id.main_layout);
+
+        ChangeBounds changeBounds = new ChangeBounds();
+        changeBounds.setDuration(400);
+
+        Fade fade = new Fade();
+        fade.setDuration(400);
+        fade.setStartDelay(100);
+        TransitionSet transitionSet = new TransitionSet();
+        transitionSet.addTransition(changeBounds);
+        transitionSet.addTransition(fade);
+
+        transitionSet.addListener(new Transition.TransitionListener() {
+            @Override
+            public void onTransitionStart(Transition transition) {
+                threadSeekBar.setRunning(false);
+            }
+
+            @Override
+            public void onTransitionEnd(Transition transition) {
+            }
+
+            @Override
+            public void onTransitionCancel(Transition transition){
+            }
+
+            @Override
+            public void onTransitionPause(Transition transition) {
+            }
+
+            @Override
+            public void onTransitionResume(Transition transition) {
+            }
+        });
+
         TransitionManager.beginDelayedTransition(constraintLayout);
         initialSet.applyTo(constraintLayout);
-        isExpanded=false;
-        threadSeekBar.setRunning(false);
     }
 
     private void showSong(){
