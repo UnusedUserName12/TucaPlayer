@@ -13,7 +13,7 @@ public class ThreadSeekBar extends Thread {
     private TextView totalTime;
     private TextView currentTime;
     static MediaPlayer mediaPlayer = MyMediaPlayer.getInstance();
-    private static boolean isRunning;
+    static boolean isRunning;
     private final Handler handler;
 
     ThreadSeekBar(SeekBar seekBar, TextView totalTime, TextView currentTime) {
@@ -44,12 +44,5 @@ public class ThreadSeekBar extends Thread {
                 throw new RuntimeException(e);
             }
         }
-    }
-
-    public boolean isRunning() {
-        return isRunning;
-    }
-    public void setRunning(boolean running) {
-        isRunning = running;
     }
 }
