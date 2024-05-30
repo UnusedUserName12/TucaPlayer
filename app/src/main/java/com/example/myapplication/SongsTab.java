@@ -28,8 +28,6 @@ public class SongsTab extends Fragment {
     private List<Song> SongList;
     private MP3ListAdapter AudioAdapter;
     MediaPlayer mediaPlayer;
-    private int prev_pos =-1;
-    private int current_pos=0;
     private boolean isListSent = false;
 
     @Override
@@ -74,15 +72,8 @@ public class SongsTab extends Fragment {
 
     private void checkSelection(){
         int currentSongId = MyMediaPlayer.getCurrentSongId();
-        for(Song s : SongList) if(currentSongId==s.getId()) {
-            s.setSelected(true);
-            current_pos = SongList.indexOf(s);
-            ThreadElementAutoSelector.current_pos = current_pos; //MORE GARBAGE??
-        }
-        if(prev_pos >-1 && prev_pos!=current_pos) SongList.get(prev_pos).setSelected(false);
-        ThreadElementAutoSelector.prev_pos = prev_pos; //EVEN MORE GARBAGE???
+        for(Song s : SongList) s.setSelected(currentSongId == s.getId());
         AudioAdapter.notifyDataSetChanged();
-        prev_pos = current_pos;
     }
 
     @Override
