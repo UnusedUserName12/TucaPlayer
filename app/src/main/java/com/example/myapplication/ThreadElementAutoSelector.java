@@ -14,9 +14,8 @@ import java.util.List;
 public class ThreadElementAutoSelector extends Thread{
     static List<Song> SongList;
     static MP3ListAdapter AudioAdapter;
-    static int current_pos;
-    static int prev_pos;
     static boolean isRunning;
+    static boolean isStoped = false;
     private final Handler handler;
     static MediaPlayer mediaPlayer = MyMediaPlayer.getInstance();
 
@@ -25,10 +24,8 @@ public class ThreadElementAutoSelector extends Thread{
      * Initializes the song list, adapter, positions, and handler.
      */
     ThreadElementAutoSelector(){
+        SongList = MyMediaPlayer.getSongList();
         AudioAdapter = null;
-        SongList = null;
-        current_pos=0;
-        prev_pos=-1;
         isRunning = true;
         this.handler = new Handler(Looper.getMainLooper());
     }
@@ -43,8 +40,6 @@ public class ThreadElementAutoSelector extends Thread{
     ThreadElementAutoSelector(List<Song> songList, MP3ListAdapter audioAdapter){
         SongList = songList;
         AudioAdapter = audioAdapter;
-        current_pos=0;
-        prev_pos=-1;
         isRunning = true;
         this.handler = new Handler(Looper.getMainLooper());
     }
@@ -54,29 +49,23 @@ public class ThreadElementAutoSelector extends Thread{
      * the selection state in the song list. The adapter is notified of changes to update the display.
      */
     public void run() {
-        while (true) {
-        if (AudioAdapter != null && !SongList.isEmpty()) {
+        while (!isStoped) {
+        if (AudioAdapter != null && SongList != null) {
                 if (mediaPlayer != null && isRunning) {
                     handler.post(() -> {
                         int currentSongId = MyMediaPlayer.getCurrentSongId();
-                        for (Song s : SongList)
-                            if (currentSongId == s.getId()) {
-                                s.setSelected(true);
-                                current_pos = SongList.indexOf(s);
-                            }
-                        if (prev_pos > -1 && prev_pos != current_pos)
-                            SongList.get(prev_pos).setSelected(false);
+                        for(Song s : SongList) s.setSelected(currentSongId == s.getId());
                         AudioAdapter.notifyDataSetChanged();
-                        prev_pos = current_pos;
                     });
                 }
 
             }
         try {
-            Thread.sleep(500);
+            Thread.sleep(200);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
         }
+        isStoped=false;
     }
 }
