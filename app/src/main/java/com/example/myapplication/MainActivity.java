@@ -340,7 +340,7 @@ public class MainActivity extends AppCompatActivity {
 
         Fade fade = new Fade();
         fade.setDuration(400);
-        fade.setStartDelay(100);
+        fade.setStartDelay(300);
         TransitionSet transitionSet = new TransitionSet();
         transitionSet.addTransition(changeBounds);
         transitionSet.addTransition(fade);
@@ -381,21 +381,20 @@ public class MainActivity extends AppCompatActivity {
 
         Fade fade = new Fade();
         fade.setDuration(400);
-        fade.setStartDelay(100);
         TransitionSet transitionSet = new TransitionSet();
         transitionSet.addTransition(changeBounds);
         transitionSet.addTransition(fade);
-
-        ThreadElementAutoSelector.isRunning = true; //Why this not working in onTransitionStart??? Why line 356 WORKS???
 
         transitionSet.addListener(new Transition.TransitionListener() {
             @Override
             public void onTransitionStart(Transition transition) {
                 ThreadSeekBar.isRunning = false;
+
             }
 
             @Override
             public void onTransitionEnd(Transition transition) {
+                ThreadElementAutoSelector.isRunning = true;
             }
 
             @Override
@@ -411,7 +410,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        TransitionManager.beginDelayedTransition(constraintLayout);
+        TransitionManager.beginDelayedTransition(constraintLayout,transitionSet);
         initialSet.applyTo(constraintLayout);
     }
 
