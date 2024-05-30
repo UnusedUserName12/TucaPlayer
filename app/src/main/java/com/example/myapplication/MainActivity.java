@@ -34,8 +34,10 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.example.myapplication.interfaces.OnSongChangeListener;
 import com.example.myapplication.db.DatabaseHelper;
 import com.example.myapplication.db.DatabaseManager;
+import com.example.myapplication.obj.Song;
 import com.google.android.material.tabs.TabLayout;
 
 import java.io.File;
@@ -44,7 +46,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements OnSongChangeListener {
 
     private static final int PERMISSION_REQUEST_READ_EXTERNAL_STORAGE = 1;
     TabLayout tabLayout;
@@ -57,6 +59,8 @@ public class MainActivity extends AppCompatActivity {
     private ImageView btn_repeat;
     private ConstraintSet initialSet;
     ThreadSeekBar threadSeekBar;
+    TextView btn_expand_play_song;
+    TextView artist_view;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        TextView btn_expand_play_song = findViewById(R.id.song_name_play_song);
+        btn_expand_play_song = findViewById(R.id.song_name_play_song);
         btn_expand_play_song.setOnClickListener(v->{
             if(!isExpanded) {
                 expandSong();
@@ -192,6 +196,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
+
+        artist_view = findViewById(R.id.artist_play_song);
+
+        MyMediaPlayer.setOnSongChangeListener(this);
 
         threadSeekBar = new ThreadSeekBar(seekBar,totalTime,currentTime);
 
@@ -418,8 +426,11 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-
-
+    @Override
+    public void onSongChanged(Song song) {
+        btn_expand_play_song.setText(song.getSongName());
+        artist_view.setText(song.getArtist());
+    }
 }
 
 
