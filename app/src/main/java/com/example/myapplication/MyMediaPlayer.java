@@ -2,7 +2,9 @@ package com.example.myapplication;
 
 import android.media.MediaPlayer;
 import android.os.Environment;
+import android.widget.TextView;
 
+import com.example.myapplication.interfaces.OnSongChangeListener;
 import com.example.myapplication.obj.Song;
 
 import java.io.File;
@@ -22,18 +24,17 @@ public class MyMediaPlayer {
 
     public static int CurrentIndex = -1;
     private static int currentSongId;
+    private static String currentSongName;
     public static boolean onRepeat = false;
     public static boolean onShuffle = false;
-
+    private static OnSongChangeListener songChangeListener;
     private static List<Song> SongList;
-
-    public static List<Song> getSongList() {
-        return SongList;
-    }
-
     public static void setSongList(List<Song> songList) {
         instance.reset();
         SongList = songList;
+    }
+    public static List<Song> getSongList() {
+        return SongList;
     }
 
     public static int getSongListSize() {
@@ -61,6 +62,10 @@ public class MyMediaPlayer {
             String selectedAudioFile = SongList.get(position).getFilename();
             currentSongId = SongList.get(position).getId();
 
+            if (songChangeListener != null) {
+                songChangeListener.onSongChanged(SongList.get(position));
+            }
+
             File audioFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), selectedAudioFile);
             instance.setDataSource(audioFile.getAbsolutePath());
             instance.prepare();
@@ -84,5 +89,7 @@ public class MyMediaPlayer {
         }
     }
 
-
+    public static void setOnSongChangeListener(OnSongChangeListener listener) {
+        songChangeListener = listener;
+    }
 }
