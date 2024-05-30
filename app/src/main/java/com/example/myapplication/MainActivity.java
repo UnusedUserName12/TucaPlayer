@@ -59,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements OnSongChangeListe
     private ImageView btn_repeat;
     private ConstraintSet initialSet;
     ThreadSeekBar threadSeekBar;
+    ThreadElementAutoSelector threadElementAutoSelector;
     TextView btn_expand_play_song;
     TextView artist_view;
 
@@ -202,6 +203,7 @@ public class MainActivity extends AppCompatActivity implements OnSongChangeListe
         MyMediaPlayer.setOnSongChangeListener(this);
 
         threadSeekBar = new ThreadSeekBar(seekBar,totalTime,currentTime);
+        threadElementAutoSelector = new ThreadElementAutoSelector();
 
     }
 
@@ -218,9 +220,13 @@ public class MainActivity extends AppCompatActivity implements OnSongChangeListe
         updateSongTable();
 
         threadSeekBar.start();
-
-        ThreadElementAutoSelector threadElementAutoSelector = new ThreadElementAutoSelector();
         threadElementAutoSelector.start();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        ThreadElementAutoSelector.isStoped=true;
     }
 
     private boolean checkPermission() {
@@ -348,7 +354,6 @@ public class MainActivity extends AppCompatActivity implements OnSongChangeListe
 
         Fade fade = new Fade();
         fade.setDuration(400);
-        fade.setStartDelay(300);
         TransitionSet transitionSet = new TransitionSet();
         transitionSet.addTransition(changeBounds);
         transitionSet.addTransition(fade);
