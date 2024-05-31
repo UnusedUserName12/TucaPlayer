@@ -62,6 +62,9 @@ public class MainActivity extends AppCompatActivity implements OnSongChangeListe
     ThreadElementAutoSelector threadElementAutoSelector;
     TextView btn_expand_play_song;
     TextView artist_view;
+    SeekBar seekBar;
+    TextView currentTime;
+    TextView totalTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -182,9 +185,9 @@ public class MainActivity extends AppCompatActivity implements OnSongChangeListe
         });
 
 
-        SeekBar seekBar = findViewById(R.id.seek_bar);
-        TextView currentTime = findViewById(R.id.currentTime);
-        TextView totalTime = findViewById(R.id.totalTime);
+        seekBar = findViewById(R.id.seek_bar);
+        currentTime = findViewById(R.id.currentTime);
+        totalTime = findViewById(R.id.totalTime);
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -202,10 +205,6 @@ public class MainActivity extends AppCompatActivity implements OnSongChangeListe
         artist_view = findViewById(R.id.artist_play_song);
 
         MyMediaPlayer.setOnSongChangeListener(this);
-
-        threadSeekBar = new ThreadSeekBar(seekBar,totalTime,currentTime);
-        threadElementAutoSelector = new ThreadElementAutoSelector();
-
     }
 
     @Override
@@ -220,6 +219,9 @@ public class MainActivity extends AppCompatActivity implements OnSongChangeListe
 
         updateSongTable();
 
+        threadSeekBar = new ThreadSeekBar(seekBar,totalTime,currentTime);
+        threadElementAutoSelector = new ThreadElementAutoSelector();
+
         threadSeekBar.start();
         threadElementAutoSelector.start();
     }
@@ -228,6 +230,7 @@ public class MainActivity extends AppCompatActivity implements OnSongChangeListe
     protected void onStop() {
         super.onStop();
         ThreadElementAutoSelector.isStoped=true;
+        ThreadSeekBar.isStoped=true;
     }
 
     private boolean checkPermission() {
