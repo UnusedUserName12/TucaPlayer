@@ -15,6 +15,7 @@ public class ThreadSeekBar extends Thread {
     static MediaPlayer mediaPlayer = MyMediaPlayer.getInstance();
     static boolean isRunning;
     private final Handler handler;
+    static boolean isStoped = false;
 
     ThreadSeekBar(SeekBar seekBar, TextView totalTime, TextView currentTime) {
         this.seekBar = seekBar;
@@ -29,7 +30,7 @@ public class ThreadSeekBar extends Thread {
         return String.format("%02d:%02d", minutes, seconds);
     }
     public void run(){
-        while (true) {
+        while (!isStoped) {
             if (mediaPlayer != null && isRunning) {
                 handler.post(() -> {
                     seekBar.setMax(mediaPlayer.getDuration());
@@ -43,6 +44,8 @@ public class ThreadSeekBar extends Thread {
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
+
         }
+        isStoped = false;
     }
 }
