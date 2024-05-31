@@ -129,29 +129,30 @@ public class MainActivity extends AppCompatActivity implements OnSongChangeListe
 
         ImageView btn_next = findViewById(R.id.btn_next);
         btn_next.setOnClickListener(v ->{
-            if (MyMediaPlayer.CurrentIndex == MyMediaPlayer.getSongListSize()-1){
-                MyMediaPlayer.CurrentIndex=-1;
+            if(MyMediaPlayer.getSongList() != null) {
+                if (MyMediaPlayer.CurrentIndex == MyMediaPlayer.getSongListSize() - 1) {
+                    MyMediaPlayer.CurrentIndex = -1;
+                } else if (onShuffle) {
+                    Random ran = new Random(System.currentTimeMillis());
+                    MyMediaPlayer.CurrentIndex = ran.nextInt(MyMediaPlayer.getSongListSize());
+                } else {
+                    MyMediaPlayer.CurrentIndex = MyMediaPlayer.CurrentIndex + 1;
+                }
+                playMedia(MyMediaPlayer.CurrentIndex);
             }
-            else if(onShuffle){
-                Random ran = new Random(System.currentTimeMillis());
-                MyMediaPlayer.CurrentIndex = ran.nextInt(MyMediaPlayer.getSongListSize());
-            }
-            else {
-                MyMediaPlayer.CurrentIndex = MyMediaPlayer.CurrentIndex + 1;
-            }
-            playMedia(MyMediaPlayer.CurrentIndex);
         });
 
         ImageView btn_back = findViewById(R.id.btn_back);
         btn_back.setOnClickListener(v -> {
-            if (MyMediaPlayer.CurrentIndex == 0){
-                MyMediaPlayer.CurrentIndex= MyMediaPlayer.getSongListSize();
+            if(MyMediaPlayer.getSongList() != null) {
+                if (MyMediaPlayer.CurrentIndex == 0) {
+                    MyMediaPlayer.CurrentIndex = MyMediaPlayer.getSongListSize();
+                }
+                if (MyMediaPlayer.CurrentIndex != -1) {
+                    --MyMediaPlayer.CurrentIndex;
+                }
+                playMedia(MyMediaPlayer.CurrentIndex);
             }
-            if(MyMediaPlayer.CurrentIndex!=-1) {
-                mediaPlayer.reset();
-                --MyMediaPlayer.CurrentIndex;
-            }
-            playMedia(MyMediaPlayer.CurrentIndex);
         });
 
         //TODO: change how background is set
@@ -435,6 +436,7 @@ public class MainActivity extends AppCompatActivity implements OnSongChangeListe
     public void onSongChanged(Song song) {
         btn_expand_play_song.setText(song.getSongName());
         artist_view.setText(song.getArtist());
+        btn_play.setImageResource(R.drawable.pause_24dp);
     }
 }
 
