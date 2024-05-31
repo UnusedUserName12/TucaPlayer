@@ -173,11 +173,11 @@ public class MainActivity extends AppCompatActivity implements OnSongChangeListe
         btn_shuffle.setOnClickListener(v -> {
             if(!onShuffle){
                 onShuffle=true;
-                btn_repeat.setBackground(new ColorDrawable(Color.rgb(240, 240, 240)));
+                btn_shuffle.setBackground(new ColorDrawable(Color.rgb(240, 240, 240)));
             }
             else {
-                onRepeat=false;
-                btn_repeat.setBackground(new ColorDrawable(Color.WHITE));
+                onShuffle=false;
+                btn_shuffle.setBackground(new ColorDrawable(Color.WHITE));
             }
         });
 
