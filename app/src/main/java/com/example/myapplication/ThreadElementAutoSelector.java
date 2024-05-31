@@ -15,7 +15,7 @@ public class ThreadElementAutoSelector extends Thread{
     static List<Song> SongList;
     static MP3ListAdapter AudioAdapter;
     static boolean isRunning;
-    static boolean isStoped = false;
+    static boolean isStopped = false;
     private final Handler handler;
     static MediaPlayer mediaPlayer = MyMediaPlayer.getInstance();
 
@@ -49,7 +49,7 @@ public class ThreadElementAutoSelector extends Thread{
      * the selection state in the song list. The adapter is notified of changes to update the display.
      */
     public void run() {
-        while (!isStoped) {
+        while (!isStopped) {
         if (AudioAdapter != null && SongList != null) {
                 if (mediaPlayer != null && isRunning) {
                     handler.post(() -> {
@@ -66,6 +66,6 @@ public class ThreadElementAutoSelector extends Thread{
             throw new RuntimeException(e);
         }
         }
-        isStoped=false;
+        isStopped =false;
     }
 }

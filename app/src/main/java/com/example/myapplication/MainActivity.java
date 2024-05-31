@@ -229,8 +229,8 @@ public class MainActivity extends AppCompatActivity implements OnSongChangeListe
     @Override
     protected void onStop() {
         super.onStop();
-        ThreadElementAutoSelector.isStoped=true;
-        ThreadSeekBar.isStoped=true;
+        ThreadElementAutoSelector.isStopped =true;
+        ThreadSeekBar.isStopped =true;
     }
 
     private boolean checkPermission() {
