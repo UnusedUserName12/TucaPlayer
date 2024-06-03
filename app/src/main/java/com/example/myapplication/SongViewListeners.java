@@ -21,6 +21,10 @@ import com.example.myapplication.obj.Song;
 
 import java.util.Random;
 
+/**
+ * Class that implements listeners for song view controls in the MainActivity.
+ * This class manages the user interactions with the song_view.
+ */
 public class SongViewListeners implements OnSongChangeListener {
     private final MainActivity mainActivity;
     static MediaPlayer mediaPlayer = MyMediaPlayer.getInstance();
@@ -30,7 +34,16 @@ public class SongViewListeners implements OnSongChangeListener {
     private final TextView song_name_text_view;
     private final TextView artist_view;
     boolean isExpanded = false;
-
+    /**
+     * Constructor to initialize the SongViewListeners with required parameters.
+     *
+     * @param mainActivity      The MainActivity instance.
+     * @param initialSet        The initial ConstraintSet configuration.
+     * @param expandedSongSet   The expanded ConstraintSet configuration.
+     * @param btnPlay           The play button ImageView.
+     * @param songNameTextView  The TextView for displaying the song name.
+     * @param artistView        The TextView for displaying the artist name.
+     */
     public SongViewListeners(MainActivity mainActivity, ConstraintSet initialSet, ConstraintSet expandedSongSet, ImageView btnPlay, TextView songNameTextView, TextView artistView) {
         this.mainActivity = mainActivity;
         this.initialSet = initialSet;
@@ -39,7 +52,18 @@ public class SongViewListeners implements OnSongChangeListener {
         song_name_text_view = songNameTextView;
         artist_view = artistView;
     }
-
+    /**
+     * Sets up listeners for various UI controls related to song playback.
+     *
+     * @param btnPlay       The play button ImageView.
+     * @param btnRepeat     The repeat button ImageView.
+     * @param btnNext       The next song button ImageView.
+     * @param btnBack       The previous song button ImageView.
+     * @param btnShuffle    The shuffle button ImageView.
+     * @param seekBar       The SeekBar for song progress.
+     * @param bottom_panel  The LinearLayout that serves as the bottom panel. Clicking on it will expand the song_view
+     * @param btn_shrink    The ImageView for shrinking the song view.
+     */
     public void setListeners(ImageView btnPlay, ImageView btnRepeat, ImageView btnNext, ImageView btnBack, ImageView btnShuffle,
                              SeekBar seekBar, LinearLayout bottom_panel, ImageView btn_shrink) {
         btnPlay.setOnClickListener(v -> {
@@ -210,7 +234,12 @@ public class SongViewListeners implements OnSongChangeListener {
         TransitionManager.beginDelayedTransition(constraintLayout, transitionSet);
         initialSet.applyTo(constraintLayout);
     }
-
+    /**
+     * Callback method when the song is changed.
+     * Updates the UI with the new song details.
+     *
+     * @param song The new song that is being played.
+     */
     @Override
     public void onSongChanged(Song song) {
         song_name_text_view.setText(song.getSongName());
