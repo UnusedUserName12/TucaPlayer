@@ -8,7 +8,9 @@
     app:cardCornerRadius="0dp"
     android:background="@color/transparent"
     android:layout_columnWeight="1"
-    android:layout_rowWeight="0.5"
+    app:cardBackgroundColor="@color/transparent"
+    android:outlineSpotShadowColor="@color/transparent"
+    android:outlineAmbientShadowColor="@color/transparent"
     android:clickable="true"
     android:focusable="true"
     >
@@ -17,17 +19,31 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <ImageView
-            android:id="@+id/cardImage"
-            android:layout_width="0dp"
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:adjustViewBounds="true"
-            android:scaleType="fitCenter"
-            android:src="@drawable/placeholder"
             app:layout_constraintBottom_toTopOf="@+id/cardText"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:cardCornerRadius="8dp"
+            android:layout_marginHorizontal="12dp"
+            app:cardBackgroundColor="@color/transparent"
+            android:outlineSpotShadowColor="@color/transparent"
+            android:outlineAmbientShadowColor="@color/transparent">
+
+            <ImageView
+                android:id="@+id/cardImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:adjustViewBounds="false"
+                android:scaleType="fitXY"
+                android:src="@drawable/placeholder"
+                app:layout_constraintBottom_toTopOf="@+id/cardText"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.cardview.widget.CardView>
 
         <TextView
             android:id="@+id/cardText"
