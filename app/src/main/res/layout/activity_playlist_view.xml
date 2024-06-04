@@ -3,64 +3,103 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <RelativeLayout
+
+
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        >
+        android:fillViewport="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <ImageView
-            android:id="@+id/playlist_image"
-            android:layout_width="170dp"
-            android:layout_height="170dp"
-            android:layout_marginTop="50dp"
-            android:layout_centerHorizontal="true"
-            android:src="@drawable/placeholder"
-            android:background="@drawable/corners25dp"
-            />
 
-        <TextView
-            android:id="@+id/playlist_name"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/playlist_image"
-            android:layout_marginStart="10dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="10dp"
-            android:layout_marginBottom="0dp"
-            android:textColor="@color/red"
-            android:textSize="20sp"
-            android:text="PLACEHOLDER"
-            android:textAlignment="center"
-            android:textStyle="bold"
-            android:fontFamily="sans-serif-black"/>
-        <ImageButton
-            android:id="@+id/btn_add_song_redirect"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/plus"
-            app:tint="@color/grey_72"
-            android:backgroundTint="@color/transparent"
-            android:layout_below="@+id/playlist_name"
-            android:layout_alignParentEnd="true"
-            android:layout_marginRight="40dp"
-            android:layout_toLeftOf="@+id/btn_more_playlist"
-         />
-        <ImageButton
-            android:id="@+id/btn_more_playlist"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/baseline_more_vert_24"
-            android:background="@color/transparent"
-            app:tint="@color/grey_72"
-            android:layout_below="@+id/playlist_name"
-            android:layout_alignParentEnd="true"/>
+            android:layout_height="wrap_content">
 
-        <ListView
-            android:id="@+id/playlist_songs"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_below="@+id/btn_add_song_redirect"
-            app:layout_constraintVertical_bias="0.0" />
-    </RelativeLayout>
+            <ImageView
+                android:id="@+id/btn_close_playlist"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="10dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:src="@drawable/baseline_arrow_back_24"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardView"
+                android:layout_width="170dp"
+                android:layout_height="170dp"
+                android:layout_marginTop="65dp"
+                app:cardCornerRadius="25dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ImageView
+                    android:id="@+id/playlist_image"
+                    android:layout_width="170dp"
+                    android:layout_height="170dp"
+                    android:layout_centerHorizontal="true"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/placeholder" />
+            </androidx.cardview.widget.CardView>
+
+
+            <TextView
+                android:id="@+id/playlist_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="10dp"
+                android:fontFamily="sans-serif-black"
+                android:text="PLACEHOLDER"
+                android:textAlignment="center"
+                android:textColor="@color/red"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/cardView" />
+
+            <ImageButton
+                android:id="@+id/btn_add_song_redirect"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="8dp"
+                android:backgroundTint="@color/transparent"
+                android:src="@drawable/plus"
+                app:layout_constraintEnd_toStartOf="@+id/btn_more_playlist"
+                app:layout_constraintTop_toBottomOf="@+id/playlist_name"
+                app:tint="@color/grey_72" />
+
+            <ImageButton
+                android:id="@+id/btn_more_playlist"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginTop="8dp"
+                android:background="@color/transparent"
+                android:src="@drawable/baseline_more_vert_24"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/playlist_name"
+                app:tint="@color/grey_72" />
+
+            <ListView
+                android:id="@+id/playlist_songs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/btn_add_song_redirect" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
