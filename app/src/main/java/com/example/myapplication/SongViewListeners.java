@@ -28,44 +28,42 @@ import java.util.Random;
 public class SongViewListeners implements OnSongChangeListener {
     private final MainActivity mainActivity;
     static MediaPlayer mediaPlayer = MyMediaPlayer.getInstance();
+    ConstraintLayout constraintLayout;
     private final ConstraintSet initialSet;
     private final ConstraintSet expandedSongSet;
-    private final ImageView btnPlay;
-    private final TextView song_name_text_view;
-    private final TextView artist_view;
+    private ImageView btnPlay;
+    private TextView song_name_view;
+    private TextView artist_view;
     boolean isExpanded = false;
     /**
      * Constructor to initialize the SongViewListeners with required parameters.
      *
      * @param mainActivity      The MainActivity instance.
-     * @param initialSet        The initial ConstraintSet configuration.
-     * @param expandedSongSet   The expanded ConstraintSet configuration.
-     * @param btnPlay           The play button ImageView.
-     * @param songNameTextView  The TextView for displaying the song name.
-     * @param artistView        The TextView for displaying the artist name.
      */
-    public SongViewListeners(MainActivity mainActivity, ConstraintSet initialSet, ConstraintSet expandedSongSet, ImageView btnPlay, TextView songNameTextView, TextView artistView) {
+    public SongViewListeners(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
-        this.initialSet = initialSet;
-        this.expandedSongSet = expandedSongSet;
-        this.btnPlay = btnPlay;
-        song_name_text_view = songNameTextView;
-        artist_view = artistView;
+        constraintLayout = mainActivity.findViewById(R.id.main_layout);
+        initialSet = new ConstraintSet();
+        initialSet.clone(constraintLayout);
+        expandedSongSet = new ConstraintSet();
+        expandedSongSet.clone(mainActivity, R.layout.activity_main_song_view);
     }
     /**
      * Sets up listeners for various UI controls related to song playback.
-     *
-     * @param btnPlay       The play button ImageView.
-     * @param btnRepeat     The repeat button ImageView.
-     * @param btnNext       The next song button ImageView.
-     * @param btnBack       The previous song button ImageView.
-     * @param btnShuffle    The shuffle button ImageView.
-     * @param seekBar       The SeekBar for song progress.
-     * @param bottom_panel  The LinearLayout that serves as the bottom panel. Clicking on it will expand the song_view
-     * @param btn_shrink    The ImageView for shrinking the song view.
      */
-    public void setListeners(ImageView btnPlay, ImageView btnRepeat, ImageView btnNext, ImageView btnBack, ImageView btnShuffle,
-                             SeekBar seekBar, LinearLayout bottom_panel, ImageView btn_shrink) {
+    public void setListeners() {
+        btnPlay = mainActivity.findViewById(R.id.btn_play_pause);
+        ImageView btnRepeat = mainActivity.findViewById(R.id.btn_repeat);
+        ImageView btnNext = mainActivity.findViewById(R.id.btn_next);
+        ImageView btnBack = mainActivity.findViewById(R.id.btn_back);
+        ImageView btnShuffle = mainActivity.findViewById(R.id.btn_shuffle);
+        ImageView btnShrink = mainActivity.findViewById(R.id.btn_close_play_song);
+        SeekBar seekBar = mainActivity.findViewById(R.id.seek_bar);
+        LinearLayout bottom_panel = mainActivity.findViewById(R.id.empty_place);
+
+        song_name_view = mainActivity.findViewById(R.id.song_view_name);
+        artist_view = mainActivity.findViewById(R.id.artist_play_song);
+
         btnPlay.setOnClickListener(v -> {
             if (!mediaPlayer.isPlaying()) {
                 mediaPlayer.start();
@@ -143,18 +141,11 @@ public class SongViewListeners implements OnSongChangeListener {
             }
         });
 
-        song_name_text_view.setOnClickListener(v -> {
-            if (!isExpanded) {
+        btnShrink.setOnClickListener(v -> {
+            if (isExpanded) {
                 expandSong();
             }
         });
-
-        btn_shrink.setOnClickListener(v -> {
-            if (isExpanded) {
-                shrinkSong();
-            }
-        });
-
 
 
         MyMediaPlayer.setOnSongChangeListener(this);
@@ -162,7 +153,6 @@ public class SongViewListeners implements OnSongChangeListener {
 
     private void expandSong() {
         isExpanded = true;
-        ConstraintLayout constraintLayout = mainActivity.findViewById(R.id.main_layout);
 
         ChangeBounds changeBounds = new ChangeBounds();
         changeBounds.setDuration(400);
@@ -199,7 +189,6 @@ public class SongViewListeners implements OnSongChangeListener {
 
     void shrinkSong() {
         isExpanded = false;
-        ConstraintLayout constraintLayout = mainActivity.findViewById(R.id.main_layout);
 
         ChangeBounds changeBounds = new ChangeBounds();
         changeBounds.setDuration(400);
@@ -242,7 +231,7 @@ public class SongViewListeners implements OnSongChangeListener {
      */
     @Override
     public void onSongChanged(Song song) {
-        song_name_text_view.setText(song.getSongName());
+        song_name_view.setText(song.getSongName());
         artist_view.setText(song.getArtist());
         btnPlay.setImageResource(R.drawable.pause_24dp);
     }
