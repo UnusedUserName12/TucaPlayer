@@ -36,7 +36,6 @@ public class MainActivity extends AppCompatActivity {
     TabLayout tabLayout;
     ViewPager2 viewPager2;
     ViewPagerAdapter viewPagerAdapter;
-    ConstraintSet initialSet;
     ThreadSeekBar threadSeekBar;
     ThreadElementAutoSelector threadElementAutoSelector;
     SeekBar seekBar;
@@ -49,8 +48,6 @@ public class MainActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        initialSet = new ConstraintSet();
 
         tabLayout = findViewById(R.id.tabLayout);
         viewPager2 = findViewById(R.id.viewPager);
@@ -82,28 +79,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        TextView song_name_text_view = findViewById(R.id.song_view_name);
-        ImageView btn_play = findViewById(R.id.btn_play_pause);
-        ImageView btn_repeat = findViewById(R.id.btn_repeat);
-        ImageView btn_shuffle = findViewById(R.id.btn_shuffle);
-        ImageView btn_next = findViewById(R.id.btn_next);
-        ImageView btn_back = findViewById(R.id.btn_back);
-        ImageView btn_shrink = findViewById(R.id.btn_close_play_song);
-        LinearLayout bottom_panel = findViewById(R.id.empty_place);
-        TextView artist_view = findViewById(R.id.artist_play_song);
-
         seekBar = findViewById(R.id.seek_bar);
         currentTime = findViewById(R.id.currentTime);
         totalTime = findViewById(R.id.totalTime);
 
-        ConstraintLayout constraintLayout = findViewById(R.id.main_layout);
-        initialSet.clone(constraintLayout);
-        ConstraintSet expandedSongSet = new ConstraintSet();
-        expandedSongSet.clone(this, R.layout.activity_main_song_view);
 
-
-        songViewListeners = new SongViewListeners(this,initialSet,expandedSongSet, btn_play, song_name_text_view, artist_view);
-        songViewListeners.setListeners(btn_play,btn_repeat,btn_next,btn_back,btn_shuffle,seekBar, bottom_panel,btn_shrink);
+        songViewListeners = new SongViewListeners(this);
+        songViewListeners.setListeners();
 
     }
 
