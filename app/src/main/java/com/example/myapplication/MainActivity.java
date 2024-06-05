@@ -5,7 +5,6 @@ import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.media.MediaMetadataRetriever;
-import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -24,10 +23,8 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.viewpager2.widget.ViewPager2;
 
-import com.example.myapplication.interfaces.OnSongChangeListener;
 import com.example.myapplication.db.DatabaseHelper;
 import com.example.myapplication.db.DatabaseManager;
-import com.example.myapplication.obj.Song;
 import com.google.android.material.tabs.TabLayout;
 
 import java.io.File;
@@ -85,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        TextView song_name_text_view = findViewById(R.id.song_name_play_song);
+        TextView song_name_text_view = findViewById(R.id.song_view_name);
         ImageView btn_play = findViewById(R.id.btn_play_pause);
         ImageView btn_repeat = findViewById(R.id.btn_repeat);
         ImageView btn_shuffle = findViewById(R.id.btn_shuffle);
@@ -102,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
         ConstraintLayout constraintLayout = findViewById(R.id.main_layout);
         initialSet.clone(constraintLayout);
         ConstraintSet expandedSongSet = new ConstraintSet();
-        expandedSongSet.clone(this, R.layout.song_view);
+        expandedSongSet.clone(this, R.layout.activity_main_song_view);
 
 
         songViewListeners = new SongViewListeners(this,initialSet,expandedSongSet, btn_play, song_name_text_view, artist_view);
