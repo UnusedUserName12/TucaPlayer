@@ -77,21 +77,32 @@
         app:layout_constraintTop_toTopOf="parent" />
 
 
-    <ImageView
-        android:id="@+id/song_image_play_song"
+    <androidx.cardview.widget.CardView
+        android:id="@+id/song_view_image_container"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginHorizontal="40dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp"
-        android:src="@drawable/placeholder"
-        app:layout_constraintBottom_toTopOf="@+id/song_name_play_song"
+        app:layout_constraintDimensionRatio="H,1:1"
+        android:layout_marginHorizontal="60dp"
+        app:layout_constraintBottom_toTopOf="@+id/song_view_name"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btn_close_play_song" />
+        app:layout_constraintTop_toBottomOf="@+id/btn_close_play_song"
+
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        app:cardCornerRadius="14dp">
+
+    <ImageView
+        android:id="@+id/song_view_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/placeholder"
+        android:scaleType="fitXY"
+        />
+    </androidx.cardview.widget.CardView>
 
     <TextView
-        android:id="@+id/song_name_play_song"
+        android:id="@+id/song_view_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="20dp"
@@ -120,7 +131,7 @@
         android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/song_name_play_song"
+        app:layout_constraintTop_toBottomOf="@+id/song_view_name"
         android:textColor="@color/grey_72"/>
 
     <ImageView
@@ -143,7 +154,7 @@
         android:layout_marginTop="16dp"
         android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/song_name_play_song">
+        app:layout_constraintTop_toBottomOf="@+id/song_view_name">
 
         <SeekBar
             android:id="@+id/seek_bar"
