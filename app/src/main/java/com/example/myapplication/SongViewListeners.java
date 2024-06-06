@@ -143,7 +143,7 @@ public class SongViewListeners implements OnSongChangeListener {
 
         btnShrink.setOnClickListener(v -> {
             if (isExpanded) {
-                expandSong();
+                shrinkSong();
             }
         });
 
