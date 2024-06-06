@@ -1,5 +1,7 @@
 package com.example.myapplication;
 
+import static com.example.myapplication.MyMediaPlayer.playMedia;
+
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
@@ -60,6 +62,8 @@ public class PlaylistView {
     ConstraintLayout constraintLayout;
     private final ConstraintSet initialSet;
     private final ConstraintSet expandedSongSet;
+
+    boolean isListSent;
 
     public PlaylistView(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
@@ -136,18 +140,19 @@ public class PlaylistView {
         });
 
         playlist_songs_view.setOnItemClickListener((parent, view, position, id1) -> {
-            if (MP3ListAdapter.selectedItemPosition != -1) {
-                SongList.get(MP3ListAdapter.selectedItemPosition).setSelected(false);
-            }
+            if(!isListSent) MyMediaPlayer.setSongList(SongList);
+            isListSent = true;
 
-            MP3ListAdapter.selectedItemPosition = position;
-            SongList.get(MP3ListAdapter.selectedItemPosition).setSelected(true);
+            playMedia(position);
+            int currentSongId = MyMediaPlayer.getCurrentSongId();
+            for(Song s : SongList) s.setSelected(currentSongId == s.getId());
             AudioAdapter.notifyDataSetChanged();
-
         });
     }
 
     public void openPlaylist(int id){
+        playlist_songs_view.setVisibility(View.INVISIBLE);
+        isListSent = false;
         PlaylistView.id = id;
         DatabaseManager databaseManager = new DatabaseManager(mainActivity);
         try {
@@ -169,11 +174,16 @@ public class PlaylistView {
                 playlist_image_view.setClipToOutline(true);
             }
             playlist = new Playlist(id,name,image_path);
+
         }
 
         cursor.close();
         loadAudio("title");
         AudioAdapter.notifyDataSetChanged();
+
+        ThreadElementAutoSelector.SongList = SongList;
+        ThreadElementAutoSelector.AudioAdapter = AudioAdapter;
+
 
         expandPlaylist();
     }
@@ -198,6 +208,9 @@ public class PlaylistView {
             public void onTransitionEnd(Transition transition) {
                 ThreadSeekBar.isRunning = true;
                 ThreadElementAutoSelector.isRunning = true;
+
+                TransitionManager.beginDelayedTransition(playlist_songs_view);
+                playlist_songs_view.setVisibility(View.VISIBLE);
 
             }
 
@@ -248,6 +261,7 @@ public class PlaylistView {
 
         TransitionManager.beginDelayedTransition(constraintLayout, transitionSet);
         initialSet.applyTo(constraintLayout);
+
     }
 
     private void openAddSongsActivity(View v){
