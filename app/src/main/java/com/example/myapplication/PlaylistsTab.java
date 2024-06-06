@@ -34,11 +34,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.sql.SQLDataException;
 
 
 public class PlaylistsTab extends Fragment {
-
-    DatabaseManager databaseManager;
     RelativeLayout get_image_button;
     ImageView chosen_image;
     GridLayout gridLayout;
@@ -49,15 +48,6 @@ public class PlaylistsTab extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context = getContext();
-
-        databaseManager = new DatabaseManager(context);
-        try{
-            databaseManager.open();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
-
     }
         @Override
         public View onCreateView(LayoutInflater inflaterr, ViewGroup container,
@@ -92,7 +82,14 @@ public class PlaylistsTab extends Fragment {
                 }
 
                 if(image_path.equals("null")) image_path = "placeholder.png";
+                DatabaseManager databaseManager = new DatabaseManager(context);
+                try{
+                    databaseManager.open();
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
                 databaseManager.insertPlaylist(name,image_path);
+                databaseManager.close();
                 updatePlaylistLayout();
                 dialog.dismiss();
             });
@@ -163,8 +160,14 @@ public class PlaylistsTab extends Fragment {
         updatePlaylistLayout();
     }
 
-    private void updatePlaylistLayout(){
+    private void updatePlaylistLayout() {
         gridLayout.removeAllViews();
+        DatabaseManager databaseManager = new DatabaseManager(context);
+        try {
+            databaseManager.open();
+        } catch (SQLDataException e) {
+            throw new RuntimeException(e);
+        }
         Cursor cursor = databaseManager.fetchPlaylists();
 
         if(cursor.moveToFirst()){
@@ -187,7 +190,10 @@ public class PlaylistsTab extends Fragment {
                 View.OnClickListener playlist_id_listener = v -> {
                     TextView textView = v.findViewById(R.id.playlistID);
                     int id = Integer.parseInt((String) textView.getText());
-                    MainActivity.getPlaylistView().openPlaylist(id);
+                    MainActivity mainActivity = (MainActivity) getActivity();
+                    if (mainActivity != null) {
+                        mainActivity.getPlaylistView().openPlaylist(id);
+                    }
                 };
 
                 cardView.setOnClickListener(playlist_id_listener);
@@ -195,6 +201,8 @@ public class PlaylistsTab extends Fragment {
 
             }while (cursor.moveToNext());
         }
+        cursor.close();
+        databaseManager.close();
         CardView add_playlist_card_View = (CardView) inflater.inflate(R.layout.add_playlist_card, gridLayout, false);
 
         add_playlist_card_View.setOnClickListener(v -> showDialog());

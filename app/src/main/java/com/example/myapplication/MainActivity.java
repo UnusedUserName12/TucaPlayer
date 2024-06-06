@@ -33,7 +33,6 @@ import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
     TabLayout tabLayout;
-    ViewPager2 viewPager2;
     ViewPagerAdapter viewPagerAdapter;
     ThreadSeekBar threadSeekBar;
     ThreadElementAutoSelector threadElementAutoSelector;
@@ -41,16 +40,15 @@ public class MainActivity extends AppCompatActivity {
     TextView currentTime;
     TextView totalTime;
     SongViewListeners songViewListeners;
-    static PlaylistView playlistView;
+    PlaylistView playlistView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         tabLayout = findViewById(R.id.tabLayout);
-        viewPager2 = findViewById(R.id.viewPager);
+        ViewPager2 viewPager2 = findViewById(R.id.viewPager);
         viewPagerAdapter = new ViewPagerAdapter(this);
         viewPager2.setAdapter(viewPagerAdapter);
 
@@ -103,11 +101,14 @@ public class MainActivity extends AppCompatActivity {
 
         updateSongTable();
 
+
         threadSeekBar = new ThreadSeekBar(seekBar,totalTime,currentTime);
         threadElementAutoSelector = new ThreadElementAutoSelector();
 
         threadSeekBar.start();
         threadElementAutoSelector.start();
+
+
     }
 
     @Override
@@ -247,7 +248,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public static PlaylistView getPlaylistView() {
+    public PlaylistView getPlaylistView() {
         return playlistView;
     }
 }
