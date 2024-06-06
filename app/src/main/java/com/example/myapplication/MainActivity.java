@@ -2,23 +2,22 @@ package com.example.myapplication;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.media.MediaMetadataRetriever;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.KeyEvent;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
+import android.view.View;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.viewpager2.widget.ViewPager2;
@@ -42,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
     TextView currentTime;
     TextView totalTime;
     SongViewListeners songViewListeners;
+    static PlaylistView playlistView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +87,8 @@ public class MainActivity extends AppCompatActivity {
         songViewListeners = new SongViewListeners(this);
         songViewListeners.setListeners();
 
+        playlistView = new PlaylistView(this);
+        playlistView.setListeners();
     }
 
     @Override
@@ -228,4 +230,22 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == RESULT_OK) {
+
+            if (requestCode == 3) {
+                Uri selectedImageUri = data.getData();
+                if (null != selectedImageUri) {
+                    playlistView.chosen_image.setImageURI(selectedImageUri);
+                    playlistView.chosen_image.setVisibility(View.VISIBLE);
+                }
+            }
+        }
+    }
+
+    public static PlaylistView getPlaylistView() {
+        return playlistView;
+    }
 }
