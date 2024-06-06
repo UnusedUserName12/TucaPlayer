@@ -13,10 +13,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-
-import androidx.cardview.widget.CardView;
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +22,9 @@ import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import androidx.cardview.widget.CardView;
+import androidx.fragment.app.Fragment;
 
 import com.example.myapplication.db.DatabaseHelper;
 import com.example.myapplication.db.DatabaseManager;
@@ -81,39 +80,29 @@ public class PlaylistsTab extends Fragment {
             EditText playlist_name_field = dialog.findViewById(R.id.insert_playlist_name);
             get_image_button = dialog.findViewById(R.id.insert_image);
             chosen_image = dialog.findViewById(R.id.chosenImage);
-            cancel_btn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    dialog.cancel();
+
+            cancel_btn.setOnClickListener(v -> dialog.cancel());
+
+            create_btn.setOnClickListener(v -> {
+                String name = String.valueOf(playlist_name_field.getText());
+                String image_path = "null";
+                if(chosen_image.getDrawable()!=null){
+                    Bitmap bm=((BitmapDrawable)chosen_image.getDrawable()).getBitmap();
+                    image_path = saveToInternalStorage(bm,name);
                 }
+
+                if(image_path.equals("null")) image_path = "placeholder.png";
+                databaseManager.insertPlaylist(name,image_path);
+                updatePlaylistLayout();
+                dialog.dismiss();
             });
 
-            create_btn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    String name = String.valueOf(playlist_name_field.getText());
-                    String image_path = "null";
-                    if(chosen_image.getDrawable()!=null){
-                        Bitmap bm=((BitmapDrawable)chosen_image.getDrawable()).getBitmap();
-                        image_path = String.valueOf(saveToInternalStorage(bm,name));
-                    }
+            get_image_button.setOnClickListener(v -> {
+                Intent i = new Intent();
+                i.setType("image/*");
+                i.setAction(Intent.ACTION_GET_CONTENT);
 
-                    if(image_path.equals("null")) image_path = "placeholder.png";
-                    databaseManager.insertPlaylist(name,image_path);
-                    updatePlaylistLayout();
-                    dialog.dismiss();
-                }
-            });
-
-            get_image_button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent i = new Intent();
-                    i.setType("image/*");
-                    i.setAction(Intent.ACTION_GET_CONTENT);
-
-                    startActivityForResult(Intent.createChooser(i, "Select Picture"), 3);
-                }
+                startActivityForResult(Intent.createChooser(i, "Select Picture"), 3);
             });
 
             dialog.show();
@@ -195,16 +184,10 @@ public class PlaylistsTab extends Fragment {
 
 
                 //Open playlist_view on card click
-                View.OnClickListener playlist_id_listener = new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        TextView textView = v.findViewById(R.id.playlistID);
-                        int id = Integer.parseInt((String) textView.getText());
-                        Intent intent = new Intent(context, PlaylistViewActivity.class);
-                        intent.putExtra("card_playlist_id",id);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        context.startActivity(intent);
-                    }
+                View.OnClickListener playlist_id_listener = v -> {
+                    TextView textView = v.findViewById(R.id.playlistID);
+                    int id = Integer.parseInt((String) textView.getText());
+                    MainActivity.getPlaylistView().openPlaylist(id);
                 };
 
                 cardView.setOnClickListener(playlist_id_listener);
@@ -213,12 +196,9 @@ public class PlaylistsTab extends Fragment {
             }while (cursor.moveToNext());
         }
         CardView add_playlist_card_View = (CardView) inflater.inflate(R.layout.add_playlist_card, gridLayout, false);
-        add_playlist_card_View.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showDialog();
-            }
-        });
+
+        add_playlist_card_View.setOnClickListener(v -> showDialog());
+
         gridLayout.addView(add_playlist_card_View);
     }
 
