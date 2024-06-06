@@ -57,12 +57,11 @@ public class PlaylistView {
     private Playlist playlist;
     ImageView chosen_image;
     ImageView playlist_image_view;
-    boolean isExpanded = false;
+    static boolean isExpanded = false;
     private ListView playlist_songs_view;
     ConstraintLayout constraintLayout;
     private final ConstraintSet initialSet;
     private final ConstraintSet expandedSongSet;
-
     boolean isListSent;
 
     public PlaylistView(MainActivity mainActivity) {

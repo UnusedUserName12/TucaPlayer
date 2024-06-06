@@ -31,6 +31,7 @@ public class SongViewListeners implements OnSongChangeListener {
     ConstraintLayout constraintLayout;
     private final ConstraintSet initialSet;
     private final ConstraintSet expandedSongSet;
+    private final ConstraintSet expandedPlaylistSet;
     private ImageView btnPlay;
     private TextView song_name_view;
     private TextView artist_view;
@@ -47,6 +48,8 @@ public class SongViewListeners implements OnSongChangeListener {
         initialSet.clone(constraintLayout);
         expandedSongSet = new ConstraintSet();
         expandedSongSet.clone(mainActivity, R.layout.activity_main_song_view);
+        expandedPlaylistSet = new ConstraintSet();
+        expandedPlaylistSet.clone(mainActivity, R.layout.activity_main_playlist_view);
     }
     /**
      * Sets up listeners for various UI controls related to song playback.
@@ -221,7 +224,8 @@ public class SongViewListeners implements OnSongChangeListener {
         });
 
         TransitionManager.beginDelayedTransition(constraintLayout, transitionSet);
-        initialSet.applyTo(constraintLayout);
+        if(!PlaylistView.isExpanded) initialSet.applyTo(constraintLayout);
+        else expandedPlaylistSet.applyTo(constraintLayout);
     }
     /**
      * Callback method when the song is changed.
