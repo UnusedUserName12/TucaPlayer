@@ -221,7 +221,9 @@ public class MainActivity extends AppCompatActivity {
             if (action == KeyEvent.ACTION_DOWN) {
                 if (songViewListeners.isExpanded) {
                     songViewListeners.shrinkSong();
-                } else {
+                } else if(PlaylistView.isExpanded) {
+                    playlistView.shrinkPlaylist();
+                }else{
                     this.finish();
                 }
                 return true;
