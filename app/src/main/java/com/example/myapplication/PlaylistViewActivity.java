@@ -14,11 +14,13 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
@@ -42,7 +44,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-
+/**
+* <p>Deprecated class</p>
+ * <p>Watch PlaylistView</p>
+ */
 public class PlaylistViewActivity extends Activity {
     private List<Song> SongList;
     private MP3ListAdapter AudioAdapter;
@@ -53,13 +58,14 @@ public class PlaylistViewActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_playlist_view);
+        setContentView(R.layout.activity_main_playlist_view);
 
         playlist_name_view = findViewById(R.id.playlist_name);
         playlist_image_view = findViewById(R.id.playlist_image);
         ListView playlist_songs_view = findViewById(R.id.playlist_songs);
         ImageButton btn_add_songs = findViewById(R.id.btn_add_song_redirect);
         ImageButton btn_more = findViewById(R.id.btn_more_playlist);
+        ImageView btn_close = findViewById(R.id.btn_close_playlist);
 
         SongList = new ArrayList<>();
 
@@ -124,6 +130,7 @@ public class PlaylistViewActivity extends Activity {
                             Toast.makeText(this, "By " + option, Toast.LENGTH_SHORT).show();
                             loadAudio(option);
                             AudioAdapter.notifyDataSetChanged();
+                            //setListViewHeightBasedOnChildren(playlist_songs_view);
                         }
                         break;
                 }
@@ -141,12 +148,12 @@ public class PlaylistViewActivity extends Activity {
             MP3ListAdapter.selectedItemPosition = position;
             SongList.get(MP3ListAdapter.selectedItemPosition).setSelected(true);
             AudioAdapter.notifyDataSetChanged();
+
         });
 
 
         loadAudio("title");
-
-
+        AudioAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -258,11 +265,11 @@ public class PlaylistViewActivity extends Activity {
         ContextWrapper cw = new ContextWrapper(PlaylistViewActivity.this);
         File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
 
-            File f = new File(directory, oldName+".jpg");
-            File n = new File(directory,newName+".jpg");
-            if(f.renameTo(n))
-                Toast.makeText(PlaylistViewActivity.this,"File rename success",Toast.LENGTH_SHORT).show();
-            else Toast.makeText(PlaylistViewActivity.this,"Something went wrong",Toast.LENGTH_SHORT).show();
+        File f = new File(directory, oldName+".jpg");
+        File n = new File(directory,newName+".jpg");
+        if(f.renameTo(n))
+            Toast.makeText(PlaylistViewActivity.this,"File rename success",Toast.LENGTH_SHORT).show();
+        else Toast.makeText(PlaylistViewActivity.this,"Something went wrong",Toast.LENGTH_SHORT).show();
 
     }
 
@@ -355,6 +362,5 @@ public class PlaylistViewActivity extends Activity {
         }
         return directory.getAbsolutePath();
     }
-
 
 }
