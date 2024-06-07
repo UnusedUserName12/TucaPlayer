@@ -31,12 +31,14 @@ public class ThreadSeekBar extends Thread {
     }
     public void run(){
         while (!isStopped) {
-            if (mediaPlayer != null && isRunning) {
+            if (mediaPlayer.isPlaying() && isRunning) {
                 handler.post(() -> {
-                    seekBar.setMax(mediaPlayer.getDuration());
-                    seekBar.setProgress(mediaPlayer.getCurrentPosition());
-                    totalTime.setText(convertToMMSS(mediaPlayer.getDuration()));
-                    currentTime.setText(convertToMMSS(mediaPlayer.getCurrentPosition()));
+                    long duration = mediaPlayer.getDuration();
+                    long current_pos = mediaPlayer.getCurrentPosition();
+                    seekBar.setMax((int) duration);
+                    seekBar.setProgress((int) current_pos);
+                    totalTime.setText(convertToMMSS(duration));
+                    currentTime.setText(convertToMMSS(current_pos));
                 });
             }
             try {
