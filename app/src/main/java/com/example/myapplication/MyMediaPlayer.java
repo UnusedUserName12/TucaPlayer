@@ -2,7 +2,6 @@ package com.example.myapplication;
 
 import android.media.MediaPlayer;
 import android.os.Environment;
-import android.widget.TextView;
 
 import com.example.myapplication.interfaces.OnSongChangeListener;
 import com.example.myapplication.obj.Song;
@@ -30,7 +29,8 @@ public class MyMediaPlayer {
     private static OnSongChangeListener songChangeListener;
     private static List<Song> SongList;
     public static void setSongList(List<Song> songList) {
-        instance.reset();
+        //TODO: Test changes in this function
+        //instance.reset();
         SongList = songList;
     }
     public static List<Song> getSongList() {
