@@ -49,8 +49,7 @@ import java.util.Objects;
 
 public class PlaylistView {
     private final MainActivity mainActivity;
-    static MediaPlayer mediaPlayer = MyMediaPlayer.getInstance();
-    public static int id;
+    int id;
     private List<Song> SongList;
     private MP3ListAdapter AudioAdapter;
     private TextView playlist_name_view;
@@ -152,7 +151,7 @@ public class PlaylistView {
     public void openPlaylist(int id){
         playlist_songs_view.setVisibility(View.INVISIBLE);
         isListSent = false;
-        PlaylistView.id = id;
+        this.id = id;
         DatabaseManager databaseManager = new DatabaseManager(mainActivity);
         try {
             databaseManager.open();
@@ -205,7 +204,6 @@ public class PlaylistView {
 
             @Override
             public void onTransitionEnd(Transition transition) {
-                ThreadSeekBar.isRunning = true;
                 ThreadElementAutoSelector.isRunning = true;
 
                 TransitionManager.beginDelayedTransition(playlist_songs_view);
@@ -244,7 +242,6 @@ public class PlaylistView {
 
             @Override
             public void onTransitionEnd(Transition transition) {
-                ThreadSeekBar.isRunning = false;
                 ThreadElementAutoSelector.isRunning = true;
             }
 
