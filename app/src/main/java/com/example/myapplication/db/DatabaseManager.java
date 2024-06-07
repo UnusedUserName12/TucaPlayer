@@ -1,9 +1,13 @@
 package com.example.myapplication.db;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+
+import com.example.myapplication.obj.Song;
+
 import java.sql.SQLDataException;
 
 public class DatabaseManager  {
@@ -104,6 +108,26 @@ public class DatabaseManager  {
             cursor.moveToFirst();
         }
         return cursor;
+    }
+
+    public Song fetchSongById(int id) {
+        Song song = null;
+            String[] columns = new String[]{DatabaseHelper.SONG_ID, DatabaseHelper.SONG_FILENAME, DatabaseHelper.SONG_NAME, DatabaseHelper.SONG_ALBUM, DatabaseHelper.SONG_ARTIST, DatabaseHelper.SONG_GENRE, DatabaseHelper.SONG_DURATION};
+            @SuppressLint("Recycle") Cursor cursor = database.query(DatabaseHelper.SONG_TABLE, columns, DatabaseHelper.SONG_ID + "=" + id, null, null, null, null, null);
+
+            if (cursor != null) {
+                cursor.moveToFirst();
+                @SuppressLint("Range") String filename = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_FILENAME));
+                @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_NAME));
+                @SuppressLint("Range") String artist = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ARTIST));
+                @SuppressLint("Range") String album = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ALBUM));
+                @SuppressLint("Range") String genre = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_GENRE));
+                @SuppressLint("Range") long duration = Long.parseLong(cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_DURATION)));
+                song = new Song(id, filename, name, artist, album, genre, duration);
+
+                cursor.close();
+            }
+        return song;
     }
 
     public Cursor fetchPlaylistSongs(int id){
