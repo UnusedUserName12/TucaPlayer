@@ -89,14 +89,13 @@ public class MainActivity extends AppCompatActivity {
         playlistView.setListeners();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     protected void onStart() {
         super.onStart();
 
         if (!checkPermission()) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 requestPermission();
-            }
         }
 
         updateSongTable();
@@ -119,21 +118,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean checkPermission() {
-        return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+        return ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
                 == PackageManager.PERMISSION_GRANTED;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     private void requestPermission() {
-        ActivityCompat.requestPermissions(this,
-                new String[] {Manifest.permission.READ_EXTERNAL_STORAGE},
-                PackageManager.PERMISSION_GRANTED);
-        ActivityCompat.requestPermissions(this,
-                new String[] {Manifest.permission.READ_MEDIA_AUDIO},
-                PackageManager.PERMISSION_GRANTED);
-        ActivityCompat.requestPermissions(this,
-                new String[] {Manifest.permission.READ_MEDIA_IMAGES},
-                PackageManager.PERMISSION_GRANTED);
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    PackageManager.PERMISSION_GRANTED);
+        }
+        else{
+            ActivityCompat.requestPermissions(this,
+                    new String[] {Manifest.permission.READ_MEDIA_AUDIO,Manifest.permission.READ_MEDIA_IMAGES},
+                    PackageManager.PERMISSION_GRANTED);
+        }
+
     }
 
     private void updateSongTable() {
