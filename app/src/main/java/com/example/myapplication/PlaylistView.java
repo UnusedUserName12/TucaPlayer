@@ -56,6 +56,7 @@ public class PlaylistView {
     private Playlist playlist;
     ImageView chosen_image;
     ImageView playlist_image_view;
+    //TODO: remove static or make SongViewListeners isExpanded static for better consistency
     static boolean isExpanded = false;
     private ListView playlist_songs_view;
     ConstraintLayout constraintLayout;
@@ -138,7 +139,10 @@ public class PlaylistView {
         });
 
         playlist_songs_view.setOnItemClickListener((parent, view, position, id1) -> {
-            if(!isListSent) MyMediaPlayer.setSongList(SongList);
+            if(!isListSent) {
+                MyMediaPlayer.setSongList(SongList);
+                mainActivity.settings.setLast_playlist_id(playlist.getId());
+            }
             isListSent = true;
 
             playMedia(position);

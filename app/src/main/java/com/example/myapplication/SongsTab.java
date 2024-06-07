@@ -57,7 +57,14 @@ public class SongsTab extends Fragment {
         AdapterView.OnItemClickListener itemListener = new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                if(!isListSent) MyMediaPlayer.setSongList(SongList);
+                if(!isListSent) {
+                    MyMediaPlayer.setSongList(SongList);
+                    MainActivity mainActivity = (MainActivity) getActivity();
+                    if(mainActivity != null) {
+                        mainActivity.settings.setLast_playlist_id(0);
+                        mainActivity.showSongView();
+                    }
+                }
                 isListSent = true;
 
                 playMedia(position);
