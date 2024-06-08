@@ -12,7 +12,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
-import android.media.MediaPlayer;
 import android.transition.Fade;
 import android.transition.Transition;
 import android.transition.TransitionManager;
@@ -56,21 +55,14 @@ public class PlaylistView {
     private Playlist playlist;
     ImageView chosen_image;
     ImageView playlist_image_view;
-    //TODO: remove static or make SongViewListeners isExpanded static for better consistency
     static boolean isExpanded = false;
     private ListView playlist_songs_view;
     ConstraintLayout constraintLayout;
-    private final ConstraintSet initialSet;
-    private final ConstraintSet expandedSongSet;
     boolean isListSent;
 
     public PlaylistView(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
         constraintLayout = mainActivity.findViewById(R.id.main_layout);
-        initialSet = new ConstraintSet();
-        initialSet.clone(constraintLayout);
-        expandedSongSet = new ConstraintSet();
-        expandedSongSet.clone(mainActivity, R.layout.activity_main_playlist_view);
     }
 
     public void setListeners() {
@@ -226,7 +218,17 @@ public class PlaylistView {
         });
 
         TransitionManager.beginDelayedTransition(constraintLayout, transitionSet);
-        expandedSongSet.applyTo(constraintLayout);
+
+        if(mainActivity.settings.getLast_song_id()>0) {
+            ConstraintSet song_view_visible_set = new ConstraintSet();
+            song_view_visible_set.clone(mainActivity,R.layout.activity_main_playlist_view);
+            song_view_visible_set.applyTo(constraintLayout);
+        }
+        else{
+            ConstraintSet song_view_hidden_set = new ConstraintSet();   //To fix issue N4
+            song_view_hidden_set.clone(mainActivity,R.layout.activity_main_playlist_view_song_hidden);
+            song_view_hidden_set.applyTo(constraintLayout);
+        }
     }
 
     void shrinkPlaylist() {
@@ -260,7 +262,16 @@ public class PlaylistView {
         });
 
         TransitionManager.beginDelayedTransition(constraintLayout, transitionSet);
-        initialSet.applyTo(constraintLayout);
+        if(mainActivity.settings.getLast_song_id()>0) {
+            ConstraintSet song_view_set = new ConstraintSet();
+            song_view_set.clone(mainActivity, R.layout.activity_main);
+            song_view_set.applyTo(constraintLayout);
+        }
+        else{
+            ConstraintSet song_view_hidden_set = new ConstraintSet();
+            song_view_hidden_set.clone(mainActivity,R.layout.activity_main_song_view_hidden);
+            song_view_hidden_set.applyTo(constraintLayout);
+        }
 
     }
 

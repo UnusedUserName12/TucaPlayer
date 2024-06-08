@@ -8,9 +8,13 @@ public class UserSettings {
 
     public static final String SONG_PREFERENCES = "song_preferences";
     public static final String LAST_SONG_ID = "last_song_id";
+    public static final String LAST_SONG_TIME = "last_song_time";
     public static final String SONG_IS_PLAYING = "song_is_playing";
     public static final String LAST_PLAYLIST_ID = "last_playlist_id";
+    public static final String SONG_IS_ON_REPEAT = "song_is_on_repeat";
+    public static final String SONG_IS_ON_SHUFFLE = "song_is_on_shuffle";
     private int last_song_id;
+    private int last_song_time;
     private int last_playlist_id;
     private boolean song_is_playing;
     private boolean song_is_on_repeat;
@@ -39,6 +43,14 @@ public class UserSettings {
 
     public void setLast_playlist_id(int last_playlist_id) {
         this.last_playlist_id = last_playlist_id;
+    }
+
+    public int getLast_song_time() {
+        return last_song_time;
+    }
+
+    public void setLast_song_time(int last_song_time) {
+        this.last_song_time = last_song_time;
     }
 
     public boolean isSong_on_repeat() {

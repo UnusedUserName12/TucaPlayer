@@ -15,14 +15,12 @@ import android.os.Environment;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -45,15 +43,15 @@ public class MainActivity extends AppCompatActivity {
     SeekBar seekBar;
     TextView currentTime;
     TextView totalTime;
-    SongViewListeners songViewListeners;
+    SongView songView;
     PlaylistView playlistView;
     UserSettings settings;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main_song_view_hidden);
+
         tabLayout = findViewById(R.id.tabLayout);
         ViewPager2 viewPager2 = findViewById(R.id.viewPager);
         viewPagerAdapter = new ViewPagerAdapter(this);
@@ -89,13 +87,14 @@ public class MainActivity extends AppCompatActivity {
         totalTime = findViewById(R.id.totalTime);
 
 
-        songViewListeners = new SongViewListeners(this);
-        songViewListeners.setListeners();
+        songView = new SongView(this);
+        songView.setListeners();
 
         playlistView = new PlaylistView(this);
         playlistView.setListeners();
 
         settings = new UserSettings();
+
         loadSharedPreferences();
         applySettingToSongView();
     }
@@ -120,7 +119,6 @@ public class MainActivity extends AppCompatActivity {
 
         ImageView btnPlay = findViewById(R.id.btn_play_pause);
         if(settings.isSong_playing()) btnPlay.setImageResource(R.drawable.pause_24dp);
-
     }
 
     @Override
@@ -132,7 +130,11 @@ public class MainActivity extends AppCompatActivity {
         saveSongViewParameters();
     }
 
-
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        saveSongViewParameters();
+    }
 
     private boolean checkPermission() {
         return ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -239,8 +241,8 @@ public class MainActivity extends AppCompatActivity {
         int keyCode = event.getKeyCode();
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             if (action == KeyEvent.ACTION_DOWN) {
-                if (songViewListeners.isExpanded) {
-                    songViewListeners.shrinkSong();
+                if (SongView.isExpanded) {
+                    songView.shrinkSong();
                 } else if(PlaylistView.isExpanded) {
                     playlistView.shrinkPlaylist();
                 }else{
@@ -281,10 +283,8 @@ public class MainActivity extends AppCompatActivity {
         settings.setSong_playing(song_is_playing);
     }
     private void applySettingToSongView() {
-        if(settings.getLast_song_id()<0){
-            hideSongView();
-        }
-        else {
+        if(settings.getLast_song_id()>0){
+            songView.showSong();
             TextView song_view_name = findViewById(R.id.song_view_name);
             DatabaseManager databaseManager = new DatabaseManager(this);
             try {
@@ -314,53 +314,21 @@ public class MainActivity extends AppCompatActivity {
                     @SuppressLint("Range") String genre = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_GENRE));
                     @SuppressLint("Range") long duration = Long.parseLong(cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_DURATION)));
 
-                    Song songL = new Song(id, filename, name, artist, album, genre, duration);
-                    SongList.add(songL);
+                    SongList.add(new Song(id, filename, name, artist, album, genre, duration));
 
                 }while (cursor.moveToNext());
             }
             cursor.close();
             databaseManager.close();
+
+            for(Song s : SongList) if(s.getId()==song.getId()) s.setSelected(true);
             MyMediaPlayer.setSongList(SongList);
+            ThreadElementAutoSelector.SongList = SongList;
         }
     }
 
-    public void showSongView(){
-        LinearLayout bottom_panel = findViewById(R.id.empty_place);
-        ImageView btnPlay = findViewById(R.id.btn_play_pause);
-        ImageView btnNext = findViewById(R.id.btn_next);
-        ImageView btnBack = findViewById(R.id.btn_back);
-        CardView song_view_image_container = findViewById(R.id.song_view_image_container);
-        TextView song_view_name = findViewById(R.id.song_view_name);
-
-        bottom_panel.setVisibility(View.VISIBLE);
-        btnPlay.setVisibility(View.VISIBLE);
-        btnNext.setVisibility(View.VISIBLE);
-        btnBack.setVisibility(View.VISIBLE);
-        song_view_image_container.setVisibility(View.VISIBLE);
-        song_view_name.setVisibility(View.VISIBLE);
-    }
-
-    //TODO: fix SongView being visible if user opens a playlist without playing a song before (low priority)
-    private void hideSongView(){
-        LinearLayout bottom_panel = findViewById(R.id.empty_place);
-        ImageView btnPlay = findViewById(R.id.btn_play_pause);
-        ImageView btnNext = findViewById(R.id.btn_next);
-        ImageView btnBack = findViewById(R.id.btn_back);
-        CardView song_view_image_container = findViewById(R.id.song_view_image_container);
-        TextView song_view_name = findViewById(R.id.song_view_name);
-
-        bottom_panel.setVisibility(View.GONE);
-
-        btnPlay.setVisibility(View.GONE);
-        btnNext.setVisibility(View.GONE);
-        btnBack.setVisibility(View.GONE);
-        song_view_image_container.setVisibility(View.GONE);
-        song_view_name.setVisibility(View.GONE);
-    }
-
     private void saveSongViewParameters() {
-        settings.setLast_song_id(MyMediaPlayer.getCurrentSongId());
+        //settings.setLast_song_id is located in SongView
         MediaPlayer mediaPlayer = MyMediaPlayer.getInstance();
         settings.setSong_playing(mediaPlayer.isPlaying());
         //settings.setLast_playlist_id is located in PlaylistView and SongsTab

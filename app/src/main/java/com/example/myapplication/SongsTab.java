@@ -62,7 +62,6 @@ public class SongsTab extends Fragment {
                     MainActivity mainActivity = (MainActivity) getActivity();
                     if(mainActivity != null) {
                         mainActivity.settings.setLast_playlist_id(0);
-                        mainActivity.showSongView();
                     }
                 }
                 isListSent = true;

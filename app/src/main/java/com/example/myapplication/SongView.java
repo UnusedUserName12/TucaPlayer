@@ -25,31 +25,23 @@ import java.util.Random;
  * Class that implements listeners for song view controls in the MainActivity.
  * This class manages the user interactions with the song_view.
  */
-public class SongViewListeners implements OnSongChangeListener {
+public class SongView implements OnSongChangeListener {
     private final MainActivity mainActivity;
     static MediaPlayer mediaPlayer = MyMediaPlayer.getInstance();
     ConstraintLayout constraintLayout;
-    private final ConstraintSet initialSet;
-    private final ConstraintSet expandedSongSet;
-    private final ConstraintSet expandedPlaylistSet;
     private ImageView btnPlay;
     private TextView song_name_view;
     private TextView artist_view;
-    boolean isExpanded = false;
+    static boolean isExpanded = false;
     /**
      * Constructor to initialize the SongViewListeners with required parameters.
      *
      * @param mainActivity      The MainActivity instance.
      */
-    public SongViewListeners(MainActivity mainActivity) {
+    public SongView(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
         constraintLayout = mainActivity.findViewById(R.id.main_layout);
-        initialSet = new ConstraintSet();
-        initialSet.clone(constraintLayout);
-        expandedSongSet = new ConstraintSet();
-        expandedSongSet.clone(mainActivity, R.layout.activity_main_song_view);
-        expandedPlaylistSet = new ConstraintSet();
-        expandedPlaylistSet.clone(mainActivity, R.layout.activity_main_playlist_view);
+
     }
     /**
      * Sets up listeners for various UI controls related to song playback.
@@ -154,7 +146,8 @@ public class SongViewListeners implements OnSongChangeListener {
         MyMediaPlayer.setOnSongChangeListener(this);
     }
 
-    private void expandSong() {
+     void expandSong() {
+
         isExpanded = true;
 
         ChangeBounds changeBounds = new ChangeBounds();
@@ -187,7 +180,10 @@ public class SongViewListeners implements OnSongChangeListener {
         });
 
         TransitionManager.beginDelayedTransition(constraintLayout, transitionSet);
-        expandedSongSet.applyTo(constraintLayout);
+        ConstraintSet expanded_song_set = new ConstraintSet();
+        expanded_song_set.clone(mainActivity, R.layout.activity_main_song_view);
+        expanded_song_set.applyTo(constraintLayout);
+
     }
 
     void shrinkSong() {
@@ -224,8 +220,57 @@ public class SongViewListeners implements OnSongChangeListener {
         });
 
         TransitionManager.beginDelayedTransition(constraintLayout, transitionSet);
-        if(!PlaylistView.isExpanded) initialSet.applyTo(constraintLayout);
-        else expandedPlaylistSet.applyTo(constraintLayout);
+        if(!PlaylistView.isExpanded){
+            ConstraintSet min_song_set = new ConstraintSet();
+            min_song_set.clone(mainActivity, R.layout.activity_main);
+            min_song_set.applyTo(constraintLayout);
+        }
+        else {
+            ConstraintSet expandedPlaylistSet = new ConstraintSet();
+            expandedPlaylistSet.clone(mainActivity, R.layout.activity_main_playlist_view);
+            expandedPlaylistSet.applyTo(constraintLayout);
+        }
+    }
+
+    void showSong(){
+        ChangeBounds changeBounds = new ChangeBounds();
+        changeBounds.setDuration(400);
+
+        TransitionSet transitionSet = new TransitionSet();
+        transitionSet.addTransition(changeBounds);
+
+        transitionSet.addListener(new Transition.TransitionListener() {
+            @Override
+            public void onTransitionStart(Transition transition) {
+                ThreadElementAutoSelector.isRunning = false;
+            }
+
+            @Override
+            public void onTransitionEnd(Transition transition) {
+                ThreadElementAutoSelector.isRunning = true;
+            }
+
+            @Override
+            public void onTransitionCancel(Transition transition) {}
+
+            @Override
+            public void onTransitionPause(Transition transition) {}
+
+            @Override
+            public void onTransitionResume(Transition transition) {}
+        });
+
+        TransitionManager.beginDelayedTransition(constraintLayout, transitionSet);
+        if(!PlaylistView.isExpanded) {
+            ConstraintSet show_song_view_set = new ConstraintSet();
+            show_song_view_set.clone(mainActivity, R.layout.activity_main);
+            show_song_view_set.applyTo(constraintLayout);
+        }
+        else {
+            ConstraintSet show_song_view_playlist_set = new ConstraintSet();
+            show_song_view_playlist_set.clone(mainActivity, R.layout.activity_main_playlist_view);
+            show_song_view_playlist_set.applyTo(constraintLayout);
+        }
     }
     /**
      * Callback method when the song is changed.
@@ -238,6 +283,11 @@ public class SongViewListeners implements OnSongChangeListener {
         song_name_view.setText(song.getSongName());
         artist_view.setText(song.getArtist());
         btnPlay.setImageResource(R.drawable.pause_24dp);
+        if(mainActivity.settings.getLast_song_id()<1) mainActivity.songView.showSong();
+        // We know that song has already changed
+        // So this if checks if we previously had a song or not
+        // If we didn't have a song before -> show SongView
+        mainActivity.settings.setLast_song_id(song.getId());
     }
 }
 
