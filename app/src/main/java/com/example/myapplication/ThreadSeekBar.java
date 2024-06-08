@@ -31,7 +31,7 @@ public class ThreadSeekBar extends Thread {
     }
     public void run(){
         while (!isStopped) {
-            if (mediaPlayer.isPlaying() && isRunning) {
+            if (isRunning && mediaPlayer.isPlaying()) {
                 handler.post(() -> {
                     long duration = mediaPlayer.getDuration();
                     long current_pos = mediaPlayer.getCurrentPosition();
