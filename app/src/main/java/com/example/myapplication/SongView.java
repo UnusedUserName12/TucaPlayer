@@ -59,6 +59,7 @@ public class SongView implements OnSongChangeListener {
         song_name_view = mainActivity.findViewById(R.id.song_view_name);
         artist_view = mainActivity.findViewById(R.id.artist_play_song);
 
+
         btnPlay.setOnClickListener(v -> {
             if(!mainActivity.settings.isSong_playing()) {
                 MyMediaPlayer.playMedia(MyMediaPlayer.CurrentIndex);
@@ -78,9 +79,11 @@ public class SongView implements OnSongChangeListener {
             if (!MyMediaPlayer.onRepeat) {
                 MyMediaPlayer.onRepeat = true;
                 btnRepeat.setBackground(new ColorDrawable(Color.rgb(240, 240, 240)));
+                mainActivity.settings.setSong_is_on_repeat(true);
             } else {
                 MyMediaPlayer.onRepeat = false;
-                btnRepeat.setBackground(new ColorDrawable(Color.WHITE));
+                btnRepeat.setBackground(new ColorDrawable(Color.TRANSPARENT));
+                mainActivity.settings.setSong_is_on_repeat(false);
             }
         });
 
@@ -115,9 +118,11 @@ public class SongView implements OnSongChangeListener {
             if (!MyMediaPlayer.onShuffle) {
                 MyMediaPlayer.onShuffle = true;
                 btnShuffle.setBackground(new ColorDrawable(Color.rgb(240, 240, 240)));
+                mainActivity.settings.setSong_is_on_shuffle(true);
             } else {
                 MyMediaPlayer.onShuffle = false;
-                btnShuffle.setBackground(new ColorDrawable(Color.WHITE));
+                btnShuffle.setBackground(new ColorDrawable(Color.TRANSPARENT));
+                mainActivity.settings.setSong_is_on_shuffle(false);
             }
         });
 

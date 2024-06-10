@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -119,6 +121,15 @@ public class MainActivity extends AppCompatActivity {
 
         ImageView btnPlay = findViewById(R.id.btn_play_pause);
         if(settings.isSong_playing()) btnPlay.setImageResource(R.drawable.pause_24dp);
+        ImageView btnRepeat = findViewById(R.id.btn_repeat);
+        if(settings.isSong_on_repeat()) {
+            MyMediaPlayer.onRepeat = true;
+            btnRepeat.setBackground(new ColorDrawable(Color.rgb(240, 240, 240)));
+        }
+        if(settings.isSong_on_shuffle()){
+            MyMediaPlayer.onShuffle = true;
+            btnRepeat.setBackground(new ColorDrawable(Color.rgb(240, 240, 240)));
+        }
     }
 
     @Override
@@ -278,9 +289,13 @@ public class MainActivity extends AppCompatActivity {
         int last_song_id = sharedPreferences.getInt(UserSettings.LAST_SONG_ID,-1);
         int last_playlist_id = sharedPreferences.getInt(UserSettings.LAST_PLAYLIST_ID,-1);
         boolean song_is_playing = sharedPreferences.getBoolean(UserSettings.SONG_IS_PLAYING,false);
+        boolean is_song_on_repeat = sharedPreferences.getBoolean(UserSettings.SONG_IS_ON_REPEAT,false);
+        boolean is_song_on_shuffle = sharedPreferences.getBoolean(UserSettings.SONG_IS_ON_SHUFFLE,false);
         settings.setLast_song_id(last_song_id);
         settings.setLast_playlist_id(last_playlist_id);
         settings.setSong_playing(song_is_playing);
+        settings.setSong_is_on_repeat(is_song_on_repeat);
+        settings.setSong_is_on_shuffle(is_song_on_shuffle);
     }
     private void applySettingToSongView() {
         if(settings.getLast_song_id()>0){
@@ -341,6 +356,8 @@ public class MainActivity extends AppCompatActivity {
         editor.putInt(UserSettings.LAST_SONG_ID,settings.getLast_song_id());
         editor.putInt(UserSettings.LAST_PLAYLIST_ID,settings.getLast_playlist_id());
         editor.putBoolean(UserSettings.SONG_IS_PLAYING,settings.isSong_playing());
+        editor.putBoolean(UserSettings.SONG_IS_ON_REPEAT,settings.isSong_on_repeat());
+        editor.putBoolean(UserSettings.SONG_IS_ON_SHUFFLE,settings.isSong_on_shuffle());
         editor.apply();
     }
 
