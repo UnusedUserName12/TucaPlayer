@@ -60,7 +60,12 @@ public class SongView implements OnSongChangeListener {
         artist_view = mainActivity.findViewById(R.id.artist_play_song);
 
         btnPlay.setOnClickListener(v -> {
-            if (!mediaPlayer.isPlaying()) {
+            if(!mainActivity.settings.isSong_playing()) {
+                MyMediaPlayer.playMedia(MyMediaPlayer.CurrentIndex);
+                btnPlay.setImageResource(R.drawable.pause_24dp);
+                mainActivity.settings.setSong_playing(true);
+            }
+            else if (!mediaPlayer.isPlaying()) {
                 mediaPlayer.start();
                 btnPlay.setImageResource(R.drawable.pause_24dp);
             } else {
@@ -95,10 +100,11 @@ public class SongView implements OnSongChangeListener {
 
         btnBack.setOnClickListener(v -> {
             if (MyMediaPlayer.getSongList() != null) {
-                if (MyMediaPlayer.CurrentIndex == 0) {
+                if(MyMediaPlayer.instance.getCurrentPosition()>2000) MyMediaPlayer.instance.seekTo(0); //for quick playback
+                else if (MyMediaPlayer.CurrentIndex == 0) {
                     MyMediaPlayer.CurrentIndex = MyMediaPlayer.getSongListSize();
                 }
-                if (MyMediaPlayer.CurrentIndex != -1) {
+                else if (MyMediaPlayer.CurrentIndex != -1) {
                     MyMediaPlayer.CurrentIndex--;
                 }
                 MyMediaPlayer.playMedia(MyMediaPlayer.CurrentIndex);
