@@ -321,8 +321,12 @@ public class MainActivity extends AppCompatActivity {
             cursor.close();
             databaseManager.close();
 
-            for(Song s : SongList) if(s.getId()==song.getId()) s.setSelected(true);
             MyMediaPlayer.setSongList(SongList);
+            for(Song s : SongList)
+                if(s.getId()==song.getId()) {
+                    s.setSelected(true);
+                    MyMediaPlayer.CurrentIndex = SongList.indexOf(s);
+                }
             ThreadElementAutoSelector.SongList = SongList;
         }
     }
