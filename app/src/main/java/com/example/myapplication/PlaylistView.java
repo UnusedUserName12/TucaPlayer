@@ -1,5 +1,6 @@
 package com.example.myapplication;
 
+import static android.app.Activity.RESULT_OK;
 import static com.example.myapplication.MyMediaPlayer.playMedia;
 
 import android.annotation.SuppressLint;
@@ -27,6 +28,10 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.content.ContextCompat;
@@ -60,9 +65,17 @@ public class PlaylistView {
     ConstraintLayout constraintLayout;
     boolean isListSent;
 
+    ActivityResultLauncher<Intent> activityLauncher;
+
     public PlaylistView(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
         constraintLayout = mainActivity.findViewById(R.id.main_layout);
+        activityLauncher = mainActivity.registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if(result.getResultCode() == RESULT_OK) {
+                loadAudio("title");
+                AudioAdapter.notifyDataSetChanged();
+            }
+        });
     }
 
     public void setListeners() {
@@ -279,8 +292,9 @@ public class PlaylistView {
         Context context = mainActivity.getBaseContext();
         Intent intent = new Intent(context, AddSongsToPlaylistActivity.class);
         intent.putExtra("playlist_id",id);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.startActivity(intent);
+
+        activityLauncher.launch(intent);
+
     }
 
     private Bitmap loadImageFromStorage(String playlistName) {

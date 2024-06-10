@@ -176,7 +176,8 @@ public class AddSongsToPlaylistActivity extends Activity {
             }
             else Toast.makeText(AddSongsToPlaylistActivity.this, "Something went wrong",Toast.LENGTH_SHORT).show();
             databaseManager.close();
-            AddSongsToPlaylistActivity.this.finish();
+            setResult(RESULT_OK);
+            finish();
         });
     }
 
