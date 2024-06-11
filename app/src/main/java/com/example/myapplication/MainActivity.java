@@ -2,10 +2,14 @@ package com.example.myapplication;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.media.MediaMetadataRetriever;
@@ -32,6 +36,10 @@ import com.example.myapplication.obj.Song;
 import com.google.android.material.tabs.TabLayout;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.SQLDataException;
 import java.util.ArrayList;
 import java.util.List;
@@ -299,6 +307,8 @@ public class MainActivity extends AppCompatActivity {
     }
     private void applySettingToSongView() {
         if(settings.getLast_song_id()>0){
+            int last_song_id = settings.getLast_song_id();
+            int last_playlist_id = settings.getLast_playlist_id();
             songView.showSong();
             TextView song_view_name = findViewById(R.id.song_view_name);
             DatabaseManager databaseManager = new DatabaseManager(this);
@@ -308,32 +318,47 @@ public class MainActivity extends AppCompatActivity {
                 throw new RuntimeException(e);
             }
 
-            Song song = databaseManager.fetchSongById(settings.getLast_song_id());
+            Song song = databaseManager.fetchSongById(last_song_id);
             song_view_name.setText(song.getSongName());
             List<Song> SongList = new ArrayList<>();
-            Cursor cursor;
-            if(settings.getLast_playlist_id()>0){
-                cursor = databaseManager.fetchPlaylistSongsFullInfo(settings.getLast_playlist_id(),"title");
+
+            Cursor song_cursor;
+            Cursor playlist_cursor = null;
+
+            if(last_playlist_id>0){
+                //load songs from a playlist
+                song_cursor = databaseManager.fetchPlaylistSongsFullInfo(last_playlist_id,"title");
+                playlist_cursor = databaseManager.getPlaylistById(last_playlist_id);
             }
             else {
-                cursor = databaseManager.fetchSongs("title");
+                //load all songs
+                song_cursor = databaseManager.fetchSongs("title");
             }
 
-            if(cursor.moveToFirst()){
+            if(song_cursor.moveToFirst()){
                 do {
-                    @SuppressLint("Range") int id = Integer.parseInt(cursor.getString(cursor.getColumnIndex(DatabaseHelper.PLAY_SONGS_TABLE_SONG_ID)));
-                    @SuppressLint("Range") String filename = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_FILENAME));
-                    @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_NAME));
-                    @SuppressLint("Range") String artist = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ARTIST));
-                    @SuppressLint("Range") String album = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ALBUM));
-                    @SuppressLint("Range") String genre = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_GENRE));
-                    @SuppressLint("Range") long duration = Long.parseLong(cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_DURATION)));
+                    @SuppressLint("Range") int id = Integer.parseInt(song_cursor.getString(song_cursor.getColumnIndex(DatabaseHelper.PLAY_SONGS_TABLE_SONG_ID)));
+                    @SuppressLint("Range") String filename = song_cursor.getString(song_cursor.getColumnIndex(DatabaseHelper.SONG_FILENAME));
+                    @SuppressLint("Range") String name = song_cursor.getString(song_cursor.getColumnIndex(DatabaseHelper.SONG_NAME));
+                    @SuppressLint("Range") String artist = song_cursor.getString(song_cursor.getColumnIndex(DatabaseHelper.SONG_ARTIST));
+                    @SuppressLint("Range") String album = song_cursor.getString(song_cursor.getColumnIndex(DatabaseHelper.SONG_ALBUM));
+                    @SuppressLint("Range") String genre = song_cursor.getString(song_cursor.getColumnIndex(DatabaseHelper.SONG_GENRE));
+                    @SuppressLint("Range") long duration = Long.parseLong(song_cursor.getString(song_cursor.getColumnIndex(DatabaseHelper.SONG_DURATION)));
 
                     SongList.add(new Song(id, filename, name, artist, album, genre, duration));
 
-                }while (cursor.moveToNext());
+                }while (song_cursor.moveToNext());
             }
-            cursor.close();
+            song_cursor.close();
+
+            //Load playlist image if user exited with saved playlist
+            if(playlist_cursor!=null && playlist_cursor.moveToFirst()) {
+                @SuppressLint("Range") String playlist_name = playlist_cursor.getString(playlist_cursor.getColumnIndex(DatabaseHelper.PLAYLIST_NAME));
+                ImageView song_view_image = findViewById(R.id.song_view_image);
+                song_view_image.setImageBitmap(loadImageFromStorage(playlist_name));
+                playlist_cursor.close();
+            }
+
             databaseManager.close();
 
             MyMediaPlayer.setSongList(SongList);
@@ -359,6 +384,42 @@ public class MainActivity extends AppCompatActivity {
         editor.putBoolean(UserSettings.SONG_IS_ON_REPEAT,settings.isSong_on_repeat());
         editor.putBoolean(UserSettings.SONG_IS_ON_SHUFFLE,settings.isSong_on_shuffle());
         editor.apply();
+    }
+
+    public Bitmap loadImageFromStorage(String playlistName) {
+        ContextWrapper cw = new ContextWrapper(this);
+        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+        try {
+            File f = new File(directory, playlistName+".jpg");
+            return BitmapFactory.decodeStream(new FileInputStream(f));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public String saveToInternalStorage(Bitmap bitmapImage,String playlistName){
+        ContextWrapper cw = new ContextWrapper(this);
+        // path to /data/data/yourapp/app_data/imageDir
+        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+        // Create imageDir
+        File mypath=new File(directory,playlistName+".jpg");
+
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(mypath);
+            // Use the compress method on the BitMap object to write image to the OutputStream
+            bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return directory.getAbsolutePath();
     }
 
     private UserSettings getSettings(){
