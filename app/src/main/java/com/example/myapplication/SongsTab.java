@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
 
 import com.example.myapplication.db.DatabaseHelper;
@@ -57,15 +58,7 @@ public class SongsTab extends Fragment {
         AdapterView.OnItemClickListener itemListener = new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                if(!isListSent) {
-                    MyMediaPlayer.setSongList(SongList);
-                    MainActivity mainActivity = (MainActivity) getActivity();
-                    if(mainActivity != null) {
-                        mainActivity.settings.setLast_playlist_id(0);
-                    }
-                }
-                isListSent = true;
-
+                sendData();
                 playMedia(position);
                 checkSelection();
             }
@@ -73,6 +66,29 @@ public class SongsTab extends Fragment {
         musicListView.setOnItemClickListener(itemListener);
 
         return view;
+    }
+    /**
+     * Sends the song list and updates the UI with the playlist image
+     <ul>
+     *     <li>Sets the song list in the MyMediaPlayer.</li>
+     *     <li>Updates the last playlist ID in the settings to 0.</li>
+     *     <li>Sets image in the UI to placeholder.</li>
+     * </ul>
+     *
+     * <p>The method ensures that these actions are only performed once by checking the {@code isListSent} flag.
+     * If the list has already been sent, the method will not perform any actions.
+     */
+    private void sendData(){
+        if(!isListSent) {
+            MyMediaPlayer.setSongList(SongList);
+            MainActivity mainActivity = (MainActivity) getActivity();
+            if(mainActivity != null) {
+                mainActivity.settings.setLast_playlist_id(0);
+                ImageView song_view_image = mainActivity.findViewById(R.id.song_view_image);
+                song_view_image.setImageResource(R.drawable.placeholder);
+            }
+        }
+        isListSent = true;
     }
 
 
