@@ -144,16 +144,6 @@ public class PlaylistsTab extends Fragment {
         return directory.getAbsolutePath();
     }
 
-    private Bitmap loadImageFromStorage(String path,String playlistName) {
-        try {
-            File f = new File(path, playlistName+".jpg");
-            return BitmapFactory.decodeStream(new FileInputStream(f));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
     @Override
     public void onResume() {
         super.onResume();
@@ -170,6 +160,8 @@ public class PlaylistsTab extends Fragment {
         }
         Cursor cursor = databaseManager.fetchPlaylists();
 
+        MainActivity mainActivity = (MainActivity) getActivity();
+
         if(cursor.moveToFirst()){
             do {
                 @SuppressLint("Range") String ID = cursor.getString(cursor.getColumnIndex(DatabaseHelper.PLAYLIST_ID));
@@ -181,16 +173,15 @@ public class PlaylistsTab extends Fragment {
                 playlistID.setText(ID);
                 TextView cardText = cardView.findViewById(R.id.cardText);
                 cardText.setText(name);
-                ImageView imageView = cardView.findViewById(R.id.cardImage);
+                ImageView cardImage = cardView.findViewById(R.id.cardImage);
 
-                if(!image_path.equals("placeholder.png")) imageView.setImageBitmap(loadImageFromStorage(image_path,name));
+                if(!image_path.equals("placeholder.png") && mainActivity!=null) cardImage.setImageBitmap(mainActivity.loadImageFromStorage(name));
 
 
                 //Open playlist_view on card click
                 View.OnClickListener playlist_id_listener = v -> {
                     TextView textView = v.findViewById(R.id.playlistID);
                     int id = Integer.parseInt((String) textView.getText());
-                    MainActivity mainActivity = (MainActivity) getActivity();
                     if (mainActivity != null) {
                         mainActivity.getPlaylistView().openPlaylist(id);
                     }
