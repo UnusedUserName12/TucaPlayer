@@ -1,5 +1,6 @@
 package com.example.myapplication;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.view.LayoutInflater;
@@ -27,6 +28,8 @@ public class MP3ListAdapter extends ArrayAdapter<Song>{
     private List<Song> filteredList;
     private final LayoutInflater mInflater;
     public static int selectedItemPosition = -1;
+
+    private Bitmap song_pic;
 
     public MP3ListAdapter(Context context, List<Song> SongList) {
         super(context, R.layout.list_item, SongList);
@@ -65,8 +68,15 @@ public class MP3ListAdapter extends ArrayAdapter<Song>{
             }
         }
         textView.setText(songName);
+        if(song_pic!=null){
+            imageView.setImageBitmap(song_pic);
+        }
 
         return convertView;
+    }
+
+    public void setSong_pic(Bitmap song_pic) {
+        this.song_pic = song_pic;
     }
 
     @NonNull
