@@ -177,8 +177,10 @@ public class PlaylistView {
             playlist_name_view.setText(name);
             if(!image_path.equals("placeholder.png"))
             {
-                playlist_image_view.setImageBitmap(loadImageFromStorage(name));
+                Bitmap song_pic_bitmap = loadImageFromStorage(name);
+                playlist_image_view.setImageBitmap(song_pic_bitmap);
                 playlist_image_view.setClipToOutline(true);
+                AudioAdapter.setSong_pic(song_pic_bitmap);
             }
             playlist = new Playlist(id,name,image_path);
 
