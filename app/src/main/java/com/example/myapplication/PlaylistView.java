@@ -28,8 +28,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -42,10 +40,6 @@ import com.example.myapplication.obj.Playlist;
 import com.example.myapplication.obj.Song;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.sql.SQLDataException;
 import java.util.ArrayList;
 import java.util.List;
@@ -144,17 +138,35 @@ public class PlaylistView {
         });
 
         playlist_songs_view.setOnItemClickListener((parent, view, position, id1) -> {
-            if(!isListSent) {
-                MyMediaPlayer.setSongList(SongList);
-                mainActivity.settings.setLast_playlist_id(playlist.getId());
-            }
-            isListSent = true;
-
+            sendData();
             playMedia(position);
             int currentSongId = MyMediaPlayer.getCurrentSongId();
             for(Song s : SongList) s.setSelected(currentSongId == s.getId());
             AudioAdapter.notifyDataSetChanged();
         });
+    }
+
+    /**
+     * Sends the song list and updates the UI with the playlist image
+     <ul>
+     *     <li>Sets the song list in the MyMediaPlayer.</li>
+     *     <li>Updates the last playlist ID in the settings.</li>
+     *     <li>Loads and sets the playlist image in the UI.</li>
+     * </ul>
+     *
+     * <p>The method ensures that these actions are only performed once by checking the {@code isListSent} flag.
+     * If the list has already been sent, the method will not perform any actions.
+     */
+
+    private void sendData() {
+        if(!isListSent) {
+            MyMediaPlayer.setSongList(SongList);
+            mainActivity.settings.setLast_playlist_id(playlist.getId());
+            ImageView SongViewImage = mainActivity.findViewById(R.id.song_view_image);
+            Bitmap song_pic_bitmap = mainActivity.loadImageFromStorage(playlist.getName());
+            SongViewImage.setImageBitmap(song_pic_bitmap);
+        }
+        isListSent = true;
     }
 
     public void openPlaylist(int id){
@@ -177,7 +189,7 @@ public class PlaylistView {
             playlist_name_view.setText(name);
             if(!image_path.equals("placeholder.png"))
             {
-                Bitmap song_pic_bitmap = loadImageFromStorage(name);
+                Bitmap song_pic_bitmap = mainActivity.loadImageFromStorage(name);
                 playlist_image_view.setImageBitmap(song_pic_bitmap);
                 playlist_image_view.setClipToOutline(true);
                 AudioAdapter.setSong_pic(song_pic_bitmap);
@@ -299,18 +311,6 @@ public class PlaylistView {
 
     }
 
-    private Bitmap loadImageFromStorage(String playlistName) {
-        ContextWrapper cw = new ContextWrapper(mainActivity);
-        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
-        try {
-            File f = new File(directory, playlistName+".jpg");
-            return BitmapFactory.decodeStream(new FileInputStream(f));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
     private void loadAudio(String orderOption) {
         SongList.clear();
         AudioAdapter.notifyDataSetChanged();
@@ -427,7 +427,7 @@ public class PlaylistView {
             String image_path = "null";
             if(chosen_image.getDrawable()!=null){
                 Bitmap bm=((BitmapDrawable)chosen_image.getDrawable()).getBitmap();
-                image_path = String.valueOf(saveToInternalStorage(bm,playlist.getName()));
+                image_path = String.valueOf(mainActivity.saveToInternalStorage(bm,playlist.getName()));
             }
 
             if(image_path.equals("null")) image_path = "placeholder.png";
@@ -435,7 +435,7 @@ public class PlaylistView {
             databaseManager.updatePlaylist(playlist.getId(),playlist.getName(),playlist.getImagePath());
             databaseManager.close();
 
-            playlist_image_view.setImageBitmap(loadImageFromStorage(playlist.getName()));
+            playlist_image_view.setImageBitmap(mainActivity.loadImageFromStorage(playlist.getName()));
             dialog.dismiss();
         });
 
@@ -447,32 +447,5 @@ public class PlaylistView {
             mainActivity.startActivityForResult(Intent.createChooser(i, "Select Picture"), 3);
         });
         dialog.show();
-    }
-
-
-
-
-    private String saveToInternalStorage(Bitmap bitmapImage,String playlistName){
-        ContextWrapper cw = new ContextWrapper(mainActivity);
-        // path to /data/data/yourapp/app_data/imageDir
-        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
-        // Create imageDir
-        File mypath=new File(directory,playlistName+".jpg");
-
-        FileOutputStream fos = null;
-        try {
-            fos = new FileOutputStream(mypath);
-            // Use the compress method on the BitMap object to write image to the OutputStream
-            bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                fos.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return directory.getAbsolutePath();
     }
 }
