@@ -105,8 +105,7 @@ public class MainActivity extends AppCompatActivity {
 
         settings = new UserSettings();
 
-        loadSharedPreferences();
-        applySettingToSongView();
+
     }
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
@@ -119,6 +118,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         updateSongTable();
+        loadSharedPreferences();
+        applySettingToSongView();
 
 
         threadSeekBar = new ThreadSeekBar(seekBar,totalTime,currentTime);
@@ -127,17 +128,6 @@ public class MainActivity extends AppCompatActivity {
         threadSeekBar.start();
         threadElementAutoSelector.start();
 
-        ImageView btnPlay = findViewById(R.id.btn_play_pause);
-        if(settings.isSong_playing()) btnPlay.setImageResource(R.drawable.pause_24dp);
-        ImageView btnRepeat = findViewById(R.id.btn_repeat);
-        if(settings.isSong_on_repeat()) {
-            MyMediaPlayer.onRepeat = true;
-            btnRepeat.setBackground(new ColorDrawable(Color.rgb(240, 240, 240)));
-        }
-        if(settings.isSong_on_shuffle()){
-            MyMediaPlayer.onShuffle = true;
-            btnRepeat.setBackground(new ColorDrawable(Color.rgb(240, 240, 240)));
-        }
     }
 
     @Override
@@ -320,6 +310,7 @@ public class MainActivity extends AppCompatActivity {
 
             Song song = databaseManager.fetchSongById(last_song_id);
             song_view_name.setText(song.getSongName());
+            song_view_name.setSelected(true);
             List<Song> SongList = new ArrayList<>();
 
             Cursor song_cursor;
@@ -368,6 +359,18 @@ public class MainActivity extends AppCompatActivity {
                     MyMediaPlayer.CurrentIndex = SongList.indexOf(s);
                 }
             ThreadElementAutoSelector.SongList = SongList;
+        }
+
+        ImageView btnPlay = findViewById(R.id.btn_play_pause);
+        if(settings.isSong_playing()) btnPlay.setImageResource(R.drawable.pause_24dp);
+        ImageView btnRepeat = findViewById(R.id.btn_repeat);
+        if(settings.isSong_on_repeat()) {
+            MyMediaPlayer.onRepeat = true;
+            btnRepeat.setBackground(new ColorDrawable(Color.rgb(240, 240, 240)));
+        }
+        if(settings.isSong_on_shuffle()){
+            MyMediaPlayer.onShuffle = true;
+            btnRepeat.setBackground(new ColorDrawable(Color.rgb(240, 240, 240)));
         }
     }
 

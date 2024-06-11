@@ -74,6 +74,7 @@
         android:ellipsize="marquee"
         android:marqueeRepeatLimit="marquee_forever"
         android:maxLines="1"
+        android:singleLine="true"
         android:scrollHorizontally="true"
         android:text="SONG NAME GOES HERE PLACEHOLDER"
         android:textAlignment="center"
