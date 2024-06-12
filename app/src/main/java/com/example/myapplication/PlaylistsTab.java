@@ -50,9 +50,9 @@ public class PlaylistsTab extends Fragment {
         context = getContext();
     }
         @Override
-        public View onCreateView(LayoutInflater inflaterr, ViewGroup container,
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
-            this.inflater = inflaterr;
+            this.inflater = inflater;
             View view = inflater.inflate(R.layout.fragment_playlists, container, false);
             gridLayout = view.findViewById(R.id.playlist_card_container);
             updatePlaylistLayout();
