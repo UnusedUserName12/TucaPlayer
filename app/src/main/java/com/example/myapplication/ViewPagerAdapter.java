@@ -6,7 +6,6 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 public class ViewPagerAdapter extends FragmentStateAdapter {
-
     public ViewPagerAdapter(@NonNull FragmentActivity fragmentActivity) {
         super(fragmentActivity);
     }
@@ -14,18 +13,26 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
     @NonNull
     @Override
     public Fragment createFragment(int position) {
-        PlaylistsTab playlistsTab = new PlaylistsTab();
-        SongsTab songsTab = new SongsTab();
-
-        switch (position){
-            case 0: return playlistsTab;
-            case 1: return songsTab;
-            default: return songsTab;
+        Fragment fragment;
+        switch (position) {
+            case 1:
+                fragment = new PlaylistsTab();
+                break;
+            case 2:
+                fragment = new SongsTab();
+                break;
+            case 3:
+                fragment = new SongsTab();
+                break;
+            default:
+                fragment = new SongsTab();
+                break;
         }
+        return fragment;
     }
 
     @Override
     public int getItemCount() {
-        return 2;
+        return 4;
     }
 }
