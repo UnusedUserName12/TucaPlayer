@@ -66,6 +66,8 @@ public class MainActivity extends AppCompatActivity {
         ViewPager2 viewPager2 = findViewById(R.id.viewPager);
         viewPagerAdapter = new ViewPagerAdapter(this);
         viewPager2.setAdapter(viewPagerAdapter);
+        viewPager2.setCurrentItem(0,false);
+
 
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
@@ -108,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     protected void onStart() {
@@ -128,6 +131,8 @@ public class MainActivity extends AppCompatActivity {
         threadSeekBar.start();
         threadElementAutoSelector.start();
 
+        ViewPager2 viewPager2 = findViewById(R.id.viewPager);
+        viewPager2.setCurrentItem(1,false);
     }
 
     @Override
