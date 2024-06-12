@@ -199,6 +199,7 @@ public class PlaylistView {
         }
 
         cursor.close();
+        databaseManager.close();
         loadAudio("title");
         AudioAdapter.notifyDataSetChanged();
 
@@ -314,15 +315,11 @@ public class PlaylistView {
     private void loadAudio(String orderOption) {
         SongList.clear();
         AudioAdapter.notifyDataSetChanged();
-
+        Cursor cursor = null;
         DatabaseManager databaseManager = new DatabaseManager(mainActivity);
         try{
             databaseManager.open();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
-        Cursor cursor = databaseManager.fetchPlaylistSongsFullInfo(playlist.getId(),orderOption);
+            cursor = databaseManager.fetchPlaylistSongsFullInfo(playlist.getId(),orderOption);
         if(cursor.moveToFirst()){
             do {
                 @SuppressLint("Range") int id = Integer.parseInt(cursor.getString(cursor.getColumnIndex(DatabaseHelper.PLAY_SONGS_TABLE_SONG_ID)));
@@ -338,9 +335,13 @@ public class PlaylistView {
 
             }while (cursor.moveToNext());
         }
-
-        databaseManager.close();
-        cursor.close();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        finally {
+            if(cursor!=null) cursor.close();
+            databaseManager.close();
+        }
     }
 
     private void showDialogRename(){
