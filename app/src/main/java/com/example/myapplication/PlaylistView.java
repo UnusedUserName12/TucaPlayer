@@ -67,7 +67,6 @@ public class PlaylistView {
         activityLauncher = mainActivity.registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
             if(result.getResultCode() == RESULT_OK) {
                 loadAudio("title");
-                AudioAdapter.notifyDataSetChanged();
             }
         });
     }
@@ -121,7 +120,6 @@ public class PlaylistView {
                         if(!option.equals("order by")) {
                             Toast.makeText(mainActivity, "By " + option, Toast.LENGTH_SHORT).show();
                             loadAudio(option);
-                            AudioAdapter.notifyDataSetChanged();
                         }
                         break;
                 }
@@ -201,7 +199,6 @@ public class PlaylistView {
         cursor.close();
         databaseManager.close();
         loadAudio("title");
-        AudioAdapter.notifyDataSetChanged();
 
         ThreadElementAutoSelector.SongList = SongList;
         ThreadElementAutoSelector.AudioAdapter = AudioAdapter;
@@ -314,7 +311,6 @@ public class PlaylistView {
 
     private void loadAudio(String orderOption) {
         SongList.clear();
-        AudioAdapter.notifyDataSetChanged();
         Cursor cursor = null;
         DatabaseManager databaseManager = new DatabaseManager(mainActivity);
         try{
@@ -341,6 +337,7 @@ public class PlaylistView {
         finally {
             if(cursor!=null) cursor.close();
             databaseManager.close();
+            AudioAdapter.notifyDataSetChanged();
         }
     }
 
