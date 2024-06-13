@@ -237,8 +237,11 @@ public class MainActivity extends AppCompatActivity {
                 String song_name = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
                 if (song_name == null) song_name = songFile.getName().replace(".mp3", "");
                 String song_album = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM);
+                if (song_album == null) song_album = "Unknown";
                 String song_artist = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
+                if (song_artist == null) song_artist = "Unknown";
                 String song_genre = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_GENRE);
+                if (song_genre == null) song_genre = "Unknown";
                 long duration = Long.parseLong(Objects.requireNonNull(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)));
 
                 databaseManager.insertSong(FolderFilename, song_name, song_album, song_artist, song_genre,duration);
