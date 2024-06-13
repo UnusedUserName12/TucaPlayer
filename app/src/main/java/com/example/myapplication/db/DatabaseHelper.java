@@ -19,7 +19,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     static final String CREATE_PLAYLIST_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS "+PLAYLIST_TABLE
             +"("
             + PLAYLIST_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-            + PLAYLIST_NAME + " TEXT NOT NULL, "
+            + PLAYLIST_NAME + " TEXT NOT NULL UNIQUE, "
             + PLAYLIST_PICTURE + " TEXT"
             + ");";
 
@@ -37,11 +37,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + "("
             + SONG_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
             + SONG_FILENAME + " TEXT NOT NULL,"
-            + SONG_NAME + " TEXT,"
-            + SONG_ALBUM + " TEXT,"
-            + SONG_ARTIST + " TEXT,"
-            + SONG_GENRE + " TEXT,"
-            + SONG_DURATION + " INTEGER"
+            + SONG_NAME + " TEXT NOT NULL,"
+            + SONG_ALBUM + " TEXT NOT NULL,"
+            + SONG_ARTIST + " TEXT NOT NULL,"
+            + SONG_GENRE + " TEXT NOT NULL,"
+            + SONG_DURATION + " INTEGER NOT NULL"
             + ");";
 
 
@@ -57,6 +57,37 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + "FOREIGN KEY ("+PLAY_SONGS_TABLE_SONG_ID+") REFERENCES " + SONG_TABLE + "(" + SONG_ID + ") ON DELETE CASCADE"
             + ");";
 
+    public static final String ALBUM_TABLE = "ALBUMS";
+    public static final String ALBUM_ID = "album_id";
+    public static final String ALBUM_NAME = "album_name";
+
+    static final String CREATE_ALBUM_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS "+ALBUM_TABLE
+            +"("
+            + ALBUM_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+            + ALBUM_NAME + " TEXT NOT NULL UNIQUE "
+            + ");";
+
+    public static final String ALBUM_SONGS_TABLE = "ALBUM_SONGS";
+    public static final String ALBUM_SONG_TABLE_ALBUM_ID = "album_id";
+    public static final String ALBUM_SONG_TABLE_SONG_ID = "song_id";
+
+    static final String CREATE_ALBUM_SONGS_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS " + ALBUM_SONGS_TABLE
+            +"("
+            + ALBUM_SONG_TABLE_ALBUM_ID + " INTEGER, "
+            + ALBUM_SONG_TABLE_SONG_ID + " INTEGER,"
+            + "FOREIGN KEY ("+ALBUM_SONG_TABLE_ALBUM_ID+") REFERENCES " + ALBUM_TABLE + "(" + ALBUM_ID + ") ON DELETE CASCADE,"
+            + "FOREIGN KEY ("+ALBUM_SONG_TABLE_SONG_ID+") REFERENCES " + SONG_TABLE + "(" + SONG_ID + ") ON DELETE CASCADE"
+            + ");";
+
+    public static final String FAVORITES_TABLE = "FAVORITES";
+    public static final String FAVORITE_ID = "song_id";
+
+    static final String CREATE_FAVORITES_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS " + FAVORITES_TABLE
+            +"("
+            + FAVORITE_ID + " INTEGER, "
+            + "FOREIGN KEY ("+FAVORITE_ID+") REFERENCES " + SONG_TABLE + "(" + SONG_ID + ") ON DELETE CASCADE"
+            + ");";
+
     public DatabaseHelper(@Nullable Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -66,6 +97,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_PLAYLIST_TABLE_QUERY);
         db.execSQL(CREATE_SONG_TABLE_QUERY);
         db.execSQL(CREATE_PLAYLIST_SONGS_TABLE_QUERY);
+        db.execSQL(CREATE_ALBUM_TABLE_QUERY);
+        db.execSQL(CREATE_ALBUM_SONGS_TABLE_QUERY);
+        db.execSQL(CREATE_FAVORITES_TABLE_QUERY);
     }
 
     @Override
@@ -73,5 +107,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS "+ PLAYLIST_TABLE);
         db.execSQL("DROP TABLE IF EXISTS "+ SONG_TABLE);
         db.execSQL("DROP TABLE IF EXISTS "+ PLAYLIST_SONGS_TABLE);
+        db.execSQL("DROP TABLE IF EXISTS "+ ALBUM_TABLE);
+        db.execSQL("DROP TABLE IF EXISTS "+ ALBUM_SONGS_TABLE);
+        db.execSQL("DROP TABLE IF EXISTS "+ FAVORITES_TABLE);
     }
 }
