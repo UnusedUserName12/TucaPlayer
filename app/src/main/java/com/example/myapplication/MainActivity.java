@@ -173,7 +173,31 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateSongTable() {
 
-        //Checking the folder
+        DatabaseManager databaseManager = new DatabaseManager(this);
+        try{
+            databaseManager.open();
+            List<String> folderFileList = fetchSongsFromFolder();
+            List<String> dbFileList = fetchSongsFromDB(databaseManager);
+
+            List<String> songsToAdd = new ArrayList<>(folderFileList);
+            songsToAdd.removeAll(dbFileList);
+
+            List<String> songsToDelete = new ArrayList<>(dbFileList);
+            songsToDelete.removeAll(folderFileList);
+
+            addSongsToDB(songsToAdd,databaseManager);
+
+            deleteSongsFromDB(songsToDelete,databaseManager);
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        finally {
+            databaseManager.close();
+        }
+    }
+
+    private List<String> fetchSongsFromFolder(){
         List<String> folderFileList = new ArrayList<>();
         File downloadsFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         if (downloadsFolder.exists() && downloadsFolder.isDirectory()) {
@@ -184,38 +208,27 @@ public class MainActivity extends AppCompatActivity {
                         folderFileList.add(file.getName());
                     }
                 }
-
             }
         } else {
             Toast.makeText(this, "Downloads folder not found", Toast.LENGTH_SHORT).show();
         }
+        return folderFileList;
+    }
 
-        //Checking the database
-        DatabaseManager databaseManager = new DatabaseManager(this);
-        try{
-            databaseManager.open();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
+    private List<String> fetchSongsFromDB(DatabaseManager databaseManager){
         Cursor cursor = databaseManager.fetchSongs("title");
         List<String> dbFileList = new ArrayList<>();
         if(cursor.moveToFirst()){
             do {
                 @SuppressLint("Range") String dbFILENAME = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_FILENAME));
                 dbFileList.add(dbFILENAME);
-                //Log.i("DATABASE_TAG", "I have read SONG : "+dbFILENAME);
             }while (cursor.moveToNext());
         }
+        cursor.close();
+        return dbFileList;
+    }
 
-        //Compare database and folder and insert if in folder but not db
-        List<String> songsToAdd = new ArrayList<>(folderFileList);
-        songsToAdd.removeAll(dbFileList);
-
-        List<String> songsToDelete = new ArrayList<>(dbFileList);
-        songsToDelete.removeAll(folderFileList);
-
-
+    private void addSongsToDB (List<String> songsToAdd, DatabaseManager databaseManager){
         if(!songsToAdd.isEmpty()) {
             MediaMetadataRetriever mmr = new MediaMetadataRetriever();
             for (String FolderFilename : songsToAdd) {
@@ -231,10 +244,11 @@ public class MainActivity extends AppCompatActivity {
                 databaseManager.insertSong(FolderFilename, song_name, song_album, song_artist, song_genre,duration);
             }
         }
+    }
 
-
-        //Delete from database if not in folder
+    private void deleteSongsFromDB(List<String> songsToDelete, DatabaseManager databaseManager){
         if(!songsToDelete.isEmpty()) {
+            Cursor cursor = databaseManager.fetchSongs("title");
             if (cursor.moveToFirst()) {
                 do {
                     @SuppressLint("Range") String ID = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ID));
@@ -243,10 +257,8 @@ public class MainActivity extends AppCompatActivity {
                     if(songsToDelete.contains(dbFILENAME)) databaseManager.deleteSong(Integer.parseInt(ID));
                 } while (cursor.moveToNext());
             }
+            cursor.close();
         }
-
-        databaseManager.close();
-        cursor.close();
     }
 
     @Override
