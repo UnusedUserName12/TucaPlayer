@@ -46,13 +46,33 @@ public class DatabaseManager  {
     }
 
 
-    //WARNING - this will break?
+
     public void insertPlaylistSong(int playlist_id, int song_id){
         ContentValues contentValues = new ContentValues();
 
         contentValues.put(DatabaseHelper.PLAY_SONGS_TABLE_PLAYLIST_ID,playlist_id);
         contentValues.put(DatabaseHelper.PLAY_SONGS_TABLE_SONG_ID,song_id);
         database.insert(DatabaseHelper.PLAYLIST_SONGS_TABLE,null,contentValues);
+    }
+
+    public void insertAlbum(String name){
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(DatabaseHelper.ALBUM_NAME, name);
+        database.insert(DatabaseHelper.ALBUM_TABLE,null,contentValues);
+    }
+
+    public void insertAlbumSong(int album_id,int song_id){
+        ContentValues contentValues = new ContentValues();
+
+        contentValues.put(DatabaseHelper.ALBUM_SONG_TABLE_ALBUM_ID,album_id);
+        contentValues.put(DatabaseHelper.ALBUM_SONG_TABLE_SONG_ID,song_id);
+        database.insert(DatabaseHelper.ALBUM_SONGS_TABLE,null,contentValues);
+    }
+
+    public void insertFavorite(int id){
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(DatabaseHelper.FAVORITE_ID,id);
+        database.insert(DatabaseHelper.FAVORITES_TABLE,null,contentValues);
     }
 
     public Cursor fetchPlaylists(){
@@ -203,6 +223,134 @@ public class DatabaseManager  {
         return cursor;
     }
 
+    /**
+     * Fetches detailed information about the songs in a specific Album.
+     *
+     * @param id the ID of the album for which to fetch song details.
+     * @param orderOption the field by which to order the results. Can be one of "title", "album", "artist", "genre", or "duration".
+     *                    If the provided value is not one of these, the results will be ordered by the song title by default.
+     * @return a Cursor object positioned at the first entry of the result set, containing the detailed song information.
+     *         The columns in the result set are:
+     *         - {@link DatabaseHelper#ALBUM_SONG_TABLE_ALBUM_ID}
+     *         - {@link DatabaseHelper#SONG_FILENAME}
+     *         - {@link DatabaseHelper#SONG_NAME}
+     *         - {@link DatabaseHelper#SONG_ALBUM}
+     *         - {@link DatabaseHelper#SONG_ARTIST}
+     *         - {@link DatabaseHelper#SONG_GENRE}
+     *         - {@link DatabaseHelper#SONG_DURATION}
+     */
+    public Cursor fetchAlbumsSongsFullInfo(int id, String orderOption){
+        String sql = "Select "
+                + "l."+ DatabaseHelper.ALBUM_SONG_TABLE_ALBUM_ID + ","
+                + "r." + DatabaseHelper.SONG_FILENAME + ","
+                + "r." + DatabaseHelper.SONG_NAME + ","
+                + "r." + DatabaseHelper.SONG_ALBUM + ","
+                + "r." + DatabaseHelper.SONG_ARTIST + ","
+                + "r." + DatabaseHelper.SONG_GENRE + ","
+                + "r." + DatabaseHelper.SONG_DURATION
+                + " FROM "
+                + DatabaseHelper.ALBUM_SONGS_TABLE + " l "
+                + " INNER JOIN "
+                + DatabaseHelper.SONG_TABLE + " r "
+                + " ON "
+                + "r." + DatabaseHelper.SONG_ID + " = " + "l." + DatabaseHelper.ALBUM_SONG_TABLE_SONG_ID
+                + " WHERE "
+                + DatabaseHelper.ALBUM_SONG_TABLE_ALBUM_ID + " = " + id
+                + " ORDER BY ";
+
+
+        orderOption = orderOption.toLowerCase();
+        switch (orderOption){
+            case "title":
+                sql += "r."+DatabaseHelper.SONG_NAME;
+                break;
+            case "album":
+                sql += "r."+DatabaseHelper.SONG_ALBUM;
+                break;
+            case "artist":
+                sql += "r."+DatabaseHelper.SONG_ARTIST;
+                break;
+            case "genre":
+                sql += "r."+DatabaseHelper.SONG_GENRE;
+                break;
+            case "duration":
+                sql += "r."+DatabaseHelper.SONG_DURATION;
+                break;
+            default:
+                sql += "r."+DatabaseHelper.SONG_NAME;
+                break;
+        }
+        Cursor cursor = database.rawQuery(sql,null);
+        if (cursor !=null){
+            cursor.moveToFirst();
+        }
+        return cursor;
+    }
+
+    /**
+     * Retrieves songs from the FAVORITES_TABLE based on the specified order option.
+     *
+     * @param orderOption the option to order the songs by. Valid options are "title", "album", "artist", "genre", or "duration".
+     * @return a Cursor object containing the result set of the query. Returns null if an error occurs.
+     */
+    public Cursor fetchFavorites(String orderOption){
+        String sql = "Select "
+                + "l."+ DatabaseHelper.FAVORITE_ID + ","
+                + "r." + DatabaseHelper.SONG_FILENAME + ","
+                + "r." + DatabaseHelper.SONG_NAME + ","
+                + "r." + DatabaseHelper.SONG_ALBUM + ","
+                + "r." + DatabaseHelper.SONG_ARTIST + ","
+                + "r." + DatabaseHelper.SONG_GENRE + ","
+                + "r." + DatabaseHelper.SONG_DURATION
+                + " FROM "
+                + DatabaseHelper.ALBUM_SONGS_TABLE + " l "
+                + " INNER JOIN "
+                + DatabaseHelper.SONG_TABLE + " r "
+                + " ON "
+                + "r." + DatabaseHelper.SONG_ID + " = " + "l." + DatabaseHelper.FAVORITE_ID
+                + " ORDER BY ";
+
+
+        orderOption = orderOption.toLowerCase();
+        switch (orderOption){
+            case "title":
+                sql += "r."+DatabaseHelper.SONG_NAME;
+                break;
+            case "album":
+                sql += "r."+DatabaseHelper.SONG_ALBUM;
+                break;
+            case "artist":
+                sql += "r."+DatabaseHelper.SONG_ARTIST;
+                break;
+            case "genre":
+                sql += "r."+DatabaseHelper.SONG_GENRE;
+                break;
+            case "duration":
+                sql += "r."+DatabaseHelper.SONG_DURATION;
+                break;
+            default:
+                sql += "r."+DatabaseHelper.SONG_NAME;
+                break;
+        }
+        Cursor cursor = database.rawQuery(sql,null);
+        if (cursor !=null){
+            cursor.moveToFirst();
+        }
+        return cursor;
+    }
+
+    public Cursor fetchAlbumById(int id){
+        String [] columns = new String[] {DatabaseHelper.ALBUM_ID,DatabaseHelper.ALBUM_NAME};
+        Cursor cursor = database.query(DatabaseHelper.ALBUM_TABLE, columns,DatabaseHelper.ALBUM_ID+"="+id,null,null,null,null,null);
+        if (cursor !=null){
+            cursor.moveToFirst();
+        }
+        return cursor;
+    }
+
+
+
+
 
     public void deletePlaylist(int id){
         database.delete(DatabaseHelper.PLAYLIST_TABLE, DatabaseHelper.PLAYLIST_ID + "="+id,null);
@@ -214,6 +362,13 @@ public class DatabaseManager  {
 
     public void deletePlaylistSong(int playlist_id, int song_id){
         database.delete(DatabaseHelper.PLAYLIST_SONGS_TABLE,DatabaseHelper.PLAY_SONGS_TABLE_PLAYLIST_ID + " = "+playlist_id+" AND "+DatabaseHelper.PLAY_SONGS_TABLE_SONG_ID+"="+song_id,null);
+    }
+    public void deleteAlbum(int album_id){
+        database.delete(DatabaseHelper.ALBUM_TABLE,DatabaseHelper.ALBUM_ID + " = "+album_id,null);
+    }
+
+    public void deleteFavorite(int favorite_id){
+        database.delete(DatabaseHelper.FAVORITES_TABLE,DatabaseHelper.FAVORITE_ID + " = "+favorite_id,null);
     }
 
     public void updatePlaylist(int playlist_id, String playlist_name, String playlist_image_path){
@@ -236,12 +391,18 @@ public class DatabaseManager  {
         database.execSQL("DROP TABLE IF EXISTS "+ DatabaseHelper.PLAYLIST_TABLE);
         database.execSQL("DROP TABLE IF EXISTS "+ DatabaseHelper.SONG_TABLE);
         database.execSQL("DROP TABLE IF EXISTS "+ DatabaseHelper.PLAYLIST_SONGS_TABLE);
+        database.execSQL("DROP TABLE IF EXISTS "+ DatabaseHelper.ALBUM_TABLE);
+        database.execSQL("DROP TABLE IF EXISTS "+ DatabaseHelper.ALBUM_SONGS_TABLE);
+        database.execSQL("DROP TABLE IF EXISTS "+ DatabaseHelper.FAVORITES_TABLE);
     }
 
     public void createTables(){
         database.execSQL(DatabaseHelper.CREATE_SONG_TABLE_QUERY);
         database.execSQL(DatabaseHelper.CREATE_PLAYLIST_TABLE_QUERY);
         database.execSQL(DatabaseHelper.CREATE_PLAYLIST_SONGS_TABLE_QUERY);
+        database.execSQL(DatabaseHelper.CREATE_ALBUM_TABLE_QUERY);
+        database.execSQL(DatabaseHelper.CREATE_ALBUM_SONGS_TABLE_QUERY);
+        database.execSQL(DatabaseHelper.CREATE_FAVORITES_TABLE_QUERY);
     }
 
 
