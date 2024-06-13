@@ -172,7 +172,7 @@ public class DatabaseManager  {
                 + "r." + DatabaseHelper.SONG_ID + " = " + "l." + DatabaseHelper.PLAY_SONGS_TABLE_SONG_ID
                 + " WHERE "
                 + DatabaseHelper.PLAY_SONGS_TABLE_PLAYLIST_ID + " = " + id
-                + " GROUP BY ";
+                + " ORDER BY ";
 
 
         orderOption = orderOption.toLowerCase();
