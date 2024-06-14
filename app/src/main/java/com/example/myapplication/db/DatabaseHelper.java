@@ -9,7 +9,7 @@ import androidx.annotation.Nullable;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     static final String DATABASE_NAME = "TUCAPLAYER.db";
-    static int DATABASE_VERSION = 1;
+    static int DATABASE_VERSION = 5;
 
     public static final String PLAYLIST_TABLE = "PLAYLISTS";
     public static final String PLAYLIST_ID = "playlist_id";
@@ -114,5 +114,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS "+ ALBUM_TABLE);
         db.execSQL("DROP TABLE IF EXISTS "+ ALBUM_SONGS_TABLE);
         db.execSQL("DROP TABLE IF EXISTS "+ FAVORITES_TABLE);
+        onCreate(db);
     }
 }

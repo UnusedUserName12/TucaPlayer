@@ -52,7 +52,7 @@ public class AlbumsTab extends Fragment {
         this.inflater = inflater;
         View view = inflater.inflate(R.layout.fragment_albums, container, false);
         gridLayout = view.findViewById(R.id.album_card_container);
-        updateAlbumContent();
+        updateAlbums();
         updateAlbumLayout();
         return view;
     }
@@ -64,23 +64,31 @@ public class AlbumsTab extends Fragment {
         //updateAlbumLayout();
     }
 
-    private void updateAlbumContent() {
+    private void updateAlbums() {
         DatabaseManager databaseManager = new DatabaseManager(context);
         try {
             databaseManager.open();
             List<Song> SongList = getListOfSongsWithAlbums(databaseManager);
             List<Album> AlbumList = getListOfAlbums(databaseManager);
+            List<Album> AlbumsToAdd = new ArrayList<>(AlbumList);
 
-            List<String> existingAlbums = new ArrayList<>();
-            for (Album a : AlbumList) {
-                existingAlbums.add(a.getName());
-            }
-
-            List<Album> AlbumsToAdd = new ArrayList<>();
-            for (Song s : SongList) {
-                if (!existingAlbums.contains(s.getAlbum())) {
-                    AlbumsToAdd.add(new Album(0, s.getAlbum(), s.getArtist(), null));
-                    existingAlbums.add(s.getAlbum());
+            if(AlbumList.isEmpty()){
+                ArrayList<String> uniqueAlbums = new ArrayList<>();
+                for(Song s : SongList) {
+                    if(!uniqueAlbums.contains(s.getAlbum()))
+                    {
+                        uniqueAlbums.add(s.getAlbum());
+                        AlbumsToAdd.add(new Album(0,s.getAlbum(),s.getArtist(),null));
+                    }
+                }
+            }else {
+                for (Song s : SongList) {
+                    for (Album a : AlbumList) {
+                        if (s.getAlbum().equals(a.getName())) {
+                            AlbumsToAdd.remove(a);
+                            break;
+                        }
+                    }
                 }
             }
 
@@ -110,15 +118,6 @@ public class AlbumsTab extends Fragment {
                         } else
                             databaseManager.insertAlbum(s.getAlbum(), s.getArtist(), "placeholder.png");
                     }
-                }
-            }
-
-            //update existing albums with songs
-            for(Song s : SongList){
-                for (Album a : AlbumList){
-                    if(s.getAlbum().equals(a.getName()))
-                        databaseManager.insertAlbumSong(a.getId(),s.getId());
-                    break;
                 }
             }
 
@@ -216,9 +215,11 @@ public class AlbumsTab extends Fragment {
                 View.OnClickListener album_id_listener = v -> {
                     TextView textView = v.findViewById(R.id.albumID);
                     int id = Integer.parseInt((String) textView.getText());
+                    TextView nameTextView = v.findViewById(R.id.album_card_name);
+                    String nameText = (String) nameTextView.getText();
                     if (mainActivity != null) {
-                        //TODO: how can we use openPlaylist for albums?
-                        mainActivity.getPlaylistView().openPlaylist(id);
+                        updateAlbumContent(id,nameText);
+                        mainActivity.getPlaylistView().openAlbum(id);
                     }
                 };
 
@@ -243,6 +244,36 @@ public class AlbumsTab extends Fragment {
         output.copyTo(outputBitmap);
         rs.destroy();
         return outputBitmap;
+    }
+
+    private void updateAlbumContent(int id,String album_name){
+        DatabaseManager databaseManager = new DatabaseManager(context);
+        try {
+            databaseManager.open();
+
+        List<Song> SongList = getListOfSongsWithAlbums(databaseManager);
+        Cursor cursor = databaseManager.fetchAlbumsSongsFullInfo(id,"title");
+        SongList.removeIf(s -> !s.getAlbum().equals(album_name));
+
+        if(cursor.moveToFirst()){
+            @SuppressLint("Range") int song_id = cursor.getInt(cursor.getColumnIndex(DatabaseHelper.SONG_ID));
+            @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_NAME));
+            @SuppressLint("Range") String artist = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ARTIST));
+            @SuppressLint("Range") String album = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ALBUM));
+            SongList.removeIf(s -> s.getAlbum().equals(album));
+        }
+
+        for(Song s : SongList){
+            databaseManager.insertAlbumSong(id,s.getId());
+        }
+
+
+        } catch (SQLDataException e) {
+            throw new RuntimeException(e);
+        }
+        finally {
+            databaseManager.close();
+        }
     }
 
 }

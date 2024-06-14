@@ -10,7 +10,6 @@ import android.content.ContextWrapper;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.transition.Fade;
@@ -58,6 +57,7 @@ public class PlaylistView {
     private ListView playlist_songs_view;
     ConstraintLayout constraintLayout;
     boolean isListSent;
+    boolean isAlbum;
 
     ActivityResultLauncher<Intent> activityLauncher;
 
@@ -66,7 +66,7 @@ public class PlaylistView {
         constraintLayout = mainActivity.findViewById(R.id.main_layout);
         activityLauncher = mainActivity.registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
             if(result.getResultCode() == RESULT_OK) {
-                loadAudio("title");
+                loadAudioPlaylist("title");
             }
         });
     }
@@ -119,7 +119,8 @@ public class PlaylistView {
                     default:
                         if(!option.equals("order by")) {
                             Toast.makeText(mainActivity, "By " + option, Toast.LENGTH_SHORT).show();
-                            loadAudio(option);
+                            if(isAlbum) loadAudioAlbum(option);
+                            else loadAudioPlaylist(option);
                         }
                         break;
                 }
@@ -168,47 +169,16 @@ public class PlaylistView {
     }
 
     public void openPlaylist(int id){
-        playlist_songs_view.setVisibility(View.INVISIBLE);
-        isListSent = false;
-        this.id = id;
-        DatabaseManager databaseManager = new DatabaseManager(mainActivity);
-        try {
-            databaseManager.open();
-        } catch (SQLDataException e) {
-            throw new RuntimeException(e);
-        }
-
-        Cursor cursor = databaseManager.getPlaylistById(id);
-
-        if(cursor.moveToFirst()){
-            @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex(DatabaseHelper.PLAYLIST_NAME));
-            @SuppressLint("Range") String image_path = cursor.getString(cursor.getColumnIndex(DatabaseHelper.PLAYLIST_PICTURE));
-
-            playlist_name_view.setText(name);
-            if(!image_path.equals("placeholder.png"))
-            {
-                Bitmap song_pic_bitmap = mainActivity.loadImageFromStorage(name);
-                playlist_image_view.setImageBitmap(song_pic_bitmap);
-                playlist_image_view.setClipToOutline(true);
-                AudioAdapter.setSong_pic(song_pic_bitmap);
-            }
-            playlist = new Playlist(id,name,image_path);
-
-        }
-
-        cursor.close();
-        databaseManager.close();
-        loadAudio("title");
-
-        ThreadElementAutoSelector.SongList = SongList;
-        ThreadElementAutoSelector.AudioAdapter = AudioAdapter;
-
-
-        expandPlaylist();
+        isAlbum = false;
+        ImageButton btn_add_songs = mainActivity.findViewById(R.id.btn_add_song_redirect);
+        btn_add_songs.setVisibility(View.VISIBLE);
+        btn_add_songs.setEnabled(true);
+        openView(id);
     }
 
     private void expandPlaylist() {
         isExpanded = true;
+        playlist_songs_view.setVisibility(View.GONE);
 
         Fade fade = new Fade();
         fade.setDuration(200);
@@ -220,16 +190,18 @@ public class PlaylistView {
             public void onTransitionStart(Transition transition) {
                 ThreadSeekBar.isRunning = false;
                 ThreadElementAutoSelector.isRunning = false;
-
             }
 
             @Override
             public void onTransitionEnd(Transition transition) {
                 ThreadElementAutoSelector.isRunning = true;
 
-                TransitionManager.beginDelayedTransition(playlist_songs_view);
+                Fade fade = new Fade();
+                fade.setDuration(200);
+                TransitionSet transitionSet = new TransitionSet();
+                transitionSet.addTransition(fade);
+                TransitionManager.beginDelayedTransition(playlist_songs_view,transitionSet);
                 playlist_songs_view.setVisibility(View.VISIBLE);
-
             }
 
             @Override
@@ -254,6 +226,7 @@ public class PlaylistView {
             song_view_hidden_set.clone(mainActivity,R.layout.activity_main_playlist_view_song_hidden);
             song_view_hidden_set.applyTo(constraintLayout);
         }
+
     }
 
     void shrinkPlaylist() {
@@ -309,13 +282,13 @@ public class PlaylistView {
 
     }
 
-    private void loadAudio(String orderOption) {
+    private void loadAudioPlaylist(String orderOption) {
         SongList.clear();
         Cursor cursor = null;
         DatabaseManager databaseManager = new DatabaseManager(mainActivity);
         try{
             databaseManager.open();
-            cursor = databaseManager.fetchPlaylistSongsFullInfo(playlist.getId(),orderOption);
+            cursor = databaseManager.fetchPlaylistSongsFullInfo(id,orderOption);
         if(cursor.moveToFirst()){
             do {
                 @SuppressLint("Range") int id = Integer.parseInt(cursor.getString(cursor.getColumnIndex(DatabaseHelper.PLAY_SONGS_TABLE_SONG_ID)));
@@ -446,4 +419,99 @@ public class PlaylistView {
         });
         dialog.show();
     }
+
+    public void openAlbum(int id){
+        isAlbum = true;
+        ImageButton btn_add_songs = mainActivity.findViewById(R.id.btn_add_song_redirect);
+        btn_add_songs.setVisibility(View.INVISIBLE);
+        btn_add_songs.setEnabled(false);
+        openView(id);
+    }
+
+    private void openView(int id) {
+        isListSent = false;
+        this.id = id;
+        DatabaseManager databaseManager = new DatabaseManager(mainActivity);
+        try {
+            databaseManager.open();
+
+            Cursor cursor;
+            String mName = null;
+            String mImage = null;
+            if (isAlbum) {
+                cursor = databaseManager.fetchAlbumById(id);
+                if (cursor.moveToFirst()) {
+                    @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex(DatabaseHelper.ALBUM_NAME));
+                    @SuppressLint("Range") String image_path = cursor.getString(cursor.getColumnIndex(DatabaseHelper.ALBUM_PICTURE));
+                    mName = name;
+                    mImage = image_path;
+                }
+                loadAudioAlbum("title");
+            } else {
+                cursor = databaseManager.getPlaylistById(id);
+                if (cursor.moveToFirst()) {
+                    @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex(DatabaseHelper.PLAYLIST_NAME));
+                    @SuppressLint("Range") String image_path = cursor.getString(cursor.getColumnIndex(DatabaseHelper.PLAYLIST_PICTURE));
+                    mName = name;
+                    mImage = image_path;
+                }
+                loadAudioPlaylist("title");
+            }
+            playlist_name_view.setText(mName);
+                if (!mImage.equals("placeholder.png")) {
+                    Bitmap song_pic_bitmap = mainActivity.loadImageFromStorage(mName);
+                    playlist_image_view.setImageBitmap(song_pic_bitmap);
+                    playlist_image_view.setClipToOutline(true);
+                    AudioAdapter.setSong_pic(song_pic_bitmap);
+                }
+                playlist = new Playlist(id, mName, mImage);
+
+                cursor.close();
+
+
+                ThreadElementAutoSelector.SongList = SongList;
+                ThreadElementAutoSelector.AudioAdapter = AudioAdapter;
+
+                expandPlaylist();
+            } catch (SQLDataException e) {
+            throw new RuntimeException(e);
+        }
+        finally {
+
+            databaseManager.close();
+        }
+    }
+
+    private void loadAudioAlbum(String orderOption) {
+        SongList.clear();
+        Cursor cursor = null;
+        DatabaseManager databaseManager = new DatabaseManager(mainActivity);
+        try{
+            databaseManager.open();
+            cursor = databaseManager.fetchAlbumsSongsFullInfo(id,orderOption);
+            if(cursor.moveToFirst()){
+                do {
+                    @SuppressLint("Range") int id = Integer.parseInt(cursor.getString(cursor.getColumnIndex(DatabaseHelper.ALBUM_SONG_TABLE_SONG_ID)));
+                    @SuppressLint("Range") String filename = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_FILENAME));
+                    @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_NAME));
+                    @SuppressLint("Range") String artist = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ARTIST));
+                    @SuppressLint("Range") String album = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ALBUM));
+                    @SuppressLint("Range") String genre = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_GENRE));
+                    @SuppressLint("Range") long duration = Long.parseLong(cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_DURATION)));
+
+                    Song song = new Song(id, filename, name, artist, album, genre, duration);
+                    SongList.add(song);
+
+                }while (cursor.moveToNext());
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        finally {
+            if(cursor!=null) cursor.close();
+            databaseManager.close();
+            AudioAdapter.notifyDataSetChanged();
+        }
+    }
 }
+

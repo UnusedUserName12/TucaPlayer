@@ -6,9 +6,9 @@ package com.example.myapplication;
  */
 public class UserSettings {
 
+    //TODO: remember if user was in playlist or album
     public static final String SONG_PREFERENCES = "song_preferences";
     public static final String LAST_SONG_ID = "last_song_id";
-    public static final String LAST_SONG_TIME = "last_song_time";
     public static final String SONG_IS_PLAYING = "song_is_playing";
     public static final String LAST_PLAYLIST_ID = "last_playlist_id";
     public static final String SONG_IS_ON_REPEAT = "song_is_on_repeat";
