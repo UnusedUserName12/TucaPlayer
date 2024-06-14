@@ -252,7 +252,7 @@ public class DatabaseManager  {
      */
     public Cursor fetchAlbumsSongsFullInfo(int id, String orderOption){
         String sql = "Select "
-                + "l."+ DatabaseHelper.ALBUM_SONG_TABLE_ALBUM_ID + ","
+                + "l."+ DatabaseHelper.ALBUM_SONG_TABLE_SONG_ID + ","
                 + "r." + DatabaseHelper.SONG_FILENAME + ","
                 + "r." + DatabaseHelper.SONG_NAME + ","
                 + "r." + DatabaseHelper.SONG_ALBUM + ","
