@@ -309,16 +309,19 @@ public class MainActivity extends AppCompatActivity {
         boolean song_is_playing = sharedPreferences.getBoolean(UserSettings.SONG_IS_PLAYING,false);
         boolean is_song_on_repeat = sharedPreferences.getBoolean(UserSettings.SONG_IS_ON_REPEAT,false);
         boolean is_song_on_shuffle = sharedPreferences.getBoolean(UserSettings.SONG_IS_ON_SHUFFLE,false);
+        boolean is_album = sharedPreferences.getBoolean(UserSettings.IS_ALBUM,false);
         settings.setLast_song_id(last_song_id);
         settings.setLast_playlist_id(last_playlist_id);
         settings.setSong_playing(song_is_playing);
         settings.setSong_is_on_repeat(is_song_on_repeat);
         settings.setSong_is_on_shuffle(is_song_on_shuffle);
+        settings.setIsAlbum(is_album);
     }
     private void applySettingToSongView() {
         if(settings.getLast_song_id()>0){
             int last_song_id = settings.getLast_song_id();
             int last_playlist_id = settings.getLast_playlist_id();
+            boolean is_album = settings.isAlbum();
             songView.showSong();
             TextView song_view_name = findViewById(R.id.song_view_name);
             DatabaseManager databaseManager = new DatabaseManager(this);
@@ -336,19 +339,22 @@ public class MainActivity extends AppCompatActivity {
             Cursor song_cursor;
             Cursor playlist_cursor = null;
 
-            if(last_playlist_id>0){
+            if(last_playlist_id>0 && !is_album){
                 //load songs from a playlist
                 song_cursor = databaseManager.fetchPlaylistSongsFullInfo(last_playlist_id,"title");
                 playlist_cursor = databaseManager.getPlaylistById(last_playlist_id);
             }
-            else {
+            else if(last_playlist_id>0 && is_album) {
+                song_cursor = databaseManager.fetchAlbumsSongsFullInfo(last_playlist_id,"title");
+                playlist_cursor = databaseManager.fetchAlbumById(last_playlist_id);
+            }else {
                 //load all songs
                 song_cursor = databaseManager.fetchSongs("title");
             }
 
             if(song_cursor.moveToFirst()){
                 do {
-                    @SuppressLint("Range") int id = Integer.parseInt(song_cursor.getString(song_cursor.getColumnIndex(DatabaseHelper.PLAY_SONGS_TABLE_SONG_ID)));
+                    @SuppressLint("Range") int id = Integer.parseInt(song_cursor.getString(song_cursor.getColumnIndex(DatabaseHelper.SONG_ID)));
                     @SuppressLint("Range") String filename = song_cursor.getString(song_cursor.getColumnIndex(DatabaseHelper.SONG_FILENAME));
                     @SuppressLint("Range") String name = song_cursor.getString(song_cursor.getColumnIndex(DatabaseHelper.SONG_NAME));
                     @SuppressLint("Range") String artist = song_cursor.getString(song_cursor.getColumnIndex(DatabaseHelper.SONG_ARTIST));
@@ -361,12 +367,16 @@ public class MainActivity extends AppCompatActivity {
                 }while (song_cursor.moveToNext());
             }
             song_cursor.close();
-
+            ImageView song_view_image = findViewById(R.id.song_view_image);
             //Load playlist image if user exited with saved playlist
-            if(playlist_cursor!=null && playlist_cursor.moveToFirst()) {
+            if(playlist_cursor!=null && !is_album && playlist_cursor.moveToFirst()) {
                 @SuppressLint("Range") String playlist_name = playlist_cursor.getString(playlist_cursor.getColumnIndex(DatabaseHelper.PLAYLIST_NAME));
-                ImageView song_view_image = findViewById(R.id.song_view_image);
                 song_view_image.setImageBitmap(loadImageFromStorage(playlist_name));
+                playlist_cursor.close();
+            }
+            if(playlist_cursor!=null && is_album && playlist_cursor.moveToFirst()){
+                @SuppressLint("Range") String album_name = playlist_cursor.getString(playlist_cursor.getColumnIndex(DatabaseHelper.ALBUM_NAME));
+                song_view_image.setImageBitmap(loadImageFromStorage(album_name));
                 playlist_cursor.close();
             }
 
@@ -406,6 +416,7 @@ public class MainActivity extends AppCompatActivity {
         editor.putBoolean(UserSettings.SONG_IS_PLAYING,settings.isSong_playing());
         editor.putBoolean(UserSettings.SONG_IS_ON_REPEAT,settings.isSong_on_repeat());
         editor.putBoolean(UserSettings.SONG_IS_ON_SHUFFLE,settings.isSong_on_shuffle());
+        editor.putBoolean(UserSettings.IS_ALBUM,settings.isAlbum());
         editor.apply();
     }
 

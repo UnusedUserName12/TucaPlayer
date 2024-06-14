@@ -161,6 +161,7 @@ public class PlaylistView {
         if(!isListSent) {
             MyMediaPlayer.setSongList(SongList);
             mainActivity.settings.setLast_playlist_id(playlist.getId());
+            mainActivity.settings.setIsAlbum(isAlbum);
             ImageView SongViewImage = mainActivity.findViewById(R.id.song_view_image);
             Bitmap song_pic_bitmap = mainActivity.loadImageFromStorage(playlist.getName());
             SongViewImage.setImageBitmap(song_pic_bitmap);

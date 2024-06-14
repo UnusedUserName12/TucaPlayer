@@ -6,20 +6,21 @@ package com.example.myapplication;
  */
 public class UserSettings {
 
-    //TODO: remember if user was in playlist or album
     public static final String SONG_PREFERENCES = "song_preferences";
     public static final String LAST_SONG_ID = "last_song_id";
     public static final String SONG_IS_PLAYING = "song_is_playing";
     public static final String LAST_PLAYLIST_ID = "last_playlist_id";
     public static final String SONG_IS_ON_REPEAT = "song_is_on_repeat";
     public static final String SONG_IS_ON_SHUFFLE = "song_is_on_shuffle";
+    public static final String IS_ALBUM = "is_album";
     private int last_song_id;
     private int last_playlist_id;
     private boolean song_is_playing;
     private boolean song_is_on_repeat;
     private boolean song_is_on_shuffle;
 
-    //TODO: implement song_is_on_repeat and song_is_on_shuffle
+    private boolean is_album;
+
     public int getLast_song_id() {
         return last_song_id;
     }
@@ -58,5 +59,13 @@ public class UserSettings {
 
     public void setSong_is_on_shuffle(boolean song_is_on_shuffle) {
         this.song_is_on_shuffle = song_is_on_shuffle;
+    }
+
+    public boolean isAlbum() {
+        return is_album;
+    }
+
+    public void setIsAlbum(boolean is_album) {
+        this.is_album = is_album;
     }
 }
