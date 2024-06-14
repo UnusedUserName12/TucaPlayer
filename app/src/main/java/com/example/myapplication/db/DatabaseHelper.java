@@ -60,11 +60,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String ALBUM_TABLE = "ALBUMS";
     public static final String ALBUM_ID = "album_id";
     public static final String ALBUM_NAME = "album_name";
+    public static final String ALBUM_ARTIST = "album_artist";
+    public static final String ALBUM_PICTURE = "album_picture";
 
     static final String CREATE_ALBUM_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS "+ALBUM_TABLE
             +"("
             + ALBUM_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-            + ALBUM_NAME + " TEXT NOT NULL UNIQUE "
+            + ALBUM_NAME + " TEXT NOT NULL UNIQUE, "
+            + ALBUM_ARTIST + " TEXT NOT NULL,"
+            + ALBUM_PICTURE + " TEXT"
             + ");";
 
     public static final String ALBUM_SONGS_TABLE = "ALBUM_SONGS";

@@ -84,6 +84,15 @@ public class DatabaseManager  {
         return cursor;
     }
 
+    public Cursor fetchAlbums() {
+        String [] columns = new String[] {DatabaseHelper.ALBUM_ID,DatabaseHelper.ALBUM_NAME,DatabaseHelper.ALBUM_ARTIST,DatabaseHelper.ALBUM_PICTURE};
+        Cursor cursor = database.query(DatabaseHelper.ALBUM_TABLE, columns,null,null,null,null,null,null);
+        if (cursor !=null){
+            cursor.moveToFirst();
+        }
+        return cursor;
+    }
+
     public Cursor getPlaylistById(int id){
         String [] columns = new String[] {DatabaseHelper.PLAYLIST_ID,DatabaseHelper.PLAYLIST_NAME,DatabaseHelper.PLAYLIST_PICTURE};
         Cursor cursor = database.query(DatabaseHelper.PLAYLIST_TABLE, columns,DatabaseHelper.PLAYLIST_ID+"="+id,null,null,null,null,null);
@@ -340,7 +349,7 @@ public class DatabaseManager  {
     }
 
     public Cursor fetchAlbumById(int id){
-        String [] columns = new String[] {DatabaseHelper.ALBUM_ID,DatabaseHelper.ALBUM_NAME};
+        String [] columns = new String[] {DatabaseHelper.ALBUM_ID,DatabaseHelper.ALBUM_NAME,DatabaseHelper.ALBUM_ARTIST,DatabaseHelper.ALBUM_PICTURE};
         Cursor cursor = database.query(DatabaseHelper.ALBUM_TABLE, columns,DatabaseHelper.ALBUM_ID+"="+id,null,null,null,null,null);
         if (cursor !=null){
             cursor.moveToFirst();
@@ -404,6 +413,7 @@ public class DatabaseManager  {
         database.execSQL(DatabaseHelper.CREATE_ALBUM_SONGS_TABLE_QUERY);
         database.execSQL(DatabaseHelper.CREATE_FAVORITES_TABLE_QUERY);
     }
+
 
 
 }
