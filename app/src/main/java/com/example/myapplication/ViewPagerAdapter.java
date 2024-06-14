@@ -15,6 +15,9 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
     public Fragment createFragment(int position) {
         Fragment fragment;
         switch (position) {
+            case 0:
+                fragment = new AlbumsTab();
+                break;
             case 1:
                 fragment = new PlaylistsTab();
                 break;
@@ -23,10 +26,8 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
                 break;
             case 3:
                 fragment = new SongsTab();
-                break;
             default:
                 fragment = new SongsTab();
-                break;
         }
         return fragment;
     }
