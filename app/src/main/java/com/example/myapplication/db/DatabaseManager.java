@@ -55,9 +55,11 @@ public class DatabaseManager  {
         database.insert(DatabaseHelper.PLAYLIST_SONGS_TABLE,null,contentValues);
     }
 
-    public void insertAlbum(String name){
+    public void insertAlbum(String album_name,String album_artist, String album_picture){
         ContentValues contentValues = new ContentValues();
-        contentValues.put(DatabaseHelper.ALBUM_NAME, name);
+        contentValues.put(DatabaseHelper.ALBUM_NAME, album_name);
+        contentValues.put(DatabaseHelper.ALBUM_ARTIST, album_artist);
+        contentValues.put(DatabaseHelper.ALBUM_PICTURE,album_picture);
         database.insert(DatabaseHelper.ALBUM_TABLE,null,contentValues);
     }
 
@@ -390,6 +392,16 @@ public class DatabaseManager  {
 
         database.update(DatabaseHelper.PLAYLIST_TABLE,values,DatabaseHelper.PLAYLIST_ID+" = ? ",new String[]{String.valueOf(playlist_id)});
 
+    }
+
+    public Cursor fetchSongsWithAlbums(){
+        String [] columns = new String[] {DatabaseHelper.SONG_ID,DatabaseHelper.SONG_FILENAME,DatabaseHelper.SONG_NAME,DatabaseHelper.SONG_ALBUM,DatabaseHelper.SONG_ARTIST,DatabaseHelper.SONG_GENRE,DatabaseHelper.SONG_DURATION};
+        Cursor cursor = database.query(DatabaseHelper.SONG_TABLE, columns,DatabaseHelper.SONG_ALBUM+"!= 'Unknown'",null,null,null,null,null);;
+
+        if (cursor !=null){
+            cursor.moveToFirst();
+        }
+        return cursor;
     }
 
     /*
