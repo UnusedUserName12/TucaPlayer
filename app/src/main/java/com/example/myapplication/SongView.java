@@ -1,10 +1,13 @@
 package com.example.myapplication;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.media.MediaPlayer;
+import android.os.Environment;
 import android.transition.ChangeBounds;
 import android.transition.Fade;
 import android.transition.Transition;
@@ -12,6 +15,7 @@ import android.transition.TransitionManager;
 import android.transition.TransitionSet;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -23,10 +27,12 @@ import com.example.myapplication.db.DatabaseManager;
 import com.example.myapplication.interfaces.OnSongChangeListener;
 import com.example.myapplication.obj.Song;
 
+import java.io.File;
 import java.sql.SQLDataException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 
@@ -44,6 +50,7 @@ public class SongView implements OnSongChangeListener {
     private TextView artist_view;
     static boolean isExpanded = false;
     private List<Song> SongList;
+    private Song mSong;
     /**
      * Constructor to initialize the SongViewListeners with required parameters.
      *
@@ -67,6 +74,7 @@ public class SongView implements OnSongChangeListener {
         SeekBar seekBar = mainActivity.findViewById(R.id.seek_bar);
         LinearLayout bottom_panel = mainActivity.findViewById(R.id.empty_place);
         btnFavorite = mainActivity.findViewById(R.id.btn_favorite_song);
+        ImageView btnMore = mainActivity.findViewById(R.id.btn_more_play_song);
 
         song_name_view = mainActivity.findViewById(R.id.song_view_name);
         artist_view = mainActivity.findViewById(R.id.artist_play_song);
@@ -165,6 +173,7 @@ public class SongView implements OnSongChangeListener {
             finally {
                 databaseManager.close();
             }
+
         });
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -194,11 +203,78 @@ public class SongView implements OnSongChangeListener {
             }
         });
 
+        btnMore.setOnClickListener(v -> {
+            PopupMenu popupMenu = new PopupMenu(mainActivity, v);
+
+            popupMenu.getMenuInflater().inflate(R.menu.song_options_menu, popupMenu.getMenu());
+            popupMenu.setOnMenuItemClickListener(menuItem -> {
+
+                String option = (String) menuItem.getTitle();
+                assert option != null;
+
+                option = option.toLowerCase();
+                switch (Objects.requireNonNull(option)) {
+                    case "edit":
+                        break;
+                    case "delete from device":
+                        showDeleteDialog();
+                        break;
+                }
+                return true;
+            });
+            popupMenu.show();
+        });
+
 
         MyMediaPlayer.setOnSongChangeListener(this);
     }
 
-     void expandSong() {
+    private void showDeleteDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
+
+        builder.setMessage("Are you sure you want to delete " + mSong.getSongName() + "?");
+        builder.setPositiveButton("Yes", (DialogInterface.OnClickListener) (dialog, which) -> {
+            DatabaseManager databaseManager = new DatabaseManager(mainActivity);
+            try {
+                databaseManager.open();
+                mediaPlayer.pause();
+                List<Song> lSongList = MyMediaPlayer.getSongList();
+                lSongList.removeIf(song -> song.getId() == mSong.getId());
+                MyMediaPlayer.setSongList(lSongList);
+                databaseManager.deleteSong(mSong.getId());
+
+                File downloadsFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                File[] files = null;
+                if (downloadsFolder.exists() && downloadsFolder.isDirectory()) {
+                    files = downloadsFolder.listFiles();
+                    if (files != null) {
+                        for (File file : files)
+                            if (file.isFile() && file.getName().equals(mSong.getFilename())){
+                                file.delete();
+                                break;
+                            }
+
+                    }
+                }
+                MyMediaPlayer.playMedia(MyMediaPlayer.CurrentIndex);
+                mediaPlayer.pause();
+
+            } catch (SQLDataException e) {
+                throw new RuntimeException(e);
+            } finally {
+                databaseManager.close();
+            }
+            dialog.dismiss();
+        });
+
+        builder.setNegativeButton("No", (DialogInterface.OnClickListener) (dialog, which) -> {
+            dialog.cancel();
+        });
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    void expandSong() {
 
         isExpanded = true;
 
@@ -376,6 +452,7 @@ public class SongView implements OnSongChangeListener {
             checkFavorite(song.getId());
         }
         mainActivity.settings.setLast_song_id(song.getId());
+        mSong=song;
     }
 
     private void checkFavorite(int id) {
