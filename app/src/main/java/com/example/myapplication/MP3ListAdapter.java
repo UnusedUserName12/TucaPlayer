@@ -17,9 +17,12 @@ import androidx.annotation.NonNull;
 
 import com.example.myapplication.obj.Song;
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 public class MP3ListAdapter extends ArrayAdapter<Song>{
 
@@ -52,10 +55,18 @@ public class MP3ListAdapter extends ArrayAdapter<Song>{
 
         TextView textView = convertView.findViewById(R.id.name);
         ImageView imageView = convertView.findViewById(R.id.pic);
+        TextView authorView  = convertView.findViewById(R.id.author);
+        TextView durationView = convertView.findViewById(R.id.duration);
 
         String songName = "";
+        String authorName = "";
+        String duration = "";
         if (position < SongList.size()) {
-            songName = SongList.get(position).getSongName();
+            Song song = SongList.get(position);
+            songName = song.getSongName();
+            authorName = song.getArtist();
+            duration = convertToMMSS(song.getDuration());
+
             if(SongList.get(position).isSelected()){
                 convertView.setBackground(new ColorDrawable(Color.rgb(255, 114, 114)));
                 textView.setTextColor(Color.WHITE);
@@ -68,6 +79,8 @@ public class MP3ListAdapter extends ArrayAdapter<Song>{
             }
         }
         textView.setText(songName);
+        authorView.setText(authorName);
+        durationView.setText(duration);
         if(song_pic!=null){
             imageView.setImageBitmap(song_pic);
         }
@@ -132,5 +145,13 @@ public class MP3ListAdapter extends ArrayAdapter<Song>{
         Bitmap newBitmap = Bitmap.createScaledBitmap(realImage, width,
                 height, filter);
         return newBitmap;
+    }
+
+    public static String convertToMMSS(long duration){
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(duration) % 60;
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(duration) % 60;
+        long hours = TimeUnit.MILLISECONDS.toHours(duration) % 24;
+        if(hours > 0) return String.format("%02d:%02d:%02d", hours, minutes, seconds);
+        else return String.format("%02d:%02d", minutes, seconds);
     }
 }
