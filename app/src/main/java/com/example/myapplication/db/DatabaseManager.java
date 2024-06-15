@@ -314,7 +314,7 @@ public class DatabaseManager  {
                 + "r." + DatabaseHelper.SONG_GENRE + ","
                 + "r." + DatabaseHelper.SONG_DURATION
                 + " FROM "
-                + DatabaseHelper.ALBUM_SONGS_TABLE + " l "
+                + DatabaseHelper.FAVORITES_TABLE + " l "
                 + " INNER JOIN "
                 + DatabaseHelper.SONG_TABLE + " r "
                 + " ON "

@@ -13,7 +13,7 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
     @NonNull
     @Override
     public Fragment createFragment(int position) {
-        Fragment fragment;
+        Fragment fragment = null;
         switch (position) {
             case 0:
                 fragment = new AlbumsTab();
@@ -25,10 +25,9 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
                 fragment = new SongsTab();
                 break;
             case 3:
-                fragment = new SongsTab();
-            default:
-                fragment = new SongsTab();
+                fragment = new FavoritesTab();
         }
+        assert fragment != null;
         return fragment;
     }
 

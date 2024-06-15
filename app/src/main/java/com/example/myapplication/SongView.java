@@ -1,5 +1,7 @@
 package com.example.myapplication;
 
+import android.annotation.SuppressLint;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.media.MediaPlayer;
@@ -16,10 +18,17 @@ import android.widget.TextView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 
+import com.example.myapplication.db.DatabaseHelper;
+import com.example.myapplication.db.DatabaseManager;
 import com.example.myapplication.interfaces.OnSongChangeListener;
 import com.example.myapplication.obj.Song;
 
+import java.sql.SQLDataException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * Class that implements listeners for song view controls in the MainActivity.
@@ -30,9 +39,11 @@ public class SongView implements OnSongChangeListener {
     static MediaPlayer mediaPlayer = MyMediaPlayer.getInstance();
     ConstraintLayout constraintLayout;
     private ImageView btnPlay;
+    private ImageView btnFavorite;
     private TextView song_name_view;
     private TextView artist_view;
     static boolean isExpanded = false;
+    private List<Song> SongList;
     /**
      * Constructor to initialize the SongViewListeners with required parameters.
      *
@@ -55,6 +66,7 @@ public class SongView implements OnSongChangeListener {
         ImageView btnShrink = mainActivity.findViewById(R.id.btn_close_play_song);
         SeekBar seekBar = mainActivity.findViewById(R.id.seek_bar);
         LinearLayout bottom_panel = mainActivity.findViewById(R.id.empty_place);
+        btnFavorite = mainActivity.findViewById(R.id.btn_favorite_song);
 
         song_name_view = mainActivity.findViewById(R.id.song_view_name);
         artist_view = mainActivity.findViewById(R.id.artist_play_song);
@@ -127,6 +139,34 @@ public class SongView implements OnSongChangeListener {
             }
         });
 
+        btnFavorite.setOnClickListener(v -> {
+            DatabaseManager databaseManager = new DatabaseManager(mainActivity);
+            try {
+                databaseManager.open();
+                int id = mainActivity.settings.getLast_song_id();
+                for(Song song : SongList){
+                    if(song.getId()==id && !song.isFavorite()) {
+                        btnFavorite.setImageResource(R.drawable.favorite_24dp_fill);
+                        databaseManager.insertFavorite(song.getId());
+                        song.setFavorite(true);
+                        break;
+                    }
+                    else if(song.getId()==id && song.isFavorite()) {
+                        btnFavorite.setImageResource(R.drawable.favorite_24dp_no_fill);
+                        databaseManager.deleteFavorite(song.getId());
+                        song.setFavorite(false);
+                        break;
+                }
+            }
+                //SongList = setListOfFavorites();
+            } catch (SQLDataException e) {
+                throw new RuntimeException(e);
+            }
+            finally {
+                databaseManager.close();
+            }
+        });
+
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -196,7 +236,12 @@ public class SongView implements OnSongChangeListener {
         expanded_song_set.clone(mainActivity, R.layout.activity_main_song_view);
         expanded_song_set.applyTo(constraintLayout);
 
+        SongList = setListOfFavorites();
+        int last_id = mainActivity.settings.getLast_song_id();
+        checkFavorite(last_id);
     }
+
+
 
     void shrinkSong() {
         isExpanded = false;
@@ -284,6 +329,36 @@ public class SongView implements OnSongChangeListener {
             show_song_view_playlist_set.applyTo(constraintLayout);
         }
     }
+
+    private List<Song> setListOfFavorites(){
+        List<Song> SongList = MyMediaPlayer.getSongList();
+
+        DatabaseManager databaseManager = new DatabaseManager(mainActivity);
+        try {
+            databaseManager.open();
+
+            Cursor cursor = databaseManager.fetchFavorites("title");
+            if(cursor.moveToFirst()){
+                do {
+                    @SuppressLint("Range") int id = Integer.parseInt(cursor.getString(cursor.getColumnIndex(DatabaseHelper.FAVORITE_ID)));
+                    for (Song song : SongList) {
+                        if (song.getId() == id) {
+                            song.setFavorite(true);
+                            break;
+                        }
+                    }
+                }while (cursor.moveToNext());
+            }
+            cursor.close();
+            //MyMediaPlayer.setSongList(SongList);
+        } catch (SQLDataException e) {
+            throw new RuntimeException(e);
+        }
+        finally {
+            databaseManager.close();
+        }
+        return SongList;
+    }
     /**
      * Callback method when the song is changed.
      * Updates the UI with the new song details.
@@ -296,10 +371,21 @@ public class SongView implements OnSongChangeListener {
         artist_view.setText(song.getArtist());
         btnPlay.setImageResource(R.drawable.pause_24dp);
         if(mainActivity.settings.getLast_song_id()<1) mainActivity.songView.showSong();
-        // We know that song has already changed
-        // So this if checks if we previously had a song or not
-        // If we didn't have a song before -> show SongView
+
+        if(SongList!=null){
+            checkFavorite(song.getId());
+        }
         mainActivity.settings.setLast_song_id(song.getId());
+    }
+
+    private void checkFavorite(int id) {
+        for(Song song : SongList){
+            if(song.getId() == id){
+                if(song.isFavorite()) btnFavorite.setImageResource(R.drawable.favorite_24dp_fill);
+                else btnFavorite.setImageResource(R.drawable.favorite_24dp_no_fill);
+                break;
+            }
+        }
     }
 }
 

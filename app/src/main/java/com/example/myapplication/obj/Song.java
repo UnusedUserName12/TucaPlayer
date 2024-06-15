@@ -11,6 +11,8 @@ public class Song {
 
     private boolean selected;
 
+    private boolean favorite;
+
 
     public Song() {
     }
@@ -22,6 +24,7 @@ public class Song {
         this.id = id;
         this.filename = filename;
         this.selected = false;
+        this.favorite = false;
     }
 
     public Song(int id,String filename, String songName, String artist, String album,String genre,long duration) {
@@ -33,6 +36,7 @@ public class Song {
         this.genre = genre;
         this.duration = duration;
         this.selected = false;
+        this.favorite = false;
     }
 
     public int getId() {
@@ -95,6 +99,13 @@ public class Song {
 
     public void setSelected(boolean selected) {
         this.selected = selected;
+    }
+    public boolean isFavorite() {
+        return favorite;
+    }
+
+    public void setFavorite(boolean favorite) {
+        this.favorite = favorite;
     }
 
 }
