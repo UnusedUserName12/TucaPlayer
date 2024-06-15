@@ -31,7 +31,7 @@ public class DatabaseManager  {
         ContentValues contentValues = new ContentValues();
         contentValues.put(DatabaseHelper.PLAYLIST_NAME, name);
         contentValues.put(DatabaseHelper.PLAYLIST_PICTURE, picture_name);
-        database.insert(DatabaseHelper.PLAYLIST_TABLE,null,contentValues);
+        database.insertOrThrow(DatabaseHelper.PLAYLIST_TABLE,null,contentValues);
     }
 
     public void insertSong(String filename,String name,String album,String artist,String genre,long duration){

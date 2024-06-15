@@ -32,9 +32,13 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import com.example.myapplication.db.DatabaseHelper;
 import com.example.myapplication.db.DatabaseManager;
+import com.example.myapplication.interfaces.OnPlaylistChangeListener;
+import com.example.myapplication.interfaces.OnSongChangeListener;
 import com.example.myapplication.obj.Playlist;
 import com.example.myapplication.obj.Song;
 
@@ -58,6 +62,7 @@ public class PlaylistView {
     ConstraintLayout constraintLayout;
     boolean isListSent;
     boolean isAlbum;
+    private static OnPlaylistChangeListener onPlaylistChangeListener;
 
     ActivityResultLauncher<Intent> activityLauncher;
 
@@ -272,6 +277,9 @@ public class PlaylistView {
             song_view_hidden_set.applyTo(constraintLayout);
         }
 
+        if(onPlaylistChangeListener!=null){
+            onPlaylistChangeListener.OnPlaylistChanged();
+        }
     }
 
     private void openAddSongsActivity(View v){
@@ -513,6 +521,10 @@ public class PlaylistView {
             databaseManager.close();
             AudioAdapter.notifyDataSetChanged();
         }
+    }
+
+    public static void setOnPlaylistChangeListener(OnPlaylistChangeListener listener) {
+        onPlaylistChangeListener = listener;
     }
 }
 

@@ -8,8 +8,8 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteConstraintException;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -22,22 +22,23 @@ import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
 import com.example.myapplication.db.DatabaseHelper;
 import com.example.myapplication.db.DatabaseManager;
+import com.example.myapplication.interfaces.OnPlaylistChangeListener;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.SQLDataException;
+import java.sql.SQLException;
 
 
-public class PlaylistsTab extends Fragment {
+public class PlaylistsTab extends Fragment implements OnPlaylistChangeListener {
     RelativeLayout get_image_button;
     ImageView chosen_image;
     GridLayout gridLayout;
@@ -48,6 +49,7 @@ public class PlaylistsTab extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context = getContext();
+        PlaylistView.setOnPlaylistChangeListener(this);
     }
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -85,11 +87,14 @@ public class PlaylistsTab extends Fragment {
                 DatabaseManager databaseManager = new DatabaseManager(context);
                 try{
                     databaseManager.open();
-                }catch (Exception e){
+                    databaseManager.insertPlaylist(name,image_path);
+                }catch (SQLiteConstraintException | SQLDataException e){
+                    Toast.makeText(context,"Playlist already exists",Toast.LENGTH_SHORT).show();
                     e.printStackTrace();
                 }
-                databaseManager.insertPlaylist(name,image_path);
-                databaseManager.close();
+                finally {
+                    databaseManager.close();
+                }
                 updatePlaylistLayout();
                 dialog.dismiss();
             });
@@ -150,7 +155,7 @@ public class PlaylistsTab extends Fragment {
         updatePlaylistLayout();
     }
 
-    private void updatePlaylistLayout() {
+    public void updatePlaylistLayout() {
         gridLayout.removeAllViews();
         DatabaseManager databaseManager = new DatabaseManager(context);
         try {
@@ -201,6 +206,9 @@ public class PlaylistsTab extends Fragment {
         gridLayout.addView(add_playlist_card_View);
     }
 
-
+    @Override
+    public void OnPlaylistChanged() {
+        updatePlaylistLayout();
     }
+}
 
