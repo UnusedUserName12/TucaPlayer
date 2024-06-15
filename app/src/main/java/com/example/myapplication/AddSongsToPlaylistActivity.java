@@ -31,12 +31,12 @@ public class AddSongsToPlaylistActivity extends Activity {
 
     private List<Song> SongList;
     private List<Integer> SongsInPlaylistList;
-    private List<Integer> SelectedSongList;
     private MP3ListAdapter AudioAdapter;
     ListView listView;
     private RelativeLayout top_panel;
     private RelativeLayout search_area;
     private SearchView searchView;
+    private Button btn_add;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -44,10 +44,9 @@ public class AddSongsToPlaylistActivity extends Activity {
         setContentView(R.layout.add_songs_to_playlist);
 
         SongList = new ArrayList<>();
-        SelectedSongList = new ArrayList<>();
         SongsInPlaylistList = new ArrayList<>();
 
-        getSongsInPlaylist(SongsInPlaylistList);
+        getSongsFromPlaylist(SongsInPlaylistList);
 
         search_area = findViewById(R.id.search_bar_area);
         top_panel = findViewById(R.id.topPanel_add_songs);
@@ -56,7 +55,7 @@ public class AddSongsToPlaylistActivity extends Activity {
         textView.setOnClickListener(v -> showSearchBar());
 
         ImageView btn_back = findViewById(R.id.btn_back_from_add_songs);
-        Button btn_add = findViewById(R.id.btn_add_songs);
+        btn_add = findViewById(R.id.btn_add_songs);
         btn_add.setEnabled(false);
         ImageView btn_sort = findViewById(R.id.btn_sort_add_songs);
         ImageView btn_select_all = findViewById(R.id.btn_select_all_add_songs);
@@ -66,9 +65,6 @@ public class AddSongsToPlaylistActivity extends Activity {
         searchView.setFocusable(true);
         searchView.setFocusableInTouchMode(true);
         listView = findViewById(R.id.add_songs_list);
-
-
-
 
         AudioAdapter = new MP3ListAdapter(this, SongList);
         listView.setAdapter(AudioAdapter);
@@ -107,8 +103,6 @@ public class AddSongsToPlaylistActivity extends Activity {
             popupMenu.getMenuInflater().inflate(R.menu.sort_order_menu, popupMenu.getMenu());
             popupMenu.setOnMenuItemClickListener(menuItem -> {
                 loadAudio((String) menuItem.getTitle()); //on click try to arrange a new list
-                updateSelection();
-
                 return true;
             });
             popupMenu.show();
@@ -117,44 +111,27 @@ public class AddSongsToPlaylistActivity extends Activity {
 
         btn_select_all.setOnClickListener(v -> {
             for(Song s : SongList){
-                if (!SelectedSongList.contains(s.getId()))
-                    SelectedSongList.add(s.getId());
-                else SelectedSongList.remove(SelectedSongList.indexOf(s.getId()));
+                s.setSelected(!s.isSelected());
             }
-
-            updateSelection();
-
-            if(SelectedSongList.isEmpty()){
-                btn_add.setEnabled(false);
-                btn_add.setBackgroundTintList(ContextCompat.getColorStateList(AddSongsToPlaylistActivity.this, color.grey_66D6D6D6));
-            }
-            else {
-                btn_add.setEnabled(true);
-                btn_add.setBackgroundTintList(ContextCompat.getColorStateList(AddSongsToPlaylistActivity.this, color.red));
-            }
+            checkAddButton();
 
             AudioAdapter.notifyDataSetChanged();
         });
 
         AdapterView.OnItemClickListener itemListener = (parent, v, position, id) -> {
             List <Song> filteredList = AudioAdapter.getFilteredList();
-            Song clickedSong = filteredList.get(position);
-            //Song clickedSong = (Song) parent.getItemAtPosition(position);
 
-            if (!SelectedSongList.contains(clickedSong.getId()))
-                SelectedSongList.add(clickedSong.getId());
-            else SelectedSongList.remove(SelectedSongList.indexOf(clickedSong.getId()));
-
-            updateSelection();
-
-            if(SelectedSongList.isEmpty()){
-                btn_add.setEnabled(false);
-                btn_add.setBackgroundTintList(ContextCompat.getColorStateList(AddSongsToPlaylistActivity.this, color.grey_66D6D6D6));
+            filteredList.get(position).setSelected(!SongList.get(position).isSelected());
+            for(Song s : SongList){
+                for(Song fs : filteredList){
+                    if(s.getId()== fs.getId()){
+                        s.setSelected(fs.isSelected());
+                        break;
+                    }
+                }
             }
-            else {
-                btn_add.setEnabled(true);
-                btn_add.setBackgroundTintList(ContextCompat.getColorStateList(AddSongsToPlaylistActivity.this, color.red));
-            }
+
+            checkAddButton();
 
             AudioAdapter.notifyDataSetChanged();
         };
@@ -170,8 +147,9 @@ public class AddSongsToPlaylistActivity extends Activity {
                 e.printStackTrace();
             }
             if(playlist_id !=0) {
-                for (int song_id : SelectedSongList) {
-                    databaseManager.insertPlaylistSong(playlist_id,song_id);
+                for (Song s : SongList) {
+                    if(s.isSelected())
+                        databaseManager.insertPlaylistSong(playlist_id,s.getId());
                 }
             }
             else Toast.makeText(AddSongsToPlaylistActivity.this, "Something went wrong",Toast.LENGTH_SHORT).show();
@@ -211,21 +189,12 @@ public class AddSongsToPlaylistActivity extends Activity {
 
             }while (cursor.moveToNext());
         }
+        AudioAdapter.notifyDataSetChanged();
 
         databaseManager.close();
         cursor.close();
     }
 
-    private void updateSelection(){
-        for (Song s : SongList) {
-            s.setSelected(false);
-        }
-        for (Song s : SongList) {
-            for(int i : SelectedSongList)     //Contains looks for "PERFECT" match
-                if(i==s.getId()) SongList.get(SongList.indexOf(s)).setSelected(true);
-            }
-        AudioAdapter.notifyDataSetChanged();
-    }
 
     private void showSearchBar(){
         top_panel.setVisibility(View.INVISIBLE);
@@ -236,7 +205,7 @@ public class AddSongsToPlaylistActivity extends Activity {
         searchView.requestFocusFromTouch();
     }
 
-    private void getSongsInPlaylist(List<Integer> list){
+    private void getSongsFromPlaylist(List<Integer> list){
         DatabaseManager databaseManager = new DatabaseManager(this);
         try{
             databaseManager.open();
@@ -254,5 +223,24 @@ public class AddSongsToPlaylistActivity extends Activity {
             }while (cursor.moveToNext());
         }
         databaseManager.close();
+    }
+
+    private void checkAddButton(){
+        boolean isEnabled = false;
+        for (Song s : SongList){
+            if (s.isSelected()) {
+                isEnabled = true;
+                break;
+            }
+        }
+
+        if(isEnabled){
+            btn_add.setEnabled(true);
+            btn_add.setBackgroundTintList(ContextCompat.getColorStateList(AddSongsToPlaylistActivity.this, color.red));
+        }
+        else {
+            btn_add.setEnabled(false);
+            btn_add.setBackgroundTintList(ContextCompat.getColorStateList(AddSongsToPlaylistActivity.this, color.grey_66D6D6D6));
+        }
     }
 }
