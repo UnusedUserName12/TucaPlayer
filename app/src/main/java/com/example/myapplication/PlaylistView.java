@@ -20,6 +20,7 @@ import android.transition.Transition;
 import android.transition.TransitionManager;
 import android.transition.TransitionSet;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -63,6 +64,7 @@ public class PlaylistView {
     boolean isListSent;
     boolean isAlbum;
     private static OnPlaylistChangeListener onPlaylistChangeListener;
+    private boolean multi_select_mode;
 
     ActivityResultLauncher<Intent> activityLauncher;
 
@@ -72,6 +74,9 @@ public class PlaylistView {
         activityLauncher = mainActivity.registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
             if(result.getResultCode() == RESULT_OK) {
                 loadAudioPlaylist("title");
+                TextView sizeView = mainActivity.findViewById(R.id.playlist_size);
+                String size = SongList.size()+" songs";
+                sizeView.setText(size);
             }
         });
     }
@@ -83,6 +88,7 @@ public class PlaylistView {
         ImageButton btn_add_songs = mainActivity.findViewById(R.id.btn_add_song_redirect);
         ImageButton btn_more = mainActivity.findViewById(R.id.btn_more_playlist);
         ImageView btn_close = mainActivity.findViewById(R.id.btn_close_playlist);
+        ImageButton btn_delete = mainActivity.findViewById(R.id.btn_delete_from_playlist);
 
         SongList = new ArrayList<>();
 
@@ -137,8 +143,53 @@ public class PlaylistView {
             sendData();
             playMedia(position);
             int currentSongId = MyMediaPlayer.getCurrentSongId();
-            for(Song s : SongList) s.setSelected(currentSongId == s.getId());
+            if(!multi_select_mode) for(Song s : SongList) s.setSelected(currentSongId == s.getId());
+            else
+            {
+                MyMediaPlayer.instance.pause();
+                if(!SongList.get(position).isSelected())
+                    SongList.get(position).setSelected(true);
+                else SongList.get(position).setSelected(false);
+            }
             AudioAdapter.notifyDataSetChanged();
+        });
+
+        playlist_songs_view.setOnItemLongClickListener((parent, view, position, id) -> {
+            if(!isAlbum) {
+                ThreadElementAutoSelector.isRunning=false;
+                multi_select_mode = true;
+                btn_delete.setVisibility(View.VISIBLE);
+                btn_add_songs.setVisibility(View.INVISIBLE);
+            }
+            return false;
+        });
+
+        btn_delete.setOnClickListener(v -> {
+            DatabaseManager databaseManager = new DatabaseManager(mainActivity);
+            try {
+                databaseManager.open();
+
+            for(Song s : SongList){
+                if(s.isSelected()) {
+                    databaseManager.deletePlaylistSong(id, s.getId());
+                }
+            }
+            SongList.removeIf(Song::isSelected);
+            } catch (SQLDataException e) {
+                throw new RuntimeException(e);
+            }
+            finally {
+                databaseManager.close();
+            }
+            AudioAdapter.notifyDataSetChanged();
+            multi_select_mode = false;
+            btn_delete.setVisibility(View.INVISIBLE);
+            btn_add_songs.setVisibility(View.VISIBLE);
+            ThreadElementAutoSelector.isRunning=true;
+
+            TextView sizeView = mainActivity.findViewById(R.id.playlist_size);
+            String size = SongList.size()+" songs";
+            sizeView.setText(size);
         });
     }
 
@@ -170,7 +221,8 @@ public class PlaylistView {
         isAlbum = false;
         ImageButton btn_add_songs = mainActivity.findViewById(R.id.btn_add_song_redirect);
         btn_add_songs.setVisibility(View.VISIBLE);
-        btn_add_songs.setEnabled(true);
+        ImageButton btn_delete = mainActivity.findViewById(R.id.btn_delete_from_playlist);
+        btn_delete.setVisibility(View.GONE);
         openView(id);
     }
 
@@ -425,12 +477,12 @@ public class PlaylistView {
     public void openAlbum(int id){
         isAlbum = true;
         ImageButton btn_add_songs = mainActivity.findViewById(R.id.btn_add_song_redirect);
-        btn_add_songs.setVisibility(View.INVISIBLE);
-        btn_add_songs.setEnabled(false);
+        btn_add_songs.setVisibility(View.GONE);
         openView(id);
     }
 
     private void openView(int id) {
+        multi_select_mode = false;
         isListSent = false;
         this.id = id;
         DatabaseManager databaseManager = new DatabaseManager(mainActivity);
@@ -473,6 +525,10 @@ public class PlaylistView {
 
                 ThreadElementAutoSelector.SongList = SongList;
                 ThreadElementAutoSelector.AudioAdapter = AudioAdapter;
+
+                TextView sizeView = mainActivity.findViewById(R.id.playlist_size);
+                String size = SongList.size()+" songs";
+                sizeView.setText(size);
 
                 expandPlaylist();
             } catch (SQLDataException e) {
@@ -545,7 +601,10 @@ public class PlaylistView {
                                 if (files != null) {
                                     for (File file : files)
                                         if (file.isFile() && file.getName().equals(filename))
+                                        {
                                             file.delete();
+                                            break;
+                                        }
                                 }
                             } while (cursor.moveToNext());
                         }

@@ -340,6 +340,17 @@
                 android:textStyle="bold"
                 android:layout_below="@id/cardView"
                 />
+            <TextView
+                android:id="@+id/playlist_size"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/playlist_name"
+                android:layout_centerHorizontal="true"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="8dp"
+                android:text="00 songs"
+                android:textAlignment="center"
+                android:textSize="12sp" />
 
             <ImageButton
                 android:id="@+id/btn_add_song_redirect"
@@ -352,6 +363,18 @@
                 app:tint="@color/grey_72"
                 android:layout_marginEnd="40dp"
                 android:layout_below="@+id/playlist_name"/>
+            <ImageButton
+                android:id="@+id/btn_delete_from_playlist"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_below="@+id/playlist_name"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="40dp"
+                android:backgroundTint="@color/transparent"
+                android:src="@drawable/delete_24dp"
+                android:visibility="gone"
+                app:tint="@color/grey_72" />
 
             <ImageButton
                 android:id="@+id/btn_more_playlist"
@@ -368,7 +391,7 @@
                 android:id="@+id/playlist_songs"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/btn_add_song_redirect"
+                android:layout_below="@+id/btn_more_playlist"
                 />
 
         </RelativeLayout>
