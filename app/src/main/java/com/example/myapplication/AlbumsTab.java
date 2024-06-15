@@ -60,8 +60,7 @@ public class AlbumsTab extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        //updateAlbumContent();
-        //updateAlbumLayout();
+        updateAlbumLayout();
     }
 
     private void updateAlbums() {
@@ -262,6 +261,7 @@ public class AlbumsTab extends Fragment {
             @SuppressLint("Range") String album = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ALBUM));
             SongList.removeIf(s -> s.getAlbum().equals(album));
         }
+        cursor.close();
 
         for(Song s : SongList){
             databaseManager.insertAlbumSong(id,s.getId());
