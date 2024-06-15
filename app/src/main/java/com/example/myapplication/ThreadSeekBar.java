@@ -27,7 +27,9 @@ public class ThreadSeekBar extends Thread {
     public static String convertToMMSS(long duration){
         long seconds = TimeUnit.MILLISECONDS.toSeconds(duration) % 60;
         long minutes = TimeUnit.MILLISECONDS.toMinutes(duration) % 60;
-        return String.format("%02d:%02d", minutes, seconds);
+        long hours = TimeUnit.MILLISECONDS.toHours(duration) % 24;
+        if(hours > 0) return String.format("%02d:%02d:%02d", hours, minutes, seconds);
+        else return String.format("%02d:%02d", minutes, seconds);
     }
     public void run(){
         while (!isStopped) {
