@@ -25,7 +25,6 @@ import java.util.List;
 
 public class SongsTab extends Fragment {
 
-    private ListView musicListView;
     private List<Song> SongList;
     private MP3ListAdapter AudioAdapter;
     MediaPlayer mediaPlayer;
@@ -43,7 +42,7 @@ public class SongsTab extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_folder, container, false);
 
-        musicListView = view.findViewById(R.id.AudioList);
+        ListView musicListView = view.findViewById(R.id.AudioList);
 
         SongList = new ArrayList<>();
 
@@ -131,6 +130,7 @@ public class SongsTab extends Fragment {
 
             }while (cursor.moveToNext());
         }
+        cursor.close();
         AudioAdapter.notifyDataSetChanged();
 
         databaseManager.close();
