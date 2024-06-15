@@ -9,7 +9,7 @@ import androidx.annotation.Nullable;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     static final String DATABASE_NAME = "TUCAPLAYER.db";
-    static int DATABASE_VERSION = 5;
+    static int DATABASE_VERSION = 6;
 
     public static final String PLAYLIST_TABLE = "PLAYLISTS";
     public static final String PLAYLIST_ID = "playlist_id";
@@ -104,6 +104,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_ALBUM_TABLE_QUERY);
         db.execSQL(CREATE_ALBUM_SONGS_TABLE_QUERY);
         db.execSQL(CREATE_FAVORITES_TABLE_QUERY);
+        db.execSQL("PRAGMA foreign_keys = ON;");
+
     }
 
     @Override
