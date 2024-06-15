@@ -4,14 +4,17 @@ import static android.app.Activity.RESULT_OK;
 import static com.example.myapplication.MyMediaPlayer.playMedia;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.Environment;
 import android.transition.Fade;
 import android.transition.Transition;
 import android.transition.TransitionManager;
@@ -32,13 +35,10 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 
 import com.example.myapplication.db.DatabaseHelper;
 import com.example.myapplication.db.DatabaseManager;
 import com.example.myapplication.interfaces.OnPlaylistChangeListener;
-import com.example.myapplication.interfaces.OnSongChangeListener;
 import com.example.myapplication.obj.Playlist;
 import com.example.myapplication.obj.Song;
 
@@ -94,7 +94,8 @@ public class PlaylistView {
         btn_more.setOnClickListener(v -> {
             PopupMenu popupMenu = new PopupMenu(mainActivity, v);
 
-            popupMenu.getMenuInflater().inflate(R.menu.playlist_options_menu, popupMenu.getMenu());
+            if(!isAlbum) popupMenu.getMenuInflater().inflate(R.menu.playlist_options_menu, popupMenu.getMenu());
+            else popupMenu.getMenuInflater().inflate(R.menu.album_options_menu, popupMenu.getMenu());
             popupMenu.setOnMenuItemClickListener(menuItem -> {
 
                 String option = (String) menuItem.getTitle();
@@ -109,17 +110,8 @@ public class PlaylistView {
                         showDialogChangeImage();
                         break;
                     case "delete playlist":
-                        DatabaseManager databaseManager = new DatabaseManager(mainActivity);
-                        try {
-                            databaseManager.open();
-                        } catch (SQLDataException e) {
-                            throw new RuntimeException(e);
-                        }
-                        databaseManager.deletePlaylist(id);
-                        File f = new File(playlist.getImagePath(), playlist.getName()+".jpg");
-                        if(f.delete()) Toast.makeText(mainActivity,"Playlist deleted",Toast.LENGTH_SHORT).show();
-                        databaseManager.close();
-                        shrinkPlaylist();
+                    case "delete album":
+                        showDeleteDialog();
                         break;
                     default:
                         if(!option.equals("order by")) {
@@ -364,7 +356,6 @@ public class PlaylistView {
      * <p><b>This method is needed due to the fact that we save and load images using
      * playlist name</b>
      *
-     *
      * @param oldName the current name of the file (without the .jpg extension)
      * @param newName the new name for the file (without the .jpg extension)
      */
@@ -414,8 +405,10 @@ public class PlaylistView {
             playlist.setImagePath(image_path);
             databaseManager.updatePlaylist(playlist.getId(),playlist.getName(),playlist.getImagePath());
             databaseManager.close();
-
-            playlist_image_view.setImageBitmap(mainActivity.loadImageFromStorage(playlist.getName()));
+            Bitmap bitmap = mainActivity.loadImageFromStorage(playlist.getName());
+            playlist_image_view.setImageBitmap(bitmap);
+            AudioAdapter.setSong_pic(bitmap);
+            AudioAdapter.notifyDataSetChanged();
             dialog.dismiss();
         });
 
@@ -467,7 +460,7 @@ public class PlaylistView {
                 loadAudioPlaylist("title");
             }
             playlist_name_view.setText(mName);
-                if (!mImage.equals("placeholder.png")) {
+                if (mImage!=null && !mImage.equals("placeholder.png")) {
                     Bitmap song_pic_bitmap = mainActivity.loadImageFromStorage(mName);
                     playlist_image_view.setImageBitmap(song_pic_bitmap);
                     playlist_image_view.setClipToOutline(true);
@@ -521,6 +514,65 @@ public class PlaylistView {
             databaseManager.close();
             AudioAdapter.notifyDataSetChanged();
         }
+    }
+
+    private void showDeleteDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
+
+        builder.setMessage("Are you sure you want to delete " + playlist.getName()+"?");
+        if(isAlbum) builder.setMessage("Are you sure you want to delete " + playlist.getName()+" with all songs from the device?");
+        builder.setCancelable(false);
+
+        builder.setPositiveButton("Yes", (DialogInterface.OnClickListener) (dialog, which) -> {
+            DatabaseManager databaseManager = new DatabaseManager(mainActivity);
+            try {
+                databaseManager.open();
+                if(isAlbum) {
+                    databaseManager.deleteAlbum(id);
+
+                    Cursor cursor = databaseManager.fetchAlbumsSongsFullInfo(id, "title");
+                        File downloadsFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                        File[] files = null;
+                        if (downloadsFolder.exists() && downloadsFolder.isDirectory()) {
+                            files = downloadsFolder.listFiles();
+                        }
+                        if (cursor.moveToFirst()) {
+                            do {
+                                @SuppressLint("Range") int id = Integer.parseInt(cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ID)));
+                                @SuppressLint("Range") String filename = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_FILENAME));
+
+                                databaseManager.deleteSong(id);
+                                if (files != null) {
+                                    for (File file : files)
+                                        if (file.isFile() && file.getName().equals(filename))
+                                            file.delete();
+                                }
+                            } while (cursor.moveToNext());
+                        }
+                        cursor.close();
+                    }
+                else {
+                    databaseManager.deletePlaylist(id);
+                }
+
+                File f = new File(playlist.getImagePath(), playlist.getName()+".jpg");
+                if(f.delete()) Toast.makeText(mainActivity,"Playlist deleted",Toast.LENGTH_SHORT).show();
+
+            } catch (SQLDataException e) {
+                throw new RuntimeException(e);
+            }
+            finally {
+                shrinkPlaylist();
+                databaseManager.close();
+            }
+            dialog.dismiss();
+        });
+
+        builder.setNegativeButton("No", (DialogInterface.OnClickListener) (dialog, which) -> {
+            dialog.cancel();
+        });
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
     }
 
     public static void setOnPlaylistChangeListener(OnPlaylistChangeListener listener) {
