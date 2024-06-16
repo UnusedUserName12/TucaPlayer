@@ -34,7 +34,9 @@ import java.io.File;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class AlbumsTab extends Fragment {
     Context context;
@@ -67,66 +69,70 @@ public class AlbumsTab extends Fragment {
         DatabaseManager databaseManager = new DatabaseManager(context);
         try {
             databaseManager.open();
-            List<Song> SongList = getListOfSongsWithAlbums(databaseManager);
-            List<Album> AlbumList = getListOfAlbums(databaseManager);
-            List<Album> AlbumsToAdd = new ArrayList<>(AlbumList);
+            List<Song> songList = getListOfSongsWithAlbums(databaseManager);
+            List<Album> albumList = getListOfAlbums(databaseManager);
 
-            if(AlbumList.isEmpty()){
-                ArrayList<String> uniqueAlbums = new ArrayList<>();
-                for(Song s : SongList) {
-                    if(!uniqueAlbums.contains(s.getAlbum()))
-                    {
-                        uniqueAlbums.add(s.getAlbum());
-                        AlbumsToAdd.add(new Album(0,s.getAlbum(),s.getArtist(),null));
-                    }
-                }
-            }else {
-                for (Song s : SongList) {
-                    for (Album a : AlbumList) {
-                        if (s.getAlbum().equals(a.getName())) {
-                            AlbumsToAdd.remove(a);
-                            break;
-                        }
+            Set<String> existingAlbums = new HashSet<>();
+            for (Album album : albumList) {
+                existingAlbums.add(album.getName());
+            }
+
+            Set<String> songAlbums = new HashSet<>();
+            for (Song song : songList) {
+                songAlbums.add(song.getAlbum());
+            }
+
+            List<Album> albumsToAdd = new ArrayList<>();
+            for (String albumName : songAlbums) {
+                if (!existingAlbums.contains(albumName)) {
+                    Song exampleSong = songList.stream()
+                            .filter(s -> s.getAlbum().equals(albumName))
+                            .findFirst()
+                            .orElse(null);
+                    if (exampleSong != null) {
+                        albumsToAdd.add(new Album(0, albumName, exampleSong.getArtist(), null));
                     }
                 }
             }
 
-            //create new albums
-            if (!AlbumsToAdd.isEmpty()) {
-                List<Song> SongsToAddToNewAlbum = new ArrayList<>();
-                for (Song s : SongList) {
-                    for (Album a : AlbumsToAdd) {
-                        if (s.getAlbum().equals(a.getName())) {
-                            SongsToAddToNewAlbum.add(s);
-                            break;
-                        }
-                    }
-                }
+            if (!albumsToAdd.isEmpty()) {
                 MediaMetadataRetriever mmr = new MediaMetadataRetriever();
                 MainActivity mainActivity = (MainActivity) getActivity();
                 if (mainActivity != null) {
-                    for (Song s : SongsToAddToNewAlbum) {
-                        File songFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), s.getFilename());
-                        mmr.setDataSource(songFile.getPath());
-                        byte[] data = mmr.getEmbeddedPicture();
-
-                        if (data != null) {
-                            Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-                            mainActivity.saveToInternalStorage(bitmap, s.getAlbum());
-                            databaseManager.insertAlbum(s.getAlbum(), s.getArtist(), s.getAlbum());
-                        } else
-                            databaseManager.insertAlbum(s.getAlbum(), s.getArtist(), "placeholder.png");
+                    for (Album album : albumsToAdd) {
+                        for (Song song : songList) {
+                            if (song.getAlbum().equals(album.getName())) {
+                                File songFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), song.getFilename());
+                                if (songFile.exists()) {
+                                    mmr.setDataSource(songFile.getPath());
+                                    byte[] data = mmr.getEmbeddedPicture();
+                                    if (data != null) {
+                                        Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+                                        mainActivity.saveToInternalStorage(bitmap, song.getAlbum());
+                                        if (!existingAlbums.contains(song.getAlbum())) {
+                                            databaseManager.insertAlbum(song.getAlbum(), song.getArtist(), song.getAlbum());
+                                            existingAlbums.add(song.getAlbum());  // Update the set to avoid duplicates
+                                        }
+                                    } else {
+                                        if (!existingAlbums.contains(song.getAlbum())) {
+                                            databaseManager.insertAlbum(song.getAlbum(), song.getArtist(), "placeholder.png");
+                                            existingAlbums.add(song.getAlbum());  // Update the set to avoid duplicates
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
-
-
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
             databaseManager.close();
         }
     }
+
+
 
     private List<Album> getListOfAlbums(DatabaseManager databaseManager) {
         List<Album> AlbumList = new ArrayList<>();
@@ -254,12 +260,12 @@ public class AlbumsTab extends Fragment {
         Cursor cursor = databaseManager.fetchAlbumsSongsFullInfo(id,"title");
         SongList.removeIf(s -> !s.getAlbum().equals(album_name));
 
+
         if(cursor.moveToFirst()){
-            @SuppressLint("Range") int song_id = cursor.getInt(cursor.getColumnIndex(DatabaseHelper.SONG_ID));
-            @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_NAME));
-            @SuppressLint("Range") String artist = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ARTIST));
-            @SuppressLint("Range") String album = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ALBUM));
-            SongList.removeIf(s -> s.getAlbum().equals(album));
+            do {
+                @SuppressLint("Range") int song_id = cursor.getInt(cursor.getColumnIndex(DatabaseHelper.SONG_ID));
+                SongList.removeIf(s -> s.getId()==song_id);
+            }while (cursor.moveToNext());
         }
         cursor.close();
 
