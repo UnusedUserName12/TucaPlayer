@@ -10,15 +10,9 @@ import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.fragment.app.Fragment;
 
 import android.os.Environment;
-import android.transition.ChangeBounds;
-import android.transition.Fade;
-import android.transition.TransitionManager;
-import android.transition.TransitionSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,6 +38,7 @@ public class SongsTab extends Fragment {
     MediaPlayer mediaPlayer;
     private boolean isListSent = false;
     private boolean multi_select_mode;
+    private ImageButton btn_delete;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -65,10 +60,10 @@ public class SongsTab extends Fragment {
         loadAudio();
         musicListView.setAdapter(AudioAdapter);
 
-        ImageButton btn_delete = view.findViewById(R.id.btn_delete_songs_fragment);
+        btn_delete = view.findViewById(R.id.btn_delete_songs_fragment);
 
-        SearchView searchBar = view.findViewById(R.id.search_bar_song_tab);
-        searchBar.setOnClickListener(v -> searchBar.setIconified(false));
+        SearchView searchView = view.findViewById(R.id.search_bar_song_tab);
+        searchView.setOnClickListener(v -> searchView.setIconified(false));
 
         //Garbage????
         ThreadElementAutoSelector.AudioAdapter = AudioAdapter;
@@ -76,7 +71,10 @@ public class SongsTab extends Fragment {
 
         AdapterView.OnItemClickListener itemListener = (parent, v, position, id) -> {
             sendData();
-            playMedia(position);
+            List <Song> filteredList = AudioAdapter.getFilteredList();
+            Song song = filteredList.get(position);
+
+            playMedia(SongList.indexOf(song));
             if(!multi_select_mode) checkSelection();
             else {
                 MyMediaPlayer.instance.pause();
@@ -87,13 +85,30 @@ public class SongsTab extends Fragment {
         musicListView.setOnItemClickListener(itemListener);
 
         musicListView.setOnItemLongClickListener((parent, view1, position, id) -> {
-            ThreadElementAutoSelector.isRunning=false;
-            multi_select_mode = true;
-            btn_delete.setVisibility(View.VISIBLE);
+            if(multi_select_mode){
+                cleanUp();
+            }else {
+                ThreadElementAutoSelector.isRunning = false;
+                multi_select_mode = true;
+                btn_delete.setVisibility(View.VISIBLE);
+            }
             return false;
         });
 
         btn_delete.setOnClickListener(this::showDeleteDialog);
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                AudioAdapter.getFilter().filter(newText);
+                return false;
+            }
+        });
 
         return view;
     }
@@ -153,14 +168,17 @@ public class SongsTab extends Fragment {
     }
 
     private void cleanUp() {
-        multi_select_mode = false;
-        isListSent=false;
-        sendData();
-        ThreadElementAutoSelector.isRunning=true;
-        MyMediaPlayer.setSongList(SongList);
-        MyMediaPlayer.CurrentIndex=0;
-        MyMediaPlayer.playMedia(CurrentIndex);
-        mediaPlayer.pause();
+        if(multi_select_mode) {
+            multi_select_mode = false;
+            isListSent = false;
+            sendData();
+            ThreadElementAutoSelector.isRunning = true;
+            MyMediaPlayer.setSongList(SongList);
+            MyMediaPlayer.CurrentIndex = 0;
+            MyMediaPlayer.playMedia(CurrentIndex);
+            mediaPlayer.pause();
+            btn_delete.setVisibility(View.GONE);
+        }
     }
 
     /**
@@ -203,8 +221,9 @@ public class SongsTab extends Fragment {
         isListSent=false;
         ThreadElementAutoSelector.AudioAdapter = AudioAdapter;
         ThreadElementAutoSelector.SongList = SongList;
+        cleanUp();
     }
-    
+
     //Now uses database values
     private void loadAudio() {
         DatabaseManager databaseManager = new DatabaseManager(getContext());
