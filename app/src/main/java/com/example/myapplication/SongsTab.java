@@ -1,25 +1,39 @@
 package com.example.myapplication;
 
+import static com.example.myapplication.MyMediaPlayer.CurrentIndex;
 import static com.example.myapplication.MyMediaPlayer.playMedia;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.fragment.app.Fragment;
 
+import android.os.Environment;
+import android.transition.ChangeBounds;
+import android.transition.Fade;
+import android.transition.TransitionManager;
+import android.transition.TransitionSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.SearchView;
 
 import com.example.myapplication.db.DatabaseHelper;
 import com.example.myapplication.db.DatabaseManager;
 import com.example.myapplication.obj.Song;
 
+import java.io.File;
+import java.sql.SQLDataException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +43,7 @@ public class SongsTab extends Fragment {
     private MP3ListAdapter AudioAdapter;
     MediaPlayer mediaPlayer;
     private boolean isListSent = false;
+    private boolean multi_select_mode;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -50,22 +65,104 @@ public class SongsTab extends Fragment {
         loadAudio();
         musicListView.setAdapter(AudioAdapter);
 
+        ImageButton btn_delete = view.findViewById(R.id.btn_delete_songs_fragment);
+
+        SearchView searchBar = view.findViewById(R.id.search_bar_song_tab);
+        searchBar.setOnClickListener(v -> searchBar.setIconified(false));
+
         //Garbage????
         ThreadElementAutoSelector.AudioAdapter = AudioAdapter;
         ThreadElementAutoSelector.SongList = SongList;
 
-        AdapterView.OnItemClickListener itemListener = new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                sendData();
-                playMedia(position);
-                checkSelection();
+        AdapterView.OnItemClickListener itemListener = (parent, v, position, id) -> {
+            sendData();
+            playMedia(position);
+            if(!multi_select_mode) checkSelection();
+            else {
+                MyMediaPlayer.instance.pause();
+                SongList.get(position).setSelected(!SongList.get(position).isSelected());
+                AudioAdapter.notifyDataSetChanged();
             }
         };
         musicListView.setOnItemClickListener(itemListener);
 
+        musicListView.setOnItemLongClickListener((parent, view1, position, id) -> {
+            ThreadElementAutoSelector.isRunning=false;
+            multi_select_mode = true;
+            btn_delete.setVisibility(View.VISIBLE);
+            return false;
+        });
+
+        btn_delete.setOnClickListener(this::showDeleteDialog);
+
         return view;
     }
+
+    private void showDeleteDialog(View v) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        int count=0;
+        for(Song s: SongList){
+            if(s.isSelected()) count++;
+        }
+        builder.setMessage("Are you sure you want to delete " + count+" songs?");
+        builder.setPositiveButton("Yes", (DialogInterface.OnClickListener) (dialog, which) -> {
+                    DatabaseManager databaseManager = new DatabaseManager(getContext());
+                    try {
+                        databaseManager.open();
+
+                        for (Song s : SongList) {
+                            if (s.isSelected()) {
+                                databaseManager.deleteSong(s.getId());
+                            }
+                        }
+
+                        File downloadsFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                        File[] files = null;
+                        if (downloadsFolder.exists() && downloadsFolder.isDirectory()) {
+                            files = downloadsFolder.listFiles();
+                            if (files != null) {
+                                for (File file : files)
+                                    for (Song s : SongList)
+                                        if (file.isFile() && s.isSelected() && file.getName().equals(s.getFilename())) {
+                                            file.delete();
+                                            break;
+                                        }
+
+                            }
+                        }
+
+                        SongList.removeIf(Song::isSelected);
+                    } catch (SQLDataException e) {
+                        throw new RuntimeException(e);
+                    } finally {
+                        AudioAdapter.notifyDataSetChanged();
+                        cleanUp();
+                        databaseManager.close();
+                    }
+            dialog.dismiss();
+        });
+
+        builder.setNegativeButton("No", (DialogInterface.OnClickListener) (dialog, which) -> {
+            cleanUp();
+            dialog.cancel();
+        });
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+
+        v.setVisibility(View.GONE);
+    }
+
+    private void cleanUp() {
+        multi_select_mode = false;
+        isListSent=false;
+        sendData();
+        ThreadElementAutoSelector.isRunning=true;
+        MyMediaPlayer.setSongList(SongList);
+        MyMediaPlayer.CurrentIndex=0;
+        MyMediaPlayer.playMedia(CurrentIndex);
+        mediaPlayer.pause();
+    }
+
     /**
      * Sends the song list and updates the UI with the playlist image
      <ul>
@@ -93,7 +190,10 @@ public class SongsTab extends Fragment {
 
     private void checkSelection(){
         int currentSongId = MyMediaPlayer.getCurrentSongId();
-        for(Song s : SongList) s.setSelected(currentSongId == s.getId());
+        for(Song s : SongList) {
+            s.setSelected(currentSongId == s.getId());
+            break;
+        }
         AudioAdapter.notifyDataSetChanged();
     }
 

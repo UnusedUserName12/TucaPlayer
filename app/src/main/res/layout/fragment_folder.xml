@@ -7,19 +7,44 @@
     tools:context=".SongsTab">
 <androidx.constraintlayout.widget.ConstraintLayout
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:id="@+id/fragment_songs">
+
+    <SearchView
+        android:id="@+id/search_bar_song_tab"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:queryHint="Search..."
+        android:layout_marginVertical="3dp"
+        android:layout_marginHorizontal="3dp"
+        android:background="@drawable/search_view_bg"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/btn_delete_songs_fragment"
+        />
+
+    <ImageButton
+        android:visibility="gone"
+        android:id="@+id/btn_delete_songs_fragment"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:backgroundTint="@color/transparent"
+        android:src="@drawable/delete_24dp"
+        app:layout_constraintBottom_toBottomOf="@+id/search_bar_song_tab"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:tint="@color/grey_72"
+        />
 
 
     <ListView
         android:id="@+id/AudioList"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/search_bar_song_tab" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>
