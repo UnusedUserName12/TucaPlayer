@@ -12,20 +12,30 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         >
+        <TextView
+            android:id="@+id/rename_playlist_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Rename Playlist"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:textColor="@color/grey_72"/>
         <EditText
             android:id="@+id/change_playlist_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Playlist Name"
             android:textStyle="bold"
-            android:textSize="20sp"
-            android:textColor="@color/grey_72"/>
+            android:textSize="16sp"
+            android:textColor="@color/grey_72"
+            android:layout_marginTop="8dp"
+            android:layout_below="@+id/rename_playlist_header"/>
         <Button
             android:id="@+id/btn_rename_playlist"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/change_playlist_name"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="14dp"
             android:padding="15dp"
             android:text="RENAME"
             android:textSize="20sp"

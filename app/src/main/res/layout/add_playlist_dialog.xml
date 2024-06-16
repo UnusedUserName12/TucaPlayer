@@ -61,7 +61,7 @@
             android:layout_below="@+id/insert_playlist_name"
             android:layout_marginTop="20dp"
             android:padding="15dp"
-            android:text="CREATE"
+            android:text="CREATE PLAYLIST"
             android:textSize="20sp"
             android:textColor="@color/white"
             android:fontFamily="sans-serif-black"
@@ -69,6 +69,7 @@
             android:backgroundTint="@color/red"
             />
         <Button
+            android:visibility="gone"
             android:id="@+id/cancel_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
