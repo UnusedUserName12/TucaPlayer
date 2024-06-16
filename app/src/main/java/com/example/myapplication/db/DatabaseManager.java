@@ -394,6 +394,16 @@ public class DatabaseManager  {
 
     }
 
+    public void updateSong(int id, String name, String artist, String album, String genre){
+        ContentValues values = new ContentValues();
+
+        values.put(DatabaseHelper.SONG_NAME,name);
+        values.put(DatabaseHelper.SONG_ARTIST,artist);
+        values.put(DatabaseHelper.SONG_ALBUM,album);
+        values.put(DatabaseHelper.SONG_GENRE,genre);
+        database.update(DatabaseHelper.SONG_TABLE,values,DatabaseHelper.SONG_ID+" = ? ",new String[]{String.valueOf(id)});
+    }
+
     public Cursor fetchSongsWithAlbums(){
         String [] columns = new String[] {DatabaseHelper.SONG_ID,DatabaseHelper.SONG_FILENAME,DatabaseHelper.SONG_NAME,DatabaseHelper.SONG_ALBUM,DatabaseHelper.SONG_ARTIST,DatabaseHelper.SONG_GENRE,DatabaseHelper.SONG_DURATION};
         Cursor cursor = database.query(DatabaseHelper.SONG_TABLE, columns,DatabaseHelper.SONG_ALBUM+"!= 'Unknown'",null,null,null,null,null);;

@@ -2,6 +2,7 @@ package com.example.myapplication;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -13,6 +14,8 @@ import android.transition.Fade;
 import android.transition.Transition;
 import android.transition.TransitionManager;
 import android.transition.TransitionSet;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
@@ -215,6 +218,7 @@ public class SongView implements OnSongChangeListener {
                 option = option.toLowerCase();
                 switch (Objects.requireNonNull(option)) {
                     case "edit":
+                        showUpdateDialog(mSong);
                         break;
                     case "delete from device":
                         showDeleteDialog();
@@ -229,43 +233,76 @@ public class SongView implements OnSongChangeListener {
         MyMediaPlayer.setOnSongChangeListener(this);
     }
 
-    private void showDeleteDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
+    private void showUpdateDialog(Song song) {
+        Dialog dialog = new Dialog(mainActivity);
+        dialog.setContentView(R.layout.update_song_data_dialog);
+        dialog.getWindow().setBackgroundDrawableResource(R.drawable.corners10dp);
 
-        builder.setMessage("Are you sure you want to delete " + mSong.getSongName() + "?");
-        builder.setPositiveButton("Yes", (DialogInterface.OnClickListener) (dialog, which) -> {
+        Button btn_rename = dialog.findViewById(R.id.btn_rename_playlist);
+        EditText song_name_field = dialog.findViewById(R.id.change_song_name);
+        EditText song_artist_field = dialog.findViewById(R.id.change_song_artist);
+        EditText song_album_field = dialog.findViewById(R.id.change_song_album);
+        EditText song_genre_field = dialog.findViewById(R.id.change_song_genre);
+
+        song_name_field.setText(song.getSongName());
+        song_artist_field.setText(song.getArtist());
+        song_album_field.setText(song.getAlbum());
+        song_genre_field.setText(song.getGenre());
+        btn_rename.setOnClickListener(v -> {
+            String newName = String.valueOf(song_name_field.getText());
+            String newArtist = String.valueOf(song_artist_field.getText());
+            String newAlbum = String.valueOf(song_album_field.getText());
+            String newGenre = String.valueOf(song_genre_field.getText());
+
             DatabaseManager databaseManager = new DatabaseManager(mainActivity);
             try {
                 databaseManager.open();
+            } catch (SQLDataException e) {
+                throw new RuntimeException(e);
+            }
+            Song newSong = new Song(song.getId(),song.getFilename(),newName,newArtist,newAlbum,newGenre,song.getDuration());
+            databaseManager.updateSong(song.getId(),newName,newArtist,newAlbum,newGenre);
+            for(Song s : SongList){
+                if(s.getId() == newSong.getId()) {
+                    s=newSong;
+                    break;
+                }
+            }
+            onSongChanged(newSong);
+
+            dialog.dismiss();
+        });
+        dialog.show();
+
+    }
+
+    private void showDeleteDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
+        Song song;
+        DatabaseManager databaseManager = new DatabaseManager(mainActivity);
+        try {
+            databaseManager.open();
+
+            song = databaseManager.fetchSongById(mainActivity.settings.getLast_song_id());
+            builder.setMessage("Are you sure you want to delete " + song.getSongName() + "?");
+            builder.setPositiveButton("Yes", (DialogInterface.OnClickListener) (dialog, which) -> {
                 mediaPlayer.pause();
                 List<Song> lSongList = MyMediaPlayer.getSongList();
-                lSongList.removeIf(song -> song.getId() == mSong.getId());
+                lSongList.removeIf(s -> s.getId() == song.getId());
                 MyMediaPlayer.setSongList(lSongList);
                 databaseManager.deleteSong(mSong.getId());
 
-                File downloadsFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-                File[] files = null;
-                if (downloadsFolder.exists() && downloadsFolder.isDirectory()) {
-                    files = downloadsFolder.listFiles();
-                    if (files != null) {
-                        for (File file : files)
-                            if (file.isFile() && file.getName().equals(mSong.getFilename())){
-                                file.delete();
-                                break;
-                            }
-
-                    }
-                }
-                MyMediaPlayer.playMedia(MyMediaPlayer.CurrentIndex);
+                File songFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), mSong.getFilename());
+                //songFile.delete();
+                if(MyMediaPlayer.CurrentIndex < SongList.size()-1)
+                    MyMediaPlayer.playMedia(MyMediaPlayer.CurrentIndex);
+                else MyMediaPlayer.playMedia(MyMediaPlayer.CurrentIndex-1);
                 mediaPlayer.pause();
-
-            } catch (SQLDataException e) {
-                throw new RuntimeException(e);
-            } finally {
-                databaseManager.close();
-            }
-            dialog.dismiss();
-        });
+                dialog.dismiss();
+            });
+        } catch (SQLDataException e) {
+            throw new RuntimeException(e);
+        }
 
         builder.setNegativeButton("No", (DialogInterface.OnClickListener) (dialog, which) -> {
             dialog.cancel();
