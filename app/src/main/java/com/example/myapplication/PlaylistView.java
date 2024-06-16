@@ -1,6 +1,7 @@
 package com.example.myapplication;
 
 import static android.app.Activity.RESULT_OK;
+import static com.example.myapplication.MyMediaPlayer.CurrentIndex;
 import static com.example.myapplication.MyMediaPlayer.playMedia;
 
 import android.annotation.SuppressLint;
@@ -175,17 +176,21 @@ public class PlaylistView {
                 }
             }
             SongList.removeIf(Song::isSelected);
+            AudioAdapter.notifyDataSetChanged();
+
             } catch (SQLDataException e) {
                 throw new RuntimeException(e);
             }
             finally {
                 databaseManager.close();
             }
-            AudioAdapter.notifyDataSetChanged();
-            multi_select_mode = false;
+            multi_select_mode=false;
+            ThreadElementAutoSelector.isRunning=true;
+            isListSent=false;
+            sendData();
+
             btn_delete.setVisibility(View.INVISIBLE);
             btn_add_songs.setVisibility(View.VISIBLE);
-            ThreadElementAutoSelector.isRunning=true;
 
             TextView sizeView = mainActivity.findViewById(R.id.playlist_size);
             String size = SongList.size()+" songs";
@@ -577,7 +582,6 @@ public class PlaylistView {
 
         builder.setMessage("Are you sure you want to delete " + playlist.getName()+"?");
         if(isAlbum) builder.setMessage("Are you sure you want to delete " + playlist.getName()+" with all songs from the device?");
-        builder.setCancelable(false);
 
         builder.setPositiveButton("Yes", (DialogInterface.OnClickListener) (dialog, which) -> {
             DatabaseManager databaseManager = new DatabaseManager(mainActivity);
@@ -621,6 +625,7 @@ public class PlaylistView {
                 throw new RuntimeException(e);
             }
             finally {
+                cleanUp();
                 shrinkPlaylist();
                 databaseManager.close();
             }
@@ -628,10 +633,48 @@ public class PlaylistView {
         });
 
         builder.setNegativeButton("No", (DialogInterface.OnClickListener) (dialog, which) -> {
+            multi_select_mode = false;
+            isListSent=false;
+            sendData();
+            ThreadElementAutoSelector.isRunning=true;
             dialog.cancel();
         });
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
+    }
+
+    private void cleanUp(){
+        multi_select_mode=false;
+        List<Song> lSongList = new ArrayList<>();
+        mainActivity.settings.setLast_playlist_id(0);
+        DatabaseManager databaseManager = new DatabaseManager(mainActivity);
+        try {
+            databaseManager.open();
+            Cursor cursor = databaseManager.fetchSongs("title");
+            if (cursor.moveToFirst())
+                do {
+                    @SuppressLint("Range") int id = Integer.parseInt(cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ID)));
+                    @SuppressLint("Range") String filename = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_FILENAME));
+                    @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_NAME));
+                    @SuppressLint("Range") String artist = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ARTIST));
+                    @SuppressLint("Range") String album = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_ALBUM));
+                    @SuppressLint("Range") String genre = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_GENRE));
+                    @SuppressLint("Range") long duration = Long.parseLong(cursor.getString(cursor.getColumnIndex(DatabaseHelper.SONG_DURATION)));
+
+                    Song song = new Song(id,filename,name,artist,album,genre,duration);
+                    lSongList.add(song);
+                }while (cursor.moveToNext());
+            cursor.close();
+
+            MyMediaPlayer.setSongList(lSongList);
+            CurrentIndex=0;
+            MyMediaPlayer.playMedia(CurrentIndex);
+            MyMediaPlayer.instance.pause();
+            mainActivity.settings.setLast_song_id(lSongList.get(0).getId());
+            ThreadElementAutoSelector.isRunning=true;
+        } catch (SQLDataException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static void setOnPlaylistChangeListener(OnPlaylistChangeListener listener) {
