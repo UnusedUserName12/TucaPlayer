@@ -78,25 +78,29 @@ public class PlaylistsTab extends Fragment implements OnPlaylistChangeListener {
             create_btn.setOnClickListener(v -> {
                 String name = String.valueOf(playlist_name_field.getText());
                 String image_path = "null";
-                if(chosen_image.getDrawable()!=null){
-                    Bitmap bm=((BitmapDrawable)chosen_image.getDrawable()).getBitmap();
-                    image_path = saveToInternalStorage(bm,name);
-                }
+                name = name.trim();
+                if(!name.isEmpty()) {
+                    if (chosen_image.getDrawable() != null) {
+                        Bitmap bm = ((BitmapDrawable) chosen_image.getDrawable()).getBitmap();
+                        image_path = saveToInternalStorage(bm, name);
+                    }
 
-                if(image_path.equals("null")) image_path = "placeholder.png";
-                DatabaseManager databaseManager = new DatabaseManager(context);
-                try{
-                    databaseManager.open();
-                    databaseManager.insertPlaylist(name,image_path);
-                }catch (SQLiteConstraintException | SQLDataException e){
-                    Toast.makeText(context,"Playlist already exists",Toast.LENGTH_SHORT).show();
-                    e.printStackTrace();
+                    if (image_path.equals("null")) image_path = "placeholder.png";
+                    DatabaseManager databaseManager = new DatabaseManager(context);
+                    try {
+                        databaseManager.open();
+                        databaseManager.insertPlaylist(name, image_path);
+                    } catch (SQLiteConstraintException | SQLDataException e) {
+                        Toast.makeText(context, "Playlist already exists", Toast.LENGTH_SHORT).show();
+                        e.printStackTrace();
+                    } finally {
+                        databaseManager.close();
+                    }
+                    updatePlaylistLayout();
+                    dialog.dismiss();
+                }else {
+                    Toast.makeText(getContext(),"Playlist name must not be empty",Toast.LENGTH_LONG).show();
                 }
-                finally {
-                    databaseManager.close();
-                }
-                updatePlaylistLayout();
-                dialog.dismiss();
             });
 
             get_image_button.setOnClickListener(v -> {

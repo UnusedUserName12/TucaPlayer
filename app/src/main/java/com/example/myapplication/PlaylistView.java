@@ -20,8 +20,8 @@ import android.transition.Fade;
 import android.transition.Transition;
 import android.transition.TransitionManager;
 import android.transition.TransitionSet;
+import android.view.ContextThemeWrapper;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -99,7 +99,8 @@ public class PlaylistView {
         btn_add_songs.setOnClickListener(this::openAddSongsActivity);
 
         btn_more.setOnClickListener(v -> {
-            PopupMenu popupMenu = new PopupMenu(mainActivity, v);
+            Context wrapper = new ContextThemeWrapper(mainActivity, R.style.CustomPopupMenu);
+            PopupMenu popupMenu = new PopupMenu(wrapper, v);
 
             if(!isAlbum) popupMenu.getMenuInflater().inflate(R.menu.playlist_options_menu, popupMenu.getMenu());
             else popupMenu.getMenuInflater().inflate(R.menu.album_options_menu, popupMenu.getMenu());
@@ -120,12 +121,8 @@ public class PlaylistView {
                     case "delete album":
                         showDeleteDialog();
                         break;
-                    default:
-                        if(!option.equals("order by")) {
-                            Toast.makeText(mainActivity, "By " + option, Toast.LENGTH_SHORT).show();
-                            if(isAlbum) loadAudioAlbum(option);
-                            else loadAudioPlaylist(option);
-                        }
+                    case "order by":
+                        showOrderPopup(v);
                         break;
                 }
 
@@ -166,36 +163,78 @@ public class PlaylistView {
         });
 
         btn_delete.setOnClickListener(v -> {
-            DatabaseManager databaseManager = new DatabaseManager(mainActivity);
-            try {
-                databaseManager.open();
+            AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity, R.style.CustomAlertDialogTheme);
+            int count=0;
+            for(Song s: SongList){
+                if(s.isSelected()) count++;
+            }
+            builder.setMessage("Are you sure you want to delete " + count+" songs?");
+            builder.setPositiveButton("Yes", (DialogInterface.OnClickListener) (dialog, which) -> {
+                DatabaseManager databaseManager = new DatabaseManager(mainActivity);
+                try {
+                    databaseManager.open();
 
-            for(Song s : SongList){
-                if(s.isSelected()) {
-                    databaseManager.deletePlaylistSong(id, s.getId());
+                    for (Song s : SongList) {
+                        if (s.isSelected()) {
+                            databaseManager.deletePlaylistSong(id, s.getId());
+                        }
+                    }
+                    SongList.removeIf(Song::isSelected);
+                    AudioAdapter.notifyDataSetChanged();
+
+                } catch (SQLDataException e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    databaseManager.close();
                 }
-            }
-            SongList.removeIf(Song::isSelected);
-            AudioAdapter.notifyDataSetChanged();
+                multi_select_mode = false;
+                ThreadElementAutoSelector.isRunning = true;
+                isListSent = false;
+                sendData();
 
-            } catch (SQLDataException e) {
-                throw new RuntimeException(e);
-            }
-            finally {
-                databaseManager.close();
-            }
-            multi_select_mode=false;
-            ThreadElementAutoSelector.isRunning=true;
-            isListSent=false;
-            sendData();
+                btn_delete.setVisibility(View.INVISIBLE);
+                btn_add_songs.setVisibility(View.VISIBLE);
 
-            btn_delete.setVisibility(View.INVISIBLE);
-            btn_add_songs.setVisibility(View.VISIBLE);
+                TextView sizeView = mainActivity.findViewById(R.id.playlist_size);
+                String size = SongList.size() + " songs";
+                sizeView.setText(size);
+                dialog.dismiss();
+            });
 
-            TextView sizeView = mainActivity.findViewById(R.id.playlist_size);
-            String size = SongList.size()+" songs";
-            sizeView.setText(size);
+            builder.setNegativeButton("No", (DialogInterface.OnClickListener) (dialog, which) -> {
+                multi_select_mode=false;
+                for(Song song : SongList){
+                    song.setSelected(false);
+                }
+                AudioAdapter.notifyDataSetChanged();
+                v.setVisibility(View.INVISIBLE);
+                btn_add_songs.setVisibility(View.VISIBLE);
+                ThreadElementAutoSelector.isRunning = true;
+                dialog.cancel();
+            });
+            AlertDialog alertDialog = builder.create();
+            alertDialog.show();
         });
+    }
+
+    private void showOrderPopup(View v) {
+        Context wrapper = new ContextThemeWrapper(mainActivity, R.style.CustomPopupMenu);
+        PopupMenu popupMenu = new PopupMenu(wrapper, v);
+
+        popupMenu.getMenuInflater().inflate(R.menu.sort_order_menu, popupMenu.getMenu());
+        popupMenu.setOnMenuItemClickListener(menuItem -> {
+
+            String option = (String) menuItem.getTitle();
+            assert option != null;
+
+            option = option.toLowerCase();
+
+            Toast.makeText(mainActivity, "By " + option, Toast.LENGTH_SHORT).show();
+            if (isAlbum) loadAudioAlbum(option);
+            else loadAudioPlaylist(option);
+            return true;
+        });
+        popupMenu.show();
     }
 
     /**
@@ -326,6 +365,7 @@ public class PlaylistView {
             song_view_hidden_set.applyTo(constraintLayout);
         }
 
+
         if(onPlaylistChangeListener!=null){
             onPlaylistChangeListener.OnPlaylistChanged();
         }
@@ -383,21 +423,24 @@ public class PlaylistView {
 
         playlist_name_field.setText(oldName);
         btn_rename.setOnClickListener(v -> {
-            String newName = String.valueOf(playlist_name_field.getText());
+            String newName = String.valueOf(playlist_name_field.getText()).trim();
+            if(!newName.isEmpty()) {
+                renamePlaylistImage(oldName, newName);
 
-            renamePlaylistImage(oldName,newName);
+                DatabaseManager databaseManager = new DatabaseManager(mainActivity);
+                try {
+                    databaseManager.open();
+                } catch (SQLDataException e) {
+                    throw new RuntimeException(e);
+                }
+                playlist.setName(newName);
+                databaseManager.updatePlaylist(playlist.getId(), playlist.getName(), playlist.getImagePath());
 
-            DatabaseManager databaseManager = new DatabaseManager(mainActivity);
-            try {
-                databaseManager.open();
-            } catch (SQLDataException e) {
-                throw new RuntimeException(e);
+                playlist_name_view.setText(newName);
+                dialog.dismiss();
+            }else {
+                Toast.makeText(mainActivity,"Field must not be empty",Toast.LENGTH_LONG).show();
             }
-            playlist.setName(newName);
-            databaseManager.updatePlaylist(playlist.getId(),playlist.getName(),playlist.getImagePath());
-
-            playlist_name_view.setText(newName);
-            dialog.dismiss();
         });
         dialog.show();
     }
@@ -522,6 +565,8 @@ public class PlaylistView {
                     playlist_image_view.setImageBitmap(song_pic_bitmap);
                     playlist_image_view.setClipToOutline(true);
                     AudioAdapter.setSong_pic(song_pic_bitmap);
+                }else if (mImage.equals("placeholder.png")){
+                    playlist_image_view.setImageResource(R.drawable.placeholder);
                 }
                 playlist = new Playlist(id, mName, mImage);
 
@@ -578,7 +623,7 @@ public class PlaylistView {
     }
 
     private void showDeleteDialog(){
-        AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
+        AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity,R.style.CustomAlertDialogTheme);
 
         builder.setMessage("Are you sure you want to delete " + playlist.getName()+"?");
         if(isAlbum) builder.setMessage("Are you sure you want to delete " + playlist.getName()+" with all songs from the device?");

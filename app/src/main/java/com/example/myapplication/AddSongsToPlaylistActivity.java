@@ -3,8 +3,11 @@ package com.example.myapplication;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 
+import android.content.Context;
 import android.database.Cursor;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
+import android.view.ContextThemeWrapper;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -64,6 +67,16 @@ public class AddSongsToPlaylistActivity extends Activity {
         searchView = findViewById(R.id.search_bar_add_song);
         searchView.setFocusable(true);
         searchView.setFocusableInTouchMode(true);
+
+        int searchIconId = searchView.getContext().getResources().getIdentifier("android:id/search_mag_icon", null, null);
+        ImageView searchIcon = (ImageView) searchView.findViewById(searchIconId);
+
+        searchIcon.setColorFilter(ContextCompat.getColor(AddSongsToPlaylistActivity.this, color.red), PorterDuff.Mode.SRC_IN);
+
+        int closeIconId = searchView.getContext().getResources().getIdentifier("android:id/search_close_btn", null, null);
+        ImageView closeIcon = (ImageView) searchView.findViewById(closeIconId);
+
+        closeIcon.setColorFilter(ContextCompat.getColor(AddSongsToPlaylistActivity.this, color.red  ), PorterDuff.Mode.SRC_IN);
         listView = findViewById(R.id.add_songs_list);
 
         AudioAdapter = new MP3ListAdapter(this, SongList);
@@ -98,7 +111,8 @@ public class AddSongsToPlaylistActivity extends Activity {
         });
 
         btn_sort.setOnClickListener(v -> {
-            PopupMenu popupMenu = new PopupMenu(AddSongsToPlaylistActivity.this, v);
+            Context wrapper = new ContextThemeWrapper(AddSongsToPlaylistActivity.this, R.style.CustomPopupMenu);
+            PopupMenu popupMenu = new PopupMenu(wrapper, v);
 
             popupMenu.getMenuInflater().inflate(R.menu.sort_order_menu, popupMenu.getMenu());
             popupMenu.setOnMenuItemClickListener(menuItem -> {

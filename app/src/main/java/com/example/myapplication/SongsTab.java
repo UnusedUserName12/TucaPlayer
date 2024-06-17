@@ -7,9 +7,11 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.database.Cursor;
+import android.graphics.PorterDuff;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import android.os.Environment;
@@ -30,6 +32,7 @@ import java.io.File;
 import java.sql.SQLDataException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class SongsTab extends Fragment {
 
@@ -64,6 +67,11 @@ public class SongsTab extends Fragment {
 
         SearchView searchView = view.findViewById(R.id.search_bar_song_tab);
         searchView.setOnClickListener(v -> searchView.setIconified(false));
+
+        int closeIconId = searchView.getContext().getResources().getIdentifier("android:id/search_close_btn", null, null);
+        ImageView closeIcon = (ImageView) searchView.findViewById(closeIconId);
+
+        closeIcon.setColorFilter(ContextCompat.getColor(requireContext(), R.color.red  ), PorterDuff.Mode.SRC_IN);
 
         //Garbage????
         ThreadElementAutoSelector.AudioAdapter = AudioAdapter;
@@ -114,7 +122,7 @@ public class SongsTab extends Fragment {
     }
 
     private void showDeleteDialog(View v) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.CustomAlertDialogTheme);
         int count=0;
         for(Song s: SongList){
             if(s.isSelected()) count++;

@@ -3,17 +3,22 @@ package com.example.myapplication;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.media.MediaPlayer;
 import android.os.Environment;
+import android.provider.ContactsContract;
 import android.transition.ChangeBounds;
 import android.transition.Fade;
 import android.transition.Transition;
 import android.transition.TransitionManager;
 import android.transition.TransitionSet;
+import android.view.ContextThemeWrapper;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -21,9 +26,11 @@ import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
+import androidx.core.content.ContextCompat;
 
 import com.example.myapplication.db.DatabaseHelper;
 import com.example.myapplication.db.DatabaseManager;
@@ -54,6 +61,8 @@ public class SongView implements OnSongChangeListener {
     static boolean isExpanded = false;
     private List<Song> SongList;
     private Song mSong;
+    ImageView repeatOutline;
+    ImageView shuffleOutline;
     /**
      * Constructor to initialize the SongViewListeners with required parameters.
      *
@@ -79,6 +88,9 @@ public class SongView implements OnSongChangeListener {
         btnFavorite = mainActivity.findViewById(R.id.btn_favorite_song);
         ImageView btnMore = mainActivity.findViewById(R.id.btn_more_play_song);
 
+        repeatOutline = mainActivity.findViewById(R.id.repeat_outline);
+        shuffleOutline = mainActivity.findViewById(R.id.shuffle_outline);
+
         song_name_view = mainActivity.findViewById(R.id.song_view_name);
         artist_view = mainActivity.findViewById(R.id.artist_play_song);
 
@@ -101,11 +113,13 @@ public class SongView implements OnSongChangeListener {
         btnRepeat.setOnClickListener(v -> {
             if (!MyMediaPlayer.onRepeat) {
                 MyMediaPlayer.onRepeat = true;
-                btnRepeat.setBackground(new ColorDrawable(Color.rgb(240, 240, 240)));
+                btnRepeat.setColorFilter(ContextCompat.getColor(mainActivity, R.color.blue), PorterDuff.Mode.SRC_IN);
+                repeatOutline.setVisibility(View.VISIBLE);
                 mainActivity.settings.setSong_is_on_repeat(true);
             } else {
                 MyMediaPlayer.onRepeat = false;
-                btnRepeat.setBackground(new ColorDrawable(Color.TRANSPARENT));
+                btnRepeat.setColorFilter(ContextCompat.getColor(mainActivity, R.color.red), PorterDuff.Mode.SRC_IN);
+                repeatOutline.setVisibility(View.INVISIBLE);
                 mainActivity.settings.setSong_is_on_repeat(false);
             }
         });
@@ -141,11 +155,13 @@ public class SongView implements OnSongChangeListener {
         btnShuffle.setOnClickListener(v -> {
             if (!MyMediaPlayer.onShuffle) {
                 MyMediaPlayer.onShuffle = true;
-                btnShuffle.setBackground(new ColorDrawable(Color.rgb(240, 240, 240)));
+                btnShuffle.setColorFilter(ContextCompat.getColor(mainActivity, R.color.blue), PorterDuff.Mode.SRC_IN);
+                shuffleOutline.setVisibility(View.VISIBLE);
                 mainActivity.settings.setSong_is_on_shuffle(true);
             } else {
                 MyMediaPlayer.onShuffle = false;
-                btnShuffle.setBackground(new ColorDrawable(Color.TRANSPARENT));
+                btnShuffle.setColorFilter(ContextCompat.getColor(mainActivity, R.color.red), PorterDuff.Mode.SRC_IN);
+                shuffleOutline.setVisibility(View.INVISIBLE);
                 mainActivity.settings.setSong_is_on_shuffle(false);
             }
         });
@@ -207,7 +223,8 @@ public class SongView implements OnSongChangeListener {
         });
 
         btnMore.setOnClickListener(v -> {
-            PopupMenu popupMenu = new PopupMenu(mainActivity, v);
+            Context wrapper = new ContextThemeWrapper(mainActivity, R.style.CustomPopupMenu);
+            PopupMenu popupMenu = new PopupMenu(wrapper, v);
 
             popupMenu.getMenuInflater().inflate(R.menu.song_options_menu, popupMenu.getMenu());
             popupMenu.setOnMenuItemClickListener(menuItem -> {
@@ -218,7 +235,7 @@ public class SongView implements OnSongChangeListener {
                 option = option.toLowerCase();
                 switch (Objects.requireNonNull(option)) {
                     case "edit":
-                        showUpdateDialog(mSong);
+                        showUpdateDialog();
                         break;
                     case "delete from device":
                         showDeleteDialog();
@@ -233,51 +250,57 @@ public class SongView implements OnSongChangeListener {
         MyMediaPlayer.setOnSongChangeListener(this);
     }
 
-    private void showUpdateDialog(Song song) {
+    private void showUpdateDialog() {
         Dialog dialog = new Dialog(mainActivity);
         dialog.setContentView(R.layout.update_song_data_dialog);
         dialog.getWindow().setBackgroundDrawableResource(R.drawable.corners10dp);
-
         Button btn_rename = dialog.findViewById(R.id.btn_rename_playlist);
         EditText song_name_field = dialog.findViewById(R.id.change_song_name);
         EditText song_artist_field = dialog.findViewById(R.id.change_song_artist);
         EditText song_album_field = dialog.findViewById(R.id.change_song_album);
         EditText song_genre_field = dialog.findViewById(R.id.change_song_genre);
 
+        DatabaseManager databaseManager = new DatabaseManager(mainActivity);
+        try {
+            databaseManager.open();
+        } catch (SQLDataException e) {
+            throw new RuntimeException(e);
+        }
+
+        Song song = databaseManager.fetchSongById(mainActivity.settings.getLast_song_id());
+
         song_name_field.setText(song.getSongName());
         song_artist_field.setText(song.getArtist());
         song_album_field.setText(song.getAlbum());
         song_genre_field.setText(song.getGenre());
         btn_rename.setOnClickListener(v -> {
-            String newName = String.valueOf(song_name_field.getText());
-            String newArtist = String.valueOf(song_artist_field.getText());
-            String newAlbum = String.valueOf(song_album_field.getText());
-            String newGenre = String.valueOf(song_genre_field.getText());
+            String newName = String.valueOf(song_name_field.getText()).trim();
+            String newArtist = String.valueOf(song_artist_field.getText()).trim();
+            String newAlbum = String.valueOf(song_album_field.getText()).trim();
+            String newGenre = String.valueOf(song_genre_field.getText()).trim();
 
-            DatabaseManager databaseManager = new DatabaseManager(mainActivity);
-            try {
-                databaseManager.open();
-            } catch (SQLDataException e) {
-                throw new RuntimeException(e);
-            }
-            Song newSong = new Song(song.getId(),song.getFilename(),newName,newArtist,newAlbum,newGenre,song.getDuration());
-            databaseManager.updateSong(song.getId(),newName,newArtist,newAlbum,newGenre);
-            for(Song s : SongList){
-                if(s.getId() == newSong.getId()) {
-                    s=newSong;
-                    break;
+            if(!newName.isEmpty() && !newArtist.isEmpty() && !newAlbum.isEmpty() && !newGenre.isEmpty()) {
+                Song newSong = new Song(song.getId(), song.getFilename(), newName, newArtist, newAlbum, newGenre, song.getDuration());
+                databaseManager.updateSong(song.getId(), newName, newArtist, newAlbum, newGenre);
+                for (Song s : SongList) {
+                    if (s.getId() == newSong.getId()) {
+                        s = newSong;
+                        break;
+                    }
                 }
-            }
-            onSongChanged(newSong);
+                onSongChanged(newSong);
 
-            dialog.dismiss();
+                dialog.dismiss();
+            }else {
+                Toast.makeText(mainActivity,"Fields must not be empty",Toast.LENGTH_LONG).show();
+            }
         });
         dialog.show();
 
     }
 
     private void showDeleteDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
+        AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity, R.style.CustomAlertDialogTheme);
         Song song;
         DatabaseManager databaseManager = new DatabaseManager(mainActivity);
         try {
@@ -332,6 +355,13 @@ public class SongView implements OnSongChangeListener {
             public void onTransitionEnd(Transition transition) {
                 ThreadSeekBar.isRunning = true;
                 ThreadElementAutoSelector.isRunning = false;
+
+                if(MyMediaPlayer.onShuffle){
+                    shuffleOutline.setVisibility(View.VISIBLE);
+                }
+                if(MyMediaPlayer.onRepeat){
+                    repeatOutline.setVisibility(View.VISIBLE);
+                }
             }
 
             @Override
