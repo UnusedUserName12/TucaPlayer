@@ -10,14 +10,14 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
+import android.graphics.PorterDuff;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.ContactsContract;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
@@ -28,6 +28,7 @@ import android.widget.Toast;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.myapplication.db.DatabaseHelper;
@@ -394,13 +395,14 @@ public class MainActivity extends AppCompatActivity {
         ImageView btnPlay = findViewById(R.id.btn_play_pause);
         if(settings.isSong_playing()) btnPlay.setImageResource(R.drawable.pause_24dp);
         ImageView btnRepeat = findViewById(R.id.btn_repeat);
+        ImageView btnShuffle = findViewById(R.id.btn_shuffle);
         if(settings.isSong_on_repeat()) {
             MyMediaPlayer.onRepeat = true;
-            btnRepeat.setBackground(new ColorDrawable(Color.rgb(240, 240, 240)));
+            btnRepeat.setColorFilter(ContextCompat.getColor(this, R.color.blue), PorterDuff.Mode.SRC_IN);
         }
         if(settings.isSong_on_shuffle()){
             MyMediaPlayer.onShuffle = true;
-            btnRepeat.setBackground(new ColorDrawable(Color.rgb(240, 240, 240)));
+            btnShuffle.setColorFilter(ContextCompat.getColor(this, R.color.blue), PorterDuff.Mode.SRC_IN);
         }
     }
 
