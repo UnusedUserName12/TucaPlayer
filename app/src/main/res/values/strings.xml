@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Music Player</string>
+    <string name="app_name">Tuca Player</string>
     <string name="zero">0:00</string>
     <string name="playlists">Playlists</string>
     <string name="folder">Songs</string>

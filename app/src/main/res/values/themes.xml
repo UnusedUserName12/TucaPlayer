@@ -3,6 +3,46 @@
     <style name="Base.Theme.MyApplication" parent="Theme.AppCompat.DayNight.DarkActionBar">
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="android:editTextColor">@color/white</item>
+        <item name="android:textColorHint">@color/white</item>
+        <item name="android:actionBarStyle">@style/MyActionBar</item>
+        <item name="actionBarStyle">@style/MyActionBar</item>
+
+    </style>
+
+
+    <style name="CustomPopupMenuItem" parent="Widget.AppCompat.PopupMenu">
+        <item name="android:textColor">@color/red</item>
+        <item name="android:background">@color/blue</item>
+        <item name="background">@color/blue</item>
+        <item name="itemBackground">@color/blue</item>
+        <item name="android:itemBackground">@color/blue</item>
+        <item name="popupMenuBackground">@color/blue</item>
+        <item name="android:popupBackground">@color/blue</item>
+    </style>
+
+
+    <style name="CustomPopupMenu" parent="Widget.AppCompat.PopupMenu">
+        <item name="android:textColor">@color/red</item>
+        <item name="android:itemBackground">@color/blue</item>
+        <item name="background">@color/blue</item>
+    </style>
+
+    <style name="MyActionBar" parent="Widget.AppCompat.ActionBar">
+        <item name="android:background">@color/blue</item>
+        <item name="background">@color/blue</item>
+    </style>
+
+    <style name="CustomAlertDialogTheme" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="android:buttonBarPositiveButtonStyle">@style/CustomDialogButton</item>
+        <item name="android:buttonBarNegativeButtonStyle">@style/CustomDialogButton</item>
+        <item name="android:buttonBarNeutralButtonStyle">@style/CustomDialogButton</item>
+        <item name="android:background">@color/blue</item>
+        <item name="android:textColorPrimary">@color/red</item>
+    </style>
+
+    <style name="CustomDialogButton" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
+        <item name="android:textColor">@color/red</item> <!-- Change this to your desired color -->
     </style>
 
     <style name="Theme.MyApplication" parent="Base.Theme.MyApplication" />

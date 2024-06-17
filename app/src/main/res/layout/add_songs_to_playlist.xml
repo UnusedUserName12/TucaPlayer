@@ -2,7 +2,8 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/blue">
 
     <RelativeLayout
         android:id="@+id/search_bar_area"
@@ -12,7 +13,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="@+id/topPanel_add_songs">
+        app:layout_constraintBottom_toBottomOf="@+id/topPanel_add_songs"
+        >
 
         <SearchView
             android:id="@+id/search_bar_add_song"
@@ -20,7 +22,9 @@
             android:layout_height="wrap_content"
             android:clickable="true"
             android:focusable="true"
-            android:queryHint="Search..."/>
+            android:queryHint="Search..."
+            android:background="@drawable/search_view_bg"
+            />
     </RelativeLayout>
 
 
@@ -47,7 +51,9 @@
             android:clickable="true"
             android:focusable="true"
             android:src="@drawable/baseline_arrow_back_24"
-            app:tint="@color/grey_72" />
+            app:tint="@color/red"
+            android:tint="@color/red"
+            android:tintMode="src_in"/>
 
     <TextView
         android:id="@+id/choose_tracks"
@@ -57,7 +63,7 @@
         android:textSize="20sp"
         android:layout_toRightOf="@+id/btn_back_from_add_songs"
         android:layout_centerVertical="true"
-        android:textColor="@color/grey_72"
+        android:textColor="@color/red"
         android:clickable="true"
         android:focusable="true"
         />
@@ -71,7 +77,9 @@
             android:layout_centerVertical="true"
             android:layout_toStartOf="@+id/btn_sort_add_songs"
             android:layout_marginEnd="70dp"
-            app:tint="@color/grey_72"
+            app:tint="@color/red"
+            android:tint="@color/red"
+            android:tintMode="src_in"
             android:clickable="true"
             android:focusable="true"/>
         <ImageView
@@ -85,7 +93,9 @@
             android:layout_marginEnd="40dp"
             android:clickable="true"
             android:focusable="true"
-            app:tint="@color/grey_72" />
+            app:tint="@color/red"
+            android:tint="@color/red"
+            android:tintMode="src_in" />
 
         <ImageView
             android:id="@+id/btn_select_all_add_songs"
@@ -97,7 +107,9 @@
             android:clickable="true"
             android:focusable="true"
             android:src="@drawable/select_all_24dp_fill0_wght400_grad0_opsz24"
-            app:tint="@color/grey_72" />
+            app:tint="@color/red"
+            android:tint="@color/red"
+            android:tintMode="src_in" />
     </RelativeLayout>
 
 

@@ -4,7 +4,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/main_layout">
+    android:id="@+id/main_layout"
+    android:background="@color/blue">
 
     <com.google.android.material.tabs.TabLayout
         android:visibility="gone"
@@ -71,6 +72,8 @@
         android:src="@drawable/keyboard_arrow_down_24dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        android:tintMode="src_in"
+        app:tint="@color/red"
         />
 
     <ImageView
@@ -84,7 +87,9 @@
         android:focusable="true"
         android:src="@drawable/baseline_more_vert_24"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:tintMode="src_in"
+        app:tint="@color/red"/>
 
 
     <androidx.cardview.widget.CardView
@@ -97,10 +102,12 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btn_close_play_song"
-
         android:layout_marginTop="16dp"
         android:layout_marginBottom="16dp"
-        app:cardCornerRadius="6dp">
+        app:cardCornerRadius="6dp"
+        app:cardBackgroundColor="@color/transparent"
+        android:outlineAmbientShadowColor="@color/transparent"
+        android:outlineSpotShadowColor="@color/transparent">
 
     <ImageView
         android:id="@+id/song_view_image"
@@ -113,7 +120,7 @@
 
     <TextView
         android:id="@+id/song_view_name"
-        android:layout_width="match_parent"
+        android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="20dp"
         android:layout_marginTop="40dp"
@@ -144,7 +151,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/song_view_name"
-        android:textColor="@color/grey_72"/>
+        android:textColor="@color/white"/>
 
     <ImageView
         android:id="@+id/btn_favorite_song"
@@ -157,7 +164,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/artist_play_song"
-         />
+        android:tintMode="src_in"
+        app:tint="@color/red"/>
 
     <RelativeLayout
         android:id="@+id/relativeLayout"
@@ -204,6 +212,27 @@
             android:textSize="14sp" />
     </RelativeLayout>
 
+    <ImageView
+        android:id="@+id/repeat_outline"
+        android:visibility="invisible"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/circle"
+        app:layout_constraintBottom_toBottomOf="@+id/btn_repeat"
+        app:layout_constraintEnd_toEndOf="@+id/btn_repeat"
+        app:layout_constraintStart_toStartOf="@+id/btn_repeat"
+        app:layout_constraintTop_toTopOf="@+id/btn_repeat" />
+
+    <ImageView
+        android:id="@+id/shuffle_outline"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/circle"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@+id/btn_shuffle"
+        app:layout_constraintEnd_toEndOf="@+id/btn_shuffle"
+        app:layout_constraintStart_toStartOf="@+id/btn_shuffle"
+        app:layout_constraintTop_toTopOf="@+id/btn_shuffle" />
 
     <ImageView
         android:id="@+id/btn_repeat"
@@ -221,7 +250,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/relativeLayout"
-         />
+        app:tint="@color/red"
+        android:tintMode="src_in"/>
 
 
     <ImageView
@@ -241,7 +271,8 @@
         app:layout_constraintEnd_toStartOf="@+id/btn_play_pause"
         app:layout_constraintStart_toEndOf="@+id/btn_repeat"
         app:layout_constraintTop_toTopOf="@+id/btn_play_pause"
-         />
+        android:tintMode="src_in"
+        app:tint="@color/red"/>
 
     <ImageView
         android:id="@+id/btn_play_pause"
@@ -258,7 +289,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/relativeLayout"
-         />
+        android:tintMode="src_in"
+        app:tint="@color/red"/>
 
     <ImageView
         android:id="@+id/btn_next"
@@ -277,7 +309,8 @@
         app:layout_constraintEnd_toStartOf="@+id/btn_shuffle"
         app:layout_constraintStart_toEndOf="@+id/btn_play_pause"
         app:layout_constraintTop_toTopOf="@+id/btn_play_pause"
-        />
+        android:tintMode="src_in"
+        app:tint="@color/red"/>
 
     <ImageView
         android:id="@+id/btn_shuffle"
@@ -294,7 +327,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/relativeLayout"
-        />
+        app:tint="@color/red"
+        android:tintMode="src_in"/>
 
     <LinearLayout
         android:id="@+id/playlist_view_container"
@@ -332,6 +366,8 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:src="@drawable/baseline_arrow_back_24"
+                android:tintMode="src_in"
+                app:tint="@color/red"
                 />
 
             <androidx.cardview.widget.CardView
@@ -376,6 +412,7 @@
                 android:layout_marginHorizontal="20dp"
                 android:layout_marginTop="8dp"
                 android:text="00 songs"
+                android:textColor="@color/white"
                 android:textAlignment="center"
                 android:textSize="12sp" />
 
@@ -387,7 +424,8 @@
                 android:layout_marginTop="8dp"
                 android:backgroundTint="@color/transparent"
                 android:src="@drawable/plus"
-                app:tint="@color/grey_72"
+                android:tintMode="src_in"
+                app:tint="@color/red"
                 android:layout_marginEnd="40dp"
                 android:layout_below="@+id/playlist_name"/>
             <ImageButton
@@ -401,7 +439,8 @@
                 android:backgroundTint="@color/transparent"
                 android:src="@drawable/delete_24dp"
                 android:visibility="gone"
-                app:tint="@color/grey_72" />
+                android:tintMode="src_in"
+                app:tint="@color/red" />
 
             <ImageButton
                 android:id="@+id/btn_more_playlist"
@@ -410,7 +449,8 @@
                 android:layout_marginTop="8dp"
                 android:background="@color/transparent"
                 android:src="@drawable/baseline_more_vert_24"
-                app:tint="@color/grey_72"
+                android:tintMode="src_in"
+                app:tint="@color/red"
                 android:layout_below="@id/playlist_name"
                 android:layout_alignParentEnd="true"/>
 

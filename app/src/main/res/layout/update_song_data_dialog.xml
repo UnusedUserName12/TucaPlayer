@@ -2,7 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/white"
+    android:background="@color/blue"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <RelativeLayout
@@ -19,7 +19,7 @@
             android:text="Update Song"
             android:textStyle="bold"
             android:textSize="20sp"
-            android:textColor="@color/grey_72"/>
+            android:textColor="@color/red"/>
         <EditText
             android:id="@+id/change_song_name"
             android:layout_width="match_parent"
@@ -28,7 +28,7 @@
             android:hint="Name"
             android:textStyle="bold"
             android:textSize="14sp"
-            android:textColor="@color/grey_72"
+            android:textColor="@color/white"
             android:layout_below="@+id/update_song_header"/>
         <EditText
             android:id="@+id/change_song_artist"
@@ -38,7 +38,7 @@
             android:hint="Artist"
             android:textStyle="bold"
             android:textSize="14sp"
-            android:textColor="@color/grey_72"
+            android:textColor="@color/white"
             android:layout_below="@+id/change_song_name"/>
         <EditText
             android:id="@+id/change_song_album"
@@ -48,7 +48,7 @@
             android:hint="Album"
             android:textStyle="bold"
             android:textSize="14sp"
-            android:textColor="@color/grey_72"
+            android:textColor="@color/white"
             android:layout_below="@+id/change_song_artist"/>
         <EditText
             android:id="@+id/change_song_genre"
@@ -58,7 +58,7 @@
             android:hint="Genre"
             android:textStyle="bold"
             android:textSize="14sp"
-            android:textColor="@color/grey_72"
+            android:textColor="@color/white"
             android:layout_below="@+id/change_song_album"/>
         <Button
             android:id="@+id/btn_rename_playlist"

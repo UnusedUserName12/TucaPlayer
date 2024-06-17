@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/corners25dp"
-    android:backgroundTint="@color/white">
+    android:backgroundTint="@color/blue">
 
 
     <RelativeLayout
@@ -25,7 +25,7 @@
             android:layout_marginEnd="50dp"
             android:layout_marginBottom="20dp"
             android:background="@drawable/corners25dp"
-            android:backgroundTint="@color/grey_66D6D6D6"
+            android:backgroundTint="@color/black40"
             android:clickable="true"
             android:focusable="true">
 
@@ -51,9 +51,10 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/insert_image"
             android:hint="Playlist Name"
+            android:textColorHint="@color/white"
             android:textStyle="bold"
             android:textSize="20sp"
-            android:textColor="@color/grey_72"/>
+            android:textColor="@color/white"/>
         <Button
             android:id="@+id/create_playlist_button"
             android:layout_width="match_parent"
