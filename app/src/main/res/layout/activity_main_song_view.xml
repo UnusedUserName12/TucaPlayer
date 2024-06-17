@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/main_layout"
-    android:background="@color/blue">
+    android:background="@drawable/background_gradient">
 
     <com.google.android.material.tabs.TabLayout
         android:visibility="gone"
@@ -377,6 +377,7 @@
                 android:layout_marginTop="65dp"
                 app:cardCornerRadius="25dp"
                 android:layout_centerHorizontal="true"
+                app:cardBackgroundColor="@color/transparent"
                 >
 
                 <ImageView
