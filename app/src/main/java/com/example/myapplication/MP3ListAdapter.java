@@ -1,4 +1,5 @@
 package com.example.myapplication;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -8,20 +9,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Filter;
-import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 
 import com.example.myapplication.obj.Song;
 
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 public class MP3ListAdapter extends ArrayAdapter<Song>{
@@ -31,7 +28,6 @@ public class MP3ListAdapter extends ArrayAdapter<Song>{
     private List<Song> filteredList;
     private final LayoutInflater mInflater;
     public static int selectedItemPosition = -1;
-
     private Bitmap song_pic;
 
     public MP3ListAdapter(Context context, List<Song> SongList) {
@@ -69,12 +65,16 @@ public class MP3ListAdapter extends ArrayAdapter<Song>{
 
             if(SongList.get(position).isSelected()){
                 convertView.setBackground(new ColorDrawable(Color.rgb(255, 114, 114)));
-                textView.setTextColor(Color.WHITE);
+                textView.setTextColor(ContextCompat.getColor(getContext(), R.color.blue));
+                authorView.setTextColor(ContextCompat.getColor(getContext(), R.color.blue));
+                durationView.setTextColor(ContextCompat.getColor(getContext(), R.color.blue));
                 //Toast.makeText(getContext(),"Colored",Toast.LENGTH_SHORT).show();
             }
             else {
                 convertView.setBackground(new ColorDrawable(Color.TRANSPARENT));
-                textView.setTextColor(Color.BLACK);
+                textView.setTextColor(ContextCompat.getColor(getContext(), R.color.white));
+                authorView.setTextColor(ContextCompat.getColor(getContext(), R.color.white));
+                durationView.setTextColor(ContextCompat.getColor(getContext(), R.color.white));
                 //Toast.makeText(getContext(),"DISColored",Toast.LENGTH_SHORT).show();
             }
         }
