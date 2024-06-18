@@ -27,6 +27,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.myapplication.db.DatabaseHelper;
 import com.example.myapplication.db.DatabaseManager;
+import com.example.myapplication.interfaces.OnAlbumDeleteListener;
 import com.example.myapplication.obj.Album;
 import com.example.myapplication.obj.Song;
 
@@ -38,7 +39,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class AlbumsTab extends Fragment {
+public class AlbumsTab extends Fragment implements OnAlbumDeleteListener {
     Context context;
     LayoutInflater inflater;
     GridLayout gridLayout;
@@ -46,6 +47,7 @@ public class AlbumsTab extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context = getContext();
+        PlaylistView.setOnAlbumDeleteListener(this);
     }
 
     @Override
@@ -282,4 +284,8 @@ public class AlbumsTab extends Fragment {
         }
     }
 
+    @Override
+    public void OnAlbumDelete() {
+        updateAlbumLayout();
+    }
 }

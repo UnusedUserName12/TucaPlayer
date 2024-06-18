@@ -40,6 +40,7 @@ import androidx.core.content.ContextCompat;
 
 import com.example.myapplication.db.DatabaseHelper;
 import com.example.myapplication.db.DatabaseManager;
+import com.example.myapplication.interfaces.OnAlbumDeleteListener;
 import com.example.myapplication.interfaces.OnPlaylistChangeListener;
 import com.example.myapplication.obj.Playlist;
 import com.example.myapplication.obj.Song;
@@ -65,6 +66,8 @@ public class PlaylistView {
     boolean isListSent;
     boolean isAlbum;
     private static OnPlaylistChangeListener onPlaylistChangeListener;
+
+    private static OnAlbumDeleteListener onAlbumDeleteListener;
     private boolean multi_select_mode;
 
     ActivityResultLauncher<Intent> activityLauncher;
@@ -658,6 +661,10 @@ public class PlaylistView {
                             } while (cursor.moveToNext());
                         }
                         cursor.close();
+
+                        if(onAlbumDeleteListener!=null){
+                            onAlbumDeleteListener.OnAlbumDelete();
+                        }
                     }
                 else {
                     databaseManager.deletePlaylist(id);
@@ -724,6 +731,10 @@ public class PlaylistView {
 
     public static void setOnPlaylistChangeListener(OnPlaylistChangeListener listener) {
         onPlaylistChangeListener = listener;
+    }
+
+    public static void setOnAlbumDeleteListener(OnAlbumDeleteListener onAlbumDeleteListener) {
+        PlaylistView.onAlbumDeleteListener = onAlbumDeleteListener;
     }
 }
 
