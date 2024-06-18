@@ -259,7 +259,12 @@ public class PlaylistView {
             mainActivity.settings.setIsAlbum(isAlbum);
             ImageView SongViewImage = mainActivity.findViewById(R.id.song_view_image);
             Bitmap song_pic_bitmap = mainActivity.loadImageFromStorage(playlist.getName());
-            SongViewImage.setImageBitmap(song_pic_bitmap);
+            if(song_pic_bitmap!=null) {
+                SongViewImage.setImageBitmap(song_pic_bitmap);
+            }
+            else{
+                SongViewImage.setImageResource(R.drawable.placeholder);
+            }
         }
         isListSent = true;
     }
@@ -509,8 +514,12 @@ public class PlaylistView {
             databaseManager.updatePlaylist(playlist.getId(),playlist.getName(),playlist.getImagePath());
             databaseManager.close();
             Bitmap bitmap = mainActivity.loadImageFromStorage(playlist.getName());
-            playlist_image_view.setImageBitmap(bitmap);
-            AudioAdapter.setSong_pic(bitmap);
+            if(bitmap!=null) {
+                playlist_image_view.setImageBitmap(bitmap);
+                AudioAdapter.setSong_pic(bitmap);
+            }else{
+                AudioAdapter.setSong_pic(null);
+            }
             AudioAdapter.notifyDataSetChanged();
             dialog.dismiss();
         });
@@ -570,6 +579,7 @@ public class PlaylistView {
                     AudioAdapter.setSong_pic(song_pic_bitmap);
                 }else if (mImage.equals("placeholder.png")){
                     playlist_image_view.setImageResource(R.drawable.placeholder);
+                    AudioAdapter.setSong_pic(null);
                 }
                 playlist = new Playlist(id, mName, mImage);
 
