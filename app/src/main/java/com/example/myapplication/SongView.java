@@ -316,7 +316,7 @@ public class SongView implements OnSongChangeListener {
                 databaseManager.deleteSong(mSong.getId());
 
                 File songFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), mSong.getFilename());
-                //songFile.delete();
+                songFile.delete();
                 if(MyMediaPlayer.CurrentIndex < SongList.size()-1)
                     MyMediaPlayer.playMedia(MyMediaPlayer.CurrentIndex);
                 else MyMediaPlayer.playMedia(MyMediaPlayer.CurrentIndex-1);
