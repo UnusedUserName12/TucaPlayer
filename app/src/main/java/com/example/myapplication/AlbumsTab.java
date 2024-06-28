@@ -28,6 +28,7 @@ import androidx.fragment.app.Fragment;
 import com.example.myapplication.db.DatabaseHelper;
 import com.example.myapplication.db.DatabaseManager;
 import com.example.myapplication.interfaces.OnAlbumDeleteListener;
+import com.example.myapplication.interfaces.ThreadGenerateAlbumsListener;
 import com.example.myapplication.obj.Album;
 import com.example.myapplication.obj.Song;
 
@@ -39,7 +40,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class AlbumsTab extends Fragment implements OnAlbumDeleteListener {
+public class AlbumsTab extends Fragment implements OnAlbumDeleteListener, ThreadGenerateAlbumsListener {
     Context context;
     LayoutInflater inflater;
     GridLayout gridLayout;
@@ -48,6 +49,7 @@ public class AlbumsTab extends Fragment implements OnAlbumDeleteListener {
         super.onCreate(savedInstanceState);
         context = getContext();
         PlaylistView.setOnAlbumDeleteListener(this);
+        ThreadGenerateAlbums.setThreadGenerateAlbumsListener(this);
     }
 
     @Override
@@ -56,101 +58,16 @@ public class AlbumsTab extends Fragment implements OnAlbumDeleteListener {
         this.inflater = inflater;
         View view = inflater.inflate(R.layout.fragment_albums, container, false);
         gridLayout = view.findViewById(R.id.album_card_container);
-        updateAlbums();
-        updateAlbumLayout();
+        if(ThreadGenerateAlbums.isFinished)
+            updateAlbumLayout();
         return view;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        updateAlbumLayout();
-    }
-
-    private void updateAlbums() {
-        DatabaseManager databaseManager = new DatabaseManager(context);
-        try {
-            databaseManager.open();
-            List<Song> songList = getListOfSongsWithAlbums(databaseManager);
-            List<Album> albumList = getListOfAlbums(databaseManager);
-
-            Set<String> existingAlbums = new HashSet<>();
-            for (Album album : albumList) {
-                existingAlbums.add(album.getName());
-            }
-
-            Set<String> songAlbums = new HashSet<>();
-            for (Song song : songList) {
-                songAlbums.add(song.getAlbum());
-            }
-
-            List<Album> albumsToAdd = new ArrayList<>();
-            for (String albumName : songAlbums) {
-                if (!existingAlbums.contains(albumName)) {
-                    Song exampleSong = songList.stream()
-                            .filter(s -> s.getAlbum().equals(albumName))
-                            .findFirst()
-                            .orElse(null);
-                    if (exampleSong != null) {
-                        albumsToAdd.add(new Album(0, albumName, exampleSong.getArtist(), null));
-                    }
-                }
-            }
-
-            if (!albumsToAdd.isEmpty()) {
-                MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-                MainActivity mainActivity = (MainActivity) getActivity();
-                if (mainActivity != null) {
-                    for (Album album : albumsToAdd) {
-                        for (Song song : songList) {
-                            if (song.getAlbum().equals(album.getName())) {
-                                File songFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), song.getFilename());
-                                if (songFile.exists()) {
-                                    mmr.setDataSource(songFile.getPath());
-                                    byte[] data = mmr.getEmbeddedPicture();
-                                    if (data != null) {
-                                        Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-                                        mainActivity.saveToInternalStorage(bitmap, song.getAlbum());
-                                        if (!existingAlbums.contains(song.getAlbum())) {
-                                            databaseManager.insertAlbum(song.getAlbum(), song.getArtist(), song.getAlbum());
-                                            existingAlbums.add(song.getAlbum());  // Update the set to avoid duplicates
-                                        }
-                                    } else {
-                                        if (!existingAlbums.contains(song.getAlbum())) {
-                                            databaseManager.insertAlbum(song.getAlbum(), song.getArtist(), "placeholder.png");
-                                            existingAlbums.add(song.getAlbum());  // Update the set to avoid duplicates
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            databaseManager.close();
-        }
-    }
-
-
-
-    private List<Album> getListOfAlbums(DatabaseManager databaseManager) {
-        List<Album> AlbumList = new ArrayList<>();
-        Cursor cursor = databaseManager.fetchAlbums();
-        if(cursor.moveToFirst()){
-            do{
-                @SuppressLint("Range") int id = cursor.getInt(cursor.getColumnIndex(DatabaseHelper.ALBUM_ID));
-                @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex(DatabaseHelper.ALBUM_NAME));
-                @SuppressLint("Range") String artist = cursor.getString(cursor.getColumnIndex(DatabaseHelper.ALBUM_ARTIST));
-                @SuppressLint("Range") String image = cursor.getString(cursor.getColumnIndex(DatabaseHelper.ALBUM_PICTURE));
-                AlbumList.add(new Album(id,name,artist,image));
-
-            }while (cursor.moveToNext());
-        }
-        cursor.close();
-        return AlbumList;
+        if(ThreadGenerateAlbums.isFinished)
+            updateAlbumLayout();
     }
 
     private List<Song> getListOfSongsWithAlbums(DatabaseManager databaseManager){
@@ -206,15 +123,10 @@ public class AlbumsTab extends Fragment implements OnAlbumDeleteListener {
 
                 if (!image.equals("placeholder.png") && mainActivity != null) {
                     Bitmap bitmap = mainActivity.loadImageFromStorage(name);
-                    Bitmap bitmapCopy = bitmap.copy(bitmap.getConfig(), true);
-
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        backgroundImage.setRenderEffect(RenderEffect.createBlurEffect(22f, 22f, Shader.TileMode.CLAMP));
-                    } else {
-                        backgroundImage.setImageBitmap(blur(context, bitmapCopy));
-                    }
+                    Bitmap bitmapBlur = mainActivity.loadImageFromStorage(name+"_blur");
 
                     cardImage.setImageBitmap(bitmap);
+                    backgroundImage.setImageBitmap(bitmapBlur);
                 }
 
 
@@ -237,20 +149,6 @@ public class AlbumsTab extends Fragment implements OnAlbumDeleteListener {
         }
         cursor.close();
         databaseManager.close();
-    }
-
-    public static Bitmap blur(Context context, Bitmap image) {
-        Bitmap outputBitmap = Bitmap.createBitmap(image);
-        RenderScript rs = RenderScript.create(context);
-        ScriptIntrinsicBlur blurScript = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs));
-        Allocation input = Allocation.createFromBitmap(rs, image);
-        Allocation output = Allocation.createFromBitmap(rs, outputBitmap);
-        blurScript.setRadius(22f);
-        blurScript.setInput(input);
-        blurScript.forEach(output);
-        output.copyTo(outputBitmap);
-        rs.destroy();
-        return outputBitmap;
     }
 
     private void updateAlbumContent(int id,String album_name){
@@ -286,6 +184,12 @@ public class AlbumsTab extends Fragment implements OnAlbumDeleteListener {
 
     @Override
     public void OnAlbumDelete() {
+        if(ThreadGenerateAlbums.isFinished)
+            updateAlbumLayout();
+    }
+
+    @Override
+    public void OnThreadFinish() {
         updateAlbumLayout();
     }
 }
