@@ -13,6 +13,7 @@ public class UserSettings {
     public static final String SONG_IS_ON_REPEAT = "song_is_on_repeat";
     public static final String SONG_IS_ON_SHUFFLE = "song_is_on_shuffle";
     public static final String IS_ALBUM = "is_album";
+    public static final String SONG_TIMESTAMP = "song_timestamp";
     private int last_song_id;
     private int last_playlist_id;
     private boolean song_is_playing;
@@ -20,6 +21,7 @@ public class UserSettings {
     private boolean song_is_on_shuffle;
 
     private boolean is_album;
+    private int song_timestamp;
 
     public int getLast_song_id() {
         return last_song_id;
@@ -67,5 +69,13 @@ public class UserSettings {
 
     public void setIsAlbum(boolean is_album) {
         this.is_album = is_album;
+    }
+
+    public int getSong_timestamp() {
+        return song_timestamp;
+    }
+
+    public void setSong_timestamp(int song_timestamp) {
+        this.song_timestamp = song_timestamp;
     }
 }

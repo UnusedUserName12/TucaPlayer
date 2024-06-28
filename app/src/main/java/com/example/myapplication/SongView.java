@@ -98,6 +98,7 @@ public class SongView implements OnSongChangeListener {
         btnPlay.setOnClickListener(v -> {
             if(!mainActivity.settings.isSong_playing() && !mediaPlayer.isPlaying()) {
                 MyMediaPlayer.playMedia(MyMediaPlayer.CurrentIndex);
+                MyMediaPlayer.instance.seekTo(mainActivity.settings.getSong_timestamp());
                 btnPlay.setImageResource(R.drawable.pause_24dp);
                 mainActivity.settings.setSong_playing(true);
             }

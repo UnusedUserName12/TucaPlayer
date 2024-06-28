@@ -195,6 +195,9 @@ public class MainActivity extends AppCompatActivity {
         }
         finally {
             databaseManager.close();
+
+            ThreadGenerateAlbums threadGenerateAlbums = new ThreadGenerateAlbums(this);
+            threadGenerateAlbums.start();
         }
     }
 
@@ -311,12 +314,14 @@ public class MainActivity extends AppCompatActivity {
         boolean is_song_on_repeat = sharedPreferences.getBoolean(UserSettings.SONG_IS_ON_REPEAT,false);
         boolean is_song_on_shuffle = sharedPreferences.getBoolean(UserSettings.SONG_IS_ON_SHUFFLE,false);
         boolean is_album = sharedPreferences.getBoolean(UserSettings.IS_ALBUM,false);
+        int song_timestamp = sharedPreferences.getInt(UserSettings.SONG_TIMESTAMP,0);
         settings.setLast_song_id(last_song_id);
         settings.setLast_playlist_id(last_playlist_id);
         settings.setSong_playing(song_is_playing);
         settings.setSong_is_on_repeat(is_song_on_repeat);
         settings.setSong_is_on_shuffle(is_song_on_shuffle);
         settings.setIsAlbum(is_album);
+        settings.setSong_timestamp(song_timestamp);
     }
     private void applySettingToSongView() {
         if(settings.getLast_song_id()>0){
@@ -324,6 +329,7 @@ public class MainActivity extends AppCompatActivity {
             int last_playlist_id = settings.getLast_playlist_id();
             boolean is_album = settings.isAlbum();
             songView.showSong();
+            if(SongView.isExpanded) songView.expandSong();
             TextView song_view_name = findViewById(R.id.song_view_name);
             DatabaseManager databaseManager = new DatabaseManager(this);
             try {
@@ -411,6 +417,7 @@ public class MainActivity extends AppCompatActivity {
         MediaPlayer mediaPlayer = MyMediaPlayer.getInstance();
         settings.setSong_playing(mediaPlayer.isPlaying());
         //settings.setLast_playlist_id is located in PlaylistView and SongsTab
+        settings.setSong_timestamp(mediaPlayer.getCurrentPosition());
 
         SharedPreferences.Editor editor = getSharedPreferences(UserSettings.SONG_PREFERENCES,MODE_PRIVATE).edit();
         editor.putInt(UserSettings.LAST_SONG_ID,settings.getLast_song_id());
@@ -419,6 +426,7 @@ public class MainActivity extends AppCompatActivity {
         editor.putBoolean(UserSettings.SONG_IS_ON_REPEAT,settings.isSong_on_repeat());
         editor.putBoolean(UserSettings.SONG_IS_ON_SHUFFLE,settings.isSong_on_shuffle());
         editor.putBoolean(UserSettings.IS_ALBUM,settings.isAlbum());
+        editor.putInt(UserSettings.SONG_TIMESTAMP, settings.getSong_timestamp());
         editor.apply();
     }
 
